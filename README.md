@@ -27,3 +27,11 @@ Import pyDOE in python
 >import pyDOE
 
 >help(pyDOE.lhs)
+
+5/22/18
+
+Python script (LHC.py) is now updated to generate parameter sets.
+
+ensemble_script_clm5 provides bash script for generating ensemble cases (create, setup, submit)
+
+pft_var.ncl provides NCL script for generating PFT-dependent param files

@@ -1,0 +1,185 @@
+#!/bin/bash
+
+# Clone CLM5 release from CTSM repository
+#git clone -b release-clm5.0 https://github.com/ESCOMP/ctsm.git clm5.0
+#cd clm5.0
+#./manage_externals/checkout_externals
+
+export CODENAME="clm5.0"
+export NAME="hydro_ensemble"
+#niter=14
+#niter=22
+#niter=32
+#niter=26
+
+export USER="kdagon"
+
+cd /glade/p/work/$USER/$CODENAME
+pwd
+
+cd cime/scripts
+pwd
+
+## first time only
+#mkdir $NAME
+##
+
+cd $NAME
+pwd
+
+##base build: UNCOMMENT THIS THE FIRST TIME YOU RUN SCRIPT
+#rm -rf codebase_$NAME
+#rm -rf /glade/scratch/$USER/codebase_$NAME
+#../create_newcase --run-unsupported --compset I2000Clm50Sp  --res f45_f45 --case codebase_$NAME --project P08010000
+
+#cd codebase_$NAME 
+#pwd
+#./case.setup
+#qcmd -- ./case.build
+
+#cd ..
+##
+
+##control run: UNCOMMENT THIS THE SECOND TIME YOU RUN SCRIPT
+# also serves as an equilibrium test
+#export EXPTNAME=${NAME}0
+
+#remove existing output
+#rm -rf /glade/scratch/$USER/$EXPTNAME
+#rm -rf /glade/scratch/$USER/archive/$EXPTNAME
+
+#remove existing working directories                                                                                                                  
+#rm -rf $EXPTNAME
+
+#../create_newcase --run-unsupported --compset I2000Clm50Sp --res f45_f45 --case $EXPTNAME --project P08010000
+
+#cd $EXPTNAME
+
+#./xmlchange JOB_QUEUE=regular
+#./xmlchange JOB_WALLCLOCK_TIME=6:00:00 
+
+#./xmlchange NTASKS_CPL=-15                                                                                                                   
+#./xmlchange NTASKS_OCN=-15
+#./xmlchange NTASKS_WAV=-15
+#./xmlchange NTASKS_GLC=-15
+#./xmlchange NTASKS_ICE=-15
+#./xmlchange NTASKS_ROF=-15
+#./xmlchange NTASKS_LND=-15
+
+#./xmlchange CONTINUE_RUN=FALSE
+#./xmlchange RESUBMIT=0
+#./xmlchange STOP_N=30
+#./xmlchange STOP_OPTION=nyears
+
+#./xmlchange BUILD_COMPLETE="TRUE"
+#./xmlchange EXEROOT="/glade/scratch/$USER/codebase_$NAME/bld"
+
+#./xmlchange DATM_CLMNCEP_YR_START=2000
+#./xmlchange DATM_CLMNCEP_YR_END=2004
+
+# modify wallclock, project, queue as necessary
+# to change mail options; this works with Cheyenne only:
+#./xmlchange --file env_batch.xml --subgroup case.run --id BATCH_COMMAND_FLAGS --val '-m abe -l walltime=6:00:00 -A P08010000 -q regular'
+
+# case.setup (creates user_nl_* files)
+#./case.setup
+
+# submit case
+#./case.submit
+##
+
+# create array of parameter names (repeated for min/max simulations)
+# in the future, could try and read these in from a text file
+declare -a arr=("displar" "displar" "dleaf" "dleaf" "froot_leaf" "froot_leaf" "kmax" "kmax" "krmax" "krmax" "leafcn" "leafcn" "medlynslope" "medlynslope" "psi50" "psi50" "rootprof_beta" "rootprof_beta" "z0mr" "z0mr" "baseflow_scalar" "baseflow_scalar" "maximum_leaf_wetted_fraction" "maximum_leaf_wetted_fraction" "interception_fraction")
+
+# number of iterations = length of arr
+niter=${#arr[@]}
+echo $niter
+
+i=1
+while [ $i -le $niter ]
+do
+
+echo $i
+
+# assign min/max based on odd/even value of i
+# note: bash arrays index with 0 start
+if [[ $(($i % 2)) -eq 0 ]]
+	then export opt=max
+	else export opt=min
+fi
+
+export EXPTNAME=${NAME}_${arr[$i-1]}_$opt
+echo $EXPTNAME
+
+#remove existing output
+rm -rf /glade/scratch/$USER/$EXPTNAME
+rm -rf /glade/scratch/$USER/archive/$EXPTNAME
+
+#remove existing working directories
+rm -rf $EXPTNAME
+
+../create_newcase --run-unsupported --compset I2000Clm50Sp --res f45_f45 --case $EXPTNAME --project P08010000
+
+cd $EXPTNAME
+
+./xmlchange JOB_QUEUE=regular
+./xmlchange JOB_WALLCLOCK_TIME=4:00:00
+
+./xmlchange NTASKS_CPL=-15
+./xmlchange NTASKS_OCN=-15
+./xmlchange NTASKS_WAV=-15
+./xmlchange NTASKS_GLC=-15
+./xmlchange NTASKS_ICE=-15
+./xmlchange NTASKS_ROF=-15
+./xmlchange NTASKS_LND=-15
+
+./xmlchange CONTINUE_RUN=FALSE
+./xmlchange RESUBMIT=0
+./xmlchange STOP_N=20
+./xmlchange STOP_OPTION=nyears
+
+./xmlchange BUILD_COMPLETE="TRUE"
+./xmlchange EXEROOT="/glade/scratch/$USER/codebase_$NAME/bld"
+
+./xmlchange DATM_CLMNCEP_YR_START=2000
+./xmlchange DATM_CLMNCEP_YR_END=2004
+
+# modify wallclock, project, queue as necessary
+# to change mail options; this works with Cheyenne only:
+#./xmlchange --file env_batch.xml --subgroup case.run --id BATCH_COMMAND_FLAGS --val '-m abe -l walltime=4:00:00 -A P08010000 -q regular'
+
+# case.setup (creates user_nl_* files)
+./case.setup
+
+# add output history fields if desired, e.g.:
+#echo "hist_fincl1='GPP'" >> user_nl_clm
+
+# need to generate these paramfiles and put them in the right place
+# if not PFT-dependent, edit the namelist appropriately
+if [ $i -le 20 ]
+then
+  uclm="paramfile='/glade/u/home/$USER/pft_files/hydro_ensemble/hydro_ens_${arr[$i-1]}_${opt}.nc'"               
+  echo  $uclm >> user_nl_clm 
+elif [ $i -eq 21 ]
+then
+  echo "baseflow_scalar=0.0005" >> user_nl_clm
+elif [ $i -eq 22 ]
+then
+  echo "baseflow_scalar=0.1" >> user_nl_clm
+elif [ $i -eq 23 ]
+then
+  echo "maximum_leaf_wetted_fraction=0.01" >> user_nl_clm
+elif [ $i -eq 24 ]
+then
+  echo "maximum_leaf_wetted_fraction=0.5" >> user_nl_clm
+else
+  echo "interception_fraction=0.5" >> user_nl_clm
+fi
+
+./case.submit
+
+cd ../
+
+(( i++ ))
+done
