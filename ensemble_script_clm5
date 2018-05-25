@@ -1,16 +1,18 @@
 #!/bin/bash
 
-# Clone CLM5 release from CTSM repository
-#git clone -b release-clm5.0 https://github.com/ESCOMP/ctsm.git clm5.0
-#cd clm5.0
+# Clone latest development branch from CTSM repository
+#git clone --origin escomp https://github.com/ESCOMP/ctsm.git ctsm_ParamEns
+#cd ctsm_ParamEns
+#git checkout -b ctsm_ParamEns master
 #./manage_externals/checkout_externals
 
-export CODENAME="clm5.0"
+#export CODENAME="clm5.0"
+export CODENAME="ctsm_ParamEns"
 export NAME="hydro_ensemble"
-#niter=14
-#niter=22
-#niter=32
-#niter=26
+
+# Set number of sample cases
+niter=10
+echo "number of samples = "$niter
 
 export USER="kdagon"
 
@@ -20,27 +22,27 @@ pwd
 cd cime/scripts
 pwd
 
-## first time only
-#mkdir $NAME
+## create experiment directory (first time only)
+mkdir $NAME
 ##
 
 cd $NAME
 pwd
 
-##base build: UNCOMMENT THIS THE FIRST TIME YOU RUN SCRIPT
-#rm -rf codebase_$NAME
-#rm -rf /glade/scratch/$USER/codebase_$NAME
-#../create_newcase --run-unsupported --compset I2000Clm50Sp  --res f45_f45 --case codebase_$NAME --project P08010000
+## Base build: UNCOMMENT THIS THE FIRST TIME YOU RUN SCRIPT
+rm -rf codebase_$NAME
+rm -rf /glade/scratch/$USER/codebase_$NAME
+../create_newcase --run-unsupported --compset I2000Clm50Sp  --res f45_f45 --case codebase_$NAME --project P08010000
 
-#cd codebase_$NAME 
-#pwd
-#./case.setup
-#qcmd -- ./case.build
+cd codebase_$NAME 
+pwd
+./case.setup
+qcmd -- ./case.build
 
-#cd ..
+cd ..
 ##
 
-##control run: UNCOMMENT THIS THE SECOND TIME YOU RUN SCRIPT
+##control run: uncomment this for a simulation with default values
 # also serves as an equilibrium test
 #export EXPTNAME=${NAME}0
 
@@ -58,13 +60,13 @@ pwd
 #./xmlchange JOB_QUEUE=regular
 #./xmlchange JOB_WALLCLOCK_TIME=6:00:00 
 
-#./xmlchange NTASKS_CPL=-15                                                                                                                   
-#./xmlchange NTASKS_OCN=-15
-#./xmlchange NTASKS_WAV=-15
-#./xmlchange NTASKS_GLC=-15
-#./xmlchange NTASKS_ICE=-15
-#./xmlchange NTASKS_ROF=-15
-#./xmlchange NTASKS_LND=-15
+#./xmlchange NTASKS_CPL=-4                                                                                                                   
+#./xmlchange NTASKS_OCN=-4
+#./xmlchange NTASKS_WAV=-4
+#./xmlchange NTASKS_GLC=-4
+#./xmlchange NTASKS_ICE=-4
+#./xmlchange NTASKS_ROF=-4
+#./xmlchange NTASKS_LND=-4
 
 #./xmlchange CONTINUE_RUN=FALSE
 #./xmlchange RESUBMIT=0
@@ -88,28 +90,18 @@ pwd
 #./case.submit
 ##
 
-# create array of parameter names (repeated for min/max simulations)
+# create array of parameter names
 # in the future, could try and read these in from a text file
-declare -a arr=("displar" "displar" "dleaf" "dleaf" "froot_leaf" "froot_leaf" "kmax" "kmax" "krmax" "krmax" "leafcn" "leafcn" "medlynslope" "medlynslope" "psi50" "psi50" "rootprof_beta" "rootprof_beta" "z0mr" "z0mr" "baseflow_scalar" "baseflow_scalar" "maximum_leaf_wetted_fraction" "maximum_leaf_wetted_fraction" "interception_fraction")
-
-# number of iterations = length of arr
-niter=${#arr[@]}
-echo $niter
+declare -a param=("medlynslope" "dleaf" "kmax" "fff" "dint" "baseflow_scalar")
+np=${#param[@]}
 
 i=1
 while [ $i -le $niter ]
 do
 
-echo $i
+echo "Starting case "$i" of "$niter
 
-# assign min/max based on odd/even value of i
-# note: bash arrays index with 0 start
-if [[ $(($i % 2)) -eq 0 ]]
-	then export opt=max
-	else export opt=min
-fi
-
-export EXPTNAME=${NAME}_${arr[$i-1]}_$opt
+export EXPTNAME=${NAME}_$i
 echo $EXPTNAME
 
 #remove existing output
@@ -126,13 +118,13 @@ cd $EXPTNAME
 ./xmlchange JOB_QUEUE=regular
 ./xmlchange JOB_WALLCLOCK_TIME=4:00:00
 
-./xmlchange NTASKS_CPL=-15
-./xmlchange NTASKS_OCN=-15
-./xmlchange NTASKS_WAV=-15
-./xmlchange NTASKS_GLC=-15
-./xmlchange NTASKS_ICE=-15
-./xmlchange NTASKS_ROF=-15
-./xmlchange NTASKS_LND=-15
+./xmlchange NTASKS_CPL=-4
+./xmlchange NTASKS_OCN=-4
+./xmlchange NTASKS_WAV=-4
+./xmlchange NTASKS_GLC=-4
+./xmlchange NTASKS_ICE=-4
+./xmlchange NTASKS_ROF=-4
+./xmlchange NTASKS_LND=-4
 
 ./xmlchange CONTINUE_RUN=FALSE
 ./xmlchange RESUBMIT=0
@@ -155,27 +147,28 @@ cd $EXPTNAME
 # add output history fields if desired, e.g.:
 #echo "hist_fincl1='GPP'" >> user_nl_clm
 
-# need to generate these paramfiles and put them in the right place
+# execute python script to read parameter values
+python LHC.py # doesn't save output
+python LHC.py 1> LHC # write output to LHC file (but how to read it in bash?)
+my_array=( $(python LHC.py) ) # captures only first bit
+OUTPUT=($(python LHC.py | tr -d '[],'))
+echo ${OUTPUT[0]} # doesn't quite read the first value
+
+# generate param files for PFT-dependent params
+# Read in default CLM params file from /glade/p/cesmdata/cseg/inputdata/lnd/clm2/paramdata/clm5_params.c171117.nc
+# Make changes
+# Write out new copy to location below
+uclm="paramfile='/glade/u/home/$USER/pft_files/hydro_ensemble_LHC/${EXPTNAME}.nc'"               
+echo  $uclm >> user_nl_clm
+
 # if not PFT-dependent, edit the namelist appropriately
-if [ $i -le 20 ]
-then
-  uclm="paramfile='/glade/u/home/$USER/pft_files/hydro_ensemble/hydro_ens_${arr[$i-1]}_${opt}.nc'"               
-  echo  $uclm >> user_nl_clm 
-elif [ $i -eq 21 ]
-then
-  echo "baseflow_scalar=0.0005" >> user_nl_clm
-elif [ $i -eq 22 ]
-then
-  echo "baseflow_scalar=0.1" >> user_nl_clm
-elif [ $i -eq 23 ]
-then
-  echo "maximum_leaf_wetted_fraction=0.01" >> user_nl_clm
-elif [ $i -eq 24 ]
-then
-  echo "maximum_leaf_wetted_fraction=0.5" >> user_nl_clm
-else
-  echo "interception_fraction=0.5" >> user_nl_clm
-fi
+# need to import LHC to read parameter values
+j=4
+while [ $j -le $np ]
+do
+python LHC.py $i-1 >> user_nl_clm
+(( j++ ))
+done
 
 ./case.submit
 
