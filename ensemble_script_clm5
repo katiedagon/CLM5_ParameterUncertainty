@@ -13,7 +13,7 @@ export CODENAME="ctsm_ParamEns"
 export NAME="hydro_ensemble_LHC"
 
 # Set number of sample cases
-niter=2
+niter=100
 echo "number of samples = "$niter
 
 # Run LHC_write to generate parameter value array
@@ -168,6 +168,8 @@ cd $EXPTNAME
 # Generate param files for PFT-dependent params
 # Set params file
 pftfile="/glade/u/home/$USER/pft_files/hydro_ensemble_LHC/${EXPTNAME}.nc"
+# Remove existing file
+rm -f $pftfile
 # Copy default 
 cp /glade/p/cesmdata/cseg/inputdata/lnd/clm2/paramdata/clm5_params.c171117.nc $pftfile
 
