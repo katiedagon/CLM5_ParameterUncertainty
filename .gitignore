@@ -1,3 +1,4 @@
+.gitignore
 *.npy
 bash_test
 *.csv
