@@ -28,3 +28,21 @@ model.add(Dense(1, activation='tanh'))
 
 # Compile model
 model.compile(optimizer='adam',loss='mse',metrics=['accuracy'])
+
+# Separate training/test data: 60/40 split
+# how does test split into validation/verification?
+x_train = inputdata[0:60,:]
+x_test = inputdata[60:,:]
+y_train = outputdata[0:60]
+y_test = outputdata[60:]
+
+# Fit the model
+# unclear on what these numbers should be
+model.fit(x_train, y_train, epochs=20, batch_size=10)
+
+# Evaluate the model using test data
+score = model.evaluate(x_test, y_test, batch_size=10)
+print("\n%s: %.2f%%" % (model.metrics_names[1], score[1]*100))
+
+# Make predictions
+predictions = model.predict(inputdata)
