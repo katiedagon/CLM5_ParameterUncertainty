@@ -1,1 +1,2 @@
-parameters.npy
+*.npy
+bash_test

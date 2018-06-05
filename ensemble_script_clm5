@@ -13,7 +13,8 @@ export CODENAME="ctsm_ParamEns"
 export NAME="hydro_ensemble_LHC"
 
 # Set number of sample cases
-niter=100
+#niter=100
+niter=1
 echo "number of samples = "$niter
 
 # Run LHC_write to generate parameter value array
@@ -60,7 +61,7 @@ pwd
 
 ## Control run: uncomment this for a simulation with default values
 # also serves as an equilibrium test
-#export EXPTNAME=${NAME}0
+#export EXPTNAME=${NAME}_0
 
 #remove existing output
 #rm -rf /glade/scratch/$USER/$EXPTNAME
@@ -74,7 +75,7 @@ pwd
 #cd $EXPTNAME
 
 #./xmlchange JOB_QUEUE=regular
-#./xmlchange JOB_WALLCLOCK_TIME=6:00:00 
+#./xmlchange JOB_WALLCLOCK_TIME=4:00:00 
 
 #./xmlchange NTASKS_CPL=-4                                                                                                                   
 #./xmlchange NTASKS_OCN=-4
@@ -86,7 +87,7 @@ pwd
 
 #./xmlchange CONTINUE_RUN=FALSE
 #./xmlchange RESUBMIT=0
-#./xmlchange STOP_N=30
+#./xmlchange STOP_N=15
 #./xmlchange STOP_OPTION=nyears
 
 #./xmlchange BUILD_COMPLETE="TRUE"
@@ -119,7 +120,8 @@ do
 
 echo "Starting case "$i" of "$niter
 
-export EXPTNAME=${NAME}_$i
+#export EXPTNAME=${NAME}_$i
+export EXPTNAME=${NAME}_${i}_hybrid
 echo $EXPTNAME
 
 # Remove existing output
@@ -134,7 +136,7 @@ rm -rf $EXPTNAME
 cd $EXPTNAME
 
 ./xmlchange JOB_QUEUE=regular
-./xmlchange JOB_WALLCLOCK_TIME=4:00:00
+./xmlchange JOB_WALLCLOCK_TIME=6:00:00
 
 ./xmlchange NTASKS_CPL=-4
 ./xmlchange NTASKS_OCN=-4
@@ -146,7 +148,7 @@ cd $EXPTNAME
 
 ./xmlchange CONTINUE_RUN=FALSE
 ./xmlchange RESUBMIT=0
-./xmlchange STOP_N=20
+./xmlchange STOP_N=25
 ./xmlchange STOP_OPTION=nyears
 
 ./xmlchange BUILD_COMPLETE="TRUE"
@@ -155,12 +157,22 @@ cd $EXPTNAME
 ./xmlchange DATM_CLMNCEP_YR_START=2000
 ./xmlchange DATM_CLMNCEP_YR_END=2004
 
+# hybrid-specific settings
+./xmlchange RUN_TYPE=hybrid
+./xmlchange RUN_REFCASE=${NAME}_0
+./xmlchange RUN_REFDATE=0016-01-01
+./xmlchange RUN_STARTDATE=0016-01-01
+
 # Modify wallclock, project, queue as necessary
 # To change mail options; this works with Cheyenne only:
 #./xmlchange --file env_batch.xml --subgroup case.run --id BATCH_COMMAND_FLAGS --val '-m abe -l walltime=4:00:00 -A P08010000 -q regular'
 
 # Setup case (creates user_nl_* files)
 ./case.setup
+
+# Prestage restart/initial data for hybrid start
+cp /glade/scratch/$USER/${NAME}_0/run/rpointer* /glade/scratch/$USER/$EXPTNAME/run
+cp /glade/scratch/$USER/${NAME}_0/run/*0016-01-01* /glade/scratch/$USER/$EXPTNAME/run
 
 # Add output history fields if desired, e.g.:
 #echo "hist_fincl1='GPP'" >> user_nl_clm
