@@ -4,9 +4,11 @@ This repository provides code to run a CLM5 ensemble to investigate parameter se
 
 # Requirements
 
-Create a clone of the [NCAR package library](https://www2.cisl.ucar.edu/resources/computational-systems/cheyenne/software/python)
+Create a clone of the [NCAR package library](https://www2.cisl.ucar.edu/resources/computational-systems/cheyenne/software/python).
 
-Install [pyDOE package](https://pythonhosted.org/pyDOE/randomized.html#latin-hypercube) in order to use lhs function for Latin Hypercube sampling
+Install [pyDOE package](https://pythonhosted.org/pyDOE/randomized.html#latin-hypercube) in order to use lhs function for Latin Hypercube sampling.
+
+Install [tensorflow](https://www.tensorflow.org/) and [keras](https://keras.io/) packages for machine learning (neural networks).
 
 ```bash
 # Create clone
@@ -15,17 +17,16 @@ cd /glade/p/work/kdagon/ncar_pylib_clone
 # Edit /bin/activate to change VIRTUAL_ENV variable to be /glade/p/work/kdagon/ncar_pylib_clone
 # Source the virtual environment
 source /bin/activate
-# Install package with specified install dir
+# Install packages with specified install dir
+pip install --upgrade -t /glade/p/work/kdagon/ncar_pylib_clone/lib/python3.6/site-packages pip
 pip install --upgrade -t /glade/p/work/kdagon/ncar_pylib_clone/lib/python3.6/site-packages pyDOE
-# Import pyDOE in python
-python
-import pyDOE
-help(pyDOE.lhs)
+pip install --upgrade -t /glade/p/work/kdagon/ncar_pylib_clone/lib/python3.6/site-packages tensorflow
+pip install --upgrade -t /glade/p/work/kdagon/ncar_pylib_clone/lib/python3.6/site-packages keras
 ```
 
-# Primary Files
+# Ensemble Generating Files
 
-The master script is ensemble_script_clm5 (bash). This sets up ensemble cases, configuration, etc. Within this you set the ensemble size.
+The master ensemble script is ensemble_script_clm5 (bash). This sets up ensemble cases, configuration, etc. Within this you set the ensemble size.
 
 This also calls 3 python scripts to set parameter values:
 
@@ -47,8 +48,15 @@ This also calls 3 python scripts to set parameter values:
 * Put them in the namelist in the proper format
 * Do this for each ensemble simulation
 
+# Machine Learning Files
+
+* NN_create.py
+
+Create neural network in Python with Keras.
+
 # Supplemental Files
 
-* LHC_invert.py inverts the existing parameter array back to the original LHC random sampling
-* pft_var.ncl provides NCL script for generating PFT-dependent param files
+* LHC_invert.py inverts the existing parameter array (parameters.npy) back to the original LHC random sampling and writes out (lhc.npy)
+* process_outputdata.ncl processes the CLM output data to a suitable output array for the neural network (outputdata.csv)
+* pft_var.ncl provides an NCL script for generating PFT-dependent param files
 * clm5_params.c171117.nc is the current CLM5 default parameter file
