@@ -22,6 +22,7 @@ pip install --upgrade -t /glade/p/work/kdagon/ncar_pylib_clone/lib/python3.6/sit
 pip install --upgrade -t /glade/p/work/kdagon/ncar_pylib_clone/lib/python3.6/site-packages pyDOE
 pip install --upgrade -t /glade/p/work/kdagon/ncar_pylib_clone/lib/python3.6/site-packages tensorflow
 pip install --upgrade -t /glade/p/work/kdagon/ncar_pylib_clone/lib/python3.6/site-packages keras
+pip install --upgrade -t /glade/p/work/kdagon/ncar_pylib_clone/lib/python3.6/site-packages pandas
 ```
 
 # Ensemble Generating Files
