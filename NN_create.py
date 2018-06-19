@@ -21,11 +21,19 @@ inputdata = np.load(file="lhc_100.npy")
 #inputreshape = np.reshape(inputdata, 100*6)
 #plt.hist(inputreshape, bins=50)
 
+# input histogram
 #hist, bin_edges = np.histogram(inputdata, bins=50)
 #plt.bar(bin_edges[:-1], hist, width=0.02)
 #plt.xlim(min(bin_edges), max(bin_edges))
-#plt.xlabel('LHC values')
+#plt.xlabel('Parameter scaling values')
 #plt.ylabel('Counts')
+#plt.show()
+
+# input image plot
+#inputfloat=inputdata.astype(float)
+#plt.imshow(inputfloat)
+#plt.colorbar()
+#plt.savefig("img_inputdata.eps")                                                                                                             
 #plt.show()
 
 # List of input variables
@@ -51,12 +59,13 @@ in_vars = ['medlynslope','dleaf','kmax','fff','dint','baseflow_scalar']
 # from 100-member ensemble in python readable format
 outputdata = np.loadtxt("outputdata.csv")
 #print(outputdata)
+#outputdata = np.loadtxt("outputdata_ET_IAV.csv")
 
-plt.hist(outputdata, bins=20)
-plt.xlabel('Global Mean GPP (umol/m2s)')
-plt.ylabel('Counts')
-plt.savefig("dist_outputdata.eps")
-plt.show()
+#plt.hist(outputdata, bins=20)
+#plt.xlabel('Global Mean GPP (umol/m2s)')
+#plt.ylabel('Counts')
+#plt.savefig("dist_outputdata.eps")
+#plt.show()
 
 # Create 2-layer simple model
 model = Sequential()
@@ -78,7 +87,7 @@ def mean_error(y_true,y_pred):
 # using a stochastic gradient descent optimizer
 opt_dense = SGD(lr=0.001, momentum=0.99, decay=1e-4, nesterov=True)
 model.compile(opt_dense, "mse", metrics=[mean_error])
-model.summary()
+#model.summary()
 
 # Separate training/test data: 60/40 split
 # how does test split into validation/verification? try 20/20
@@ -99,25 +108,26 @@ results = model.fit(x_train, y_train, epochs=150, batch_size=30,
 
 #print(results.history)
 print("Training Mean Error:", results.history['mean_error'][-1])
+#print("Training Mean Error N=", results.history.shape)
 
 # Plot histogram of model mean error
-plt.hist(results.history['mean_error'], bins=20)
-plt.xlabel('Training Mean Error')
-plt.ylabel('Counts')
-plt.savefig("dist_train_me.eps")
-plt.show()
+#plt.hist(results.history['mean_error'], bins=20)
+#plt.xlabel('Training Mean Error')
+#plt.ylabel('Counts')
+#plt.savefig("dist_train_me.eps")
+#plt.show()
 
 # Plot training history by epoch
-plt.plot(results.epoch, results.history['val_mean_error'], label='validation')
-plt.plot(results.epoch, results.history['mean_error'], label='train')
-#plt.xticks(results.epoch)
-plt.legend()
-plt.hlines(y=0,xmin=0,xmax=150)
-plt.ylabel('Mean Error')
-plt.xlabel('Epoch')
-plt.title('Neural Network Training History')
-plt.savefig("train_history.eps")
-plt.show()
+#plt.plot(results.epoch, results.history['val_mean_error'], label='validation')
+#plt.plot(results.epoch, results.history['mean_error'], label='train')
+##plt.xticks(results.epoch)
+#plt.legend()
+#plt.hlines(y=0,xmin=0,xmax=150)
+#plt.ylabel('Mean Error')
+#plt.xlabel('Epoch')
+#plt.title('Neural Network Training History')
+#plt.savefig("train_history.eps")
+#plt.show()
 
 # Evaluate the model using test data
 #score = model.evaluate(x_test, y_test, batch_size=10)
@@ -137,12 +147,23 @@ def model_error_preds(y_true,y_pred):
 # calculate model mean error with predictions
 model_me = model_error_preds(y_test, model_preds)
 print("Validation Mean Error: ", model_me)
+#print("Validation Mean Error N=", model_preds.shape)
 
 # plot histogram of model mean error with predictions
-plt.hist(y_test-model_preds, bins=20)
-plt.xlabel('Validation Mean Error')
-plt.ylabel('Counts')
-plt.savefig("dist_val_me.eps")
+#plt.hist(y_test-model_preds, bins=20)
+#plt.xlabel('Validation Mean Error')
+#plt.ylabel('Counts')
+#plt.savefig("dist_val_me.eps")
+#plt.show()
+
+# scatterplot actual versus predicted (validation set)
+plt.scatter(y_test, model_preds)
+plt.xlabel('Model Output GPP')
+plt.ylabel('Predicted GPP')
+plt.xlim(1.7,2.7)
+plt.ylim(1.7,2.7)
+#ax.plot(ax.get_xlim(), ax.get_ylim(), ls="--", c=".3")
+plt.savefig("validation_scatter.eps")
 plt.show()
 
 # Model interpretation by permutation variable importance
