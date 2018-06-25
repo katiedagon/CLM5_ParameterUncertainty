@@ -1,3 +1,4 @@
 *.npy
 bash_test
 *.csv
+figures/

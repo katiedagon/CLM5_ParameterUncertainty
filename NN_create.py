@@ -9,12 +9,14 @@ from keras.regularizers import l2
 
 import keras.backend as K
 
+from scipy import stats
+
 import numpy as np
 #import pandas as pd
 import matplotlib.pyplot as plt
 
 # Fix random seed for reproducibility
-np.random.seed(5)
+np.random.seed(5) # GM GPP
 
 # Read in input array
 inputdata = np.load(file="lhc_100.npy")
@@ -57,15 +59,15 @@ in_vars = ['medlynslope','dleaf','kmax','fff','dint','baseflow_scalar']
 # Read in output array
 # use NCL script to generate global mean GPP array 
 # from 100-member ensemble in python readable format
-outputdata = np.loadtxt("outputdata.csv")
+outputdata = np.loadtxt("outputdata_GPP.csv")
 #print(outputdata)
 #outputdata = np.loadtxt("outputdata_ET_IAV.csv")
 
-#plt.hist(outputdata, bins=20)
-#plt.xlabel('Global Mean GPP (umol/m2s)')
-#plt.ylabel('Counts')
+plt.hist(outputdata, bins=20)
+plt.xlabel('Global Mean GPP (umol/m2s)')
+plt.ylabel('Counts')
 #plt.savefig("dist_outputdata.eps")
-#plt.show()
+plt.show()
 
 # Create 2-layer simple model
 model = Sequential()
@@ -98,7 +100,6 @@ y_train = outputdata[0:60]
 y_test = outputdata[60:]
 #y_val = outputdata[80:]
 
-
 # Fit the model
 #model.fit(x_train, y_train, epochs=20, batch_size=10)
 #model.fit(x_train, y_train, epochs=40, batch_size=10)
@@ -108,7 +109,7 @@ results = model.fit(x_train, y_train, epochs=150, batch_size=30,
 
 #print(results.history)
 print("Training Mean Error:", results.history['mean_error'][-1])
-#print("Training Mean Error N=", results.history.shape)
+print("Validation Mean Error:", results.history['val_mean_error'][-1])
 
 # Plot histogram of model mean error
 #plt.hist(results.history['mean_error'], bins=20)
@@ -117,17 +118,24 @@ print("Training Mean Error:", results.history['mean_error'][-1])
 #plt.savefig("dist_train_me.eps")
 #plt.show()
 
+# Plot histogram of validation mean error
+plt.hist(results.history['val_mean_error'], bins=20)
+plt.xlabel('Validation Mean Error')
+plt.ylabel('Counts')
+#plt.savefig("dist_val_me.eps")
+plt.show()
+
 # Plot training history by epoch
-#plt.plot(results.epoch, results.history['val_mean_error'], label='validation')
-#plt.plot(results.epoch, results.history['mean_error'], label='train')
+plt.plot(results.epoch, results.history['val_mean_error'], label='validation')
+plt.plot(results.epoch, results.history['mean_error'], label='train')
 ##plt.xticks(results.epoch)
-#plt.legend()
-#plt.hlines(y=0,xmin=0,xmax=150)
-#plt.ylabel('Mean Error')
-#plt.xlabel('Epoch')
-#plt.title('Neural Network Training History')
+plt.legend()
+plt.hlines(y=0,xmin=0,xmax=150)
+plt.ylabel('Mean Error')
+plt.xlabel('Epoch')
+plt.title('Neural Network Training History')
 #plt.savefig("train_history.eps")
-#plt.show()
+plt.show()
 
 # Evaluate the model using test data
 #score = model.evaluate(x_test, y_test, batch_size=10)
@@ -146,15 +154,14 @@ def model_error_preds(y_true,y_pred):
 
 # calculate model mean error with predictions
 model_me = model_error_preds(y_test, model_preds)
-print("Validation Mean Error: ", model_me)
-#print("Validation Mean Error N=", model_preds.shape)
+print("Prediction Mean Error: ", model_me)
 
-# plot histogram of model mean error with predictions
-#plt.hist(y_test-model_preds, bins=20)
-#plt.xlabel('Validation Mean Error')
-#plt.ylabel('Counts')
-#plt.savefig("dist_val_me.eps")
-#plt.show()
+# plot histogram of prediction error
+plt.hist(y_test-model_preds, bins=10)
+plt.xlabel('Prediction Error')
+plt.ylabel('Counts')
+#plt.savefig("dist_preds.eps")
+plt.show()
 
 # scatterplot actual versus predicted (validation set)
 plt.scatter(y_test, model_preds)
@@ -162,42 +169,48 @@ plt.xlabel('Model Output GPP')
 plt.ylabel('Predicted GPP')
 plt.xlim(1.7,2.7)
 plt.ylim(1.7,2.7)
+# trying to get a 1:1 line to show up (doesn't work)
 #ax.plot(ax.get_xlim(), ax.get_ylim(), ls="--", c=".3")
-plt.savefig("validation_scatter.eps")
+#plt.savefig("validation_scatter.eps")
 plt.show()
 
-# Model interpretation by permutation variable importance
-def variable_importance(model, data, labels, input_vars, score_func, num_iters=10):
-    preds = model.predict(data)[:, 0]
-    score_val = score_func(labels, preds)
-    indices = np.arange(data.shape[0])
-    imp_scores = np.zeros((len(input_vars), num_iters))
-    shuf_data = np.copy(data)
-    for n in range(num_iters):
-        print(n)
-        np.random.shuffle(indices)
-        for v, var in enumerate(input_vars):
-            print(var)
-            shuf_data[:, v] = shuf_data[indices, v]
-            shuf_preds = model.predict(shuf_data)[:, 0]
-            imp_scores[v, n] = score_func(labels, shuf_preds)
-            shuf_data[:, v] = data[:, v]
-    return score_val - imp_scores
+# linear regression of actual vs predicted
+slope, intercept, r_value, p_value, std_err = stats.linregress(y_test,
+                model_preds)
+print("r-squared:", r_value**2)
 
-model_imp_scores = variable_importance(model, x_test, y_test, in_vars,
-        model_error_preds, num_iters=3)
-model_mean_scores = model_imp_scores.mean(axis=1)
+# Model interpretation by permutation variable importance
+#def variable_importance(model, data, labels, input_vars, score_func, num_iters=10):
+#    preds = model.predict(data)[:, 0]
+#    score_val = score_func(labels, preds)
+#    indices = np.arange(data.shape[0])
+#    imp_scores = np.zeros((len(input_vars), num_iters))
+#    shuf_data = np.copy(data)
+#    for n in range(num_iters):
+#        print(n)
+#        np.random.shuffle(indices)
+#        for v, var in enumerate(input_vars):
+#            print(var)
+#            shuf_data[:, v] = shuf_data[indices, v]
+#            shuf_preds = model.predict(shuf_data)[:, 0]
+#            imp_scores[v, n] = score_func(labels, shuf_preds)
+#            shuf_data[:, v] = data[:, v]
+#    return score_val - imp_scores
+
+#model_imp_scores = variable_importance(model, x_test, y_test, in_vars,
+#        model_error_preds, num_iters=3)
+#model_mean_scores = model_imp_scores.mean(axis=1)
 #for v, var in enumerate(in_vars):
 #    print(var, model_mean_scores[v])
 
 # Visualize what input most activates the output layer through feature
 # optimization
-out_diff = K.mean((model.layers[-1].output - 1) ** 2)
-grad = K.gradients(out_diff, [model.input])[0]
-grad /= K.maximum(K.sqrt(K.mean(grad ** 2)), K.epsilon())
-iterate = K.function([model.input, K.learning_phase()],
-        [out_diff, grad])
-input_img_data = np.zeros(shape=(1, len(in_vars)))
+#out_diff = K.mean((model.layers[-1].output - 1) ** 2)
+#grad = K.gradients(out_diff, [model.input])[0]
+#grad /= K.maximum(K.sqrt(K.mean(grad ** 2)), K.epsilon())
+#iterate = K.function([model.input, K.learning_phase()],
+#        [out_diff, grad])
+#input_img_data = np.zeros(shape=(1, len(in_vars)))
 #print(input_img_data.shape)
 
 #for i in range(20):
