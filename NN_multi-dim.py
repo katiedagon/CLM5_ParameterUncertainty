@@ -54,20 +54,22 @@ model = Sequential()
 # first layer with 20 nodes and rectified linear activation
 # specify input_dim as number of parameters, not number of simulations
 # l2 norm regularizer
-model.add(Dense(20, input_dim=inputdata.shape[1], activation='relu',
-    kernel_regularizer=l2(.001)))
+model.add(Dense(20, input_dim=inputdata.shape[1], 
+    activation='relu', kernel_regularizer=l2(.001)))
 # output layer with linear activation
-model.add(Dense(1))
+model.add(Dense(2))
 
 # Define model metrics
-def mean_error(y_true,y_pred):
-    return K.mean(y_true-y_pred)
+#def mean_error(y_true,y_pred):
+#    return K.mean(y_true-y_pred)
+def mean_sq_err(y_true,y_pred):
+    return K.mean((y_true-y_pred)**2)
 
 # Compile model
 # using a stochastic gradient descent optimizer
 # loss function is mean squared error
 opt_dense = SGD(lr=0.001, momentum=0.99, decay=1e-4, nesterov=True)
-model.compile(opt_dense, "mse", metrics=[mean_error])
+model.compile(opt_dense, "mse", metrics=[mean_sq_err])
 #model.summary()
 
 # Separate training/test data: 60/40 split
@@ -80,26 +82,26 @@ y_test = outputdata[60:]
 results = model.fit(x_train, y_train, epochs=150, batch_size=30,
         validation_data=(x_test,y_test))
 #print(results)
-print("Training Mean Error:", results.history['mean_error'][-1])
-print("Validation Mean Error:", results.history['val_mean_error'][-1])
+print("Training Mean Error:", results.history['mean_sq_err'][-1])
+print("Validation Mean Error:", results.history['val_mean_sq_err'][-1])
 
 # Plot histogram of model mean error
-plt.hist(results.history['mean_error'], bins=20)
+plt.hist(results.history['mean_sq_err'], bins=20)
 plt.xlabel('Training Mean Error')
 plt.ylabel('Counts')
 #plt.savefig("dist_train_me.eps")
 plt.show()
 
 # Plot histogram of validation mean error
-plt.hist(results.history['val_mean_error'], bins=20)
+plt.hist(results.history['val_mean_sq_err'], bins=20)
 plt.xlabel('Validation Mean Error')
 plt.ylabel('Counts')
 #plt.savefig("dist_val_me.eps")
 plt.show()
 
 # Plot training history by epoch
-plt.plot(results.epoch, results.history['val_mean_error'], label='validation')
-plt.plot(results.epoch, results.history['mean_error'], label='train')
+plt.plot(results.epoch, results.history['val_mean_sq_err'], label='validation')
+plt.plot(results.epoch, results.history['mean_sq_err'], label='train')
 plt.legend()
 plt.hlines(y=0,xmin=0,xmax=150)
 plt.ylabel('Mean Error')
@@ -116,7 +118,8 @@ score = model.evaluate(x_test, y_test, batch_size=10)
 #print(score)
 
 # Make predictions using validation
-model_preds = model.predict(x_test)[:,0]
+#model_preds = model.predict(x_test)[:,0]
+model_preds = model.predict(x_test)
 #print(model_preds)
 
 # plot histogram of predictions
@@ -127,7 +130,7 @@ plt.show()
 
 # model metric for predictions
 def model_error_preds(y_true,y_pred):
-    return np.mean(y_true-y_pred)
+    return np.mean((y_true-y_pred)**2)
 
 # calculate model mean error with predictions
 model_me = model_error_preds(y_test, model_preds)
