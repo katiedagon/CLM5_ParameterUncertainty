@@ -51,9 +51,9 @@ This also calls 3 python scripts to set parameter values:
 
 # Machine Learning Files
 
-* NN_create.py
-
-Create neural network in Python with Keras.
+* NN_create.py: Create and test out simple neural networks in Python with Keras.
+* NN_develop.py: Further refine and train neural networks using parameter values and CLM model output.
+* NN_multi-dim.py: Test out multidimensional output.
 
 # Supplemental Files
 
@@ -61,3 +61,4 @@ Create neural network in Python with Keras.
 * process_outputdata.ncl processes the CLM output data to a suitable output array for the neural network (outputdata.csv)
 * pft_var.ncl provides an NCL script for generating PFT-dependent param files
 * clm5_params.c171117.nc is the current CLM5 default parameter file
+* simple_model.py tests simpler models between LHC values and CLM output (correlation coefficients, scatterplots, multi-linear regression)

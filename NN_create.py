@@ -63,10 +63,15 @@ outputdata = np.loadtxt("outputdata_GPP.csv")
 #print(outputdata)
 #outputdata = np.loadtxt("outputdata_ET_IAV.csv")
 
+# transform GPP to reduce left skew
+#outputdata = outputdata**10
+
 plt.hist(outputdata, bins=20)
-plt.xlabel('Global Mean GPP (umol/m2s)')
+#plt.xlabel('Global Mean GPP (umol/m2s)')
+plt.xlabel('Global Mean GPP^10')
 plt.ylabel('Counts')
-#plt.savefig("dist_outputdata.eps")
+#plt.savefig("dist_outputdata_GPP.eps")
+#plt.savefig("dist_outputdata_GPP^10.eps")
 plt.show()
 
 # Create 2-layer simple model
@@ -119,11 +124,11 @@ print("Validation Mean Error:", results.history['val_mean_error'][-1])
 #plt.show()
 
 # Plot histogram of validation mean error
-plt.hist(results.history['val_mean_error'], bins=20)
-plt.xlabel('Validation Mean Error')
-plt.ylabel('Counts')
+#plt.hist(results.history['val_mean_error'], bins=20)
+#plt.xlabel('Validation Mean Error')
+#plt.ylabel('Counts')
 #plt.savefig("dist_val_me.eps")
-plt.show()
+#plt.show()
 
 # Plot training history by epoch
 plt.plot(results.epoch, results.history['val_mean_error'], label='validation')
@@ -167,8 +172,8 @@ plt.show()
 plt.scatter(y_test, model_preds)
 plt.xlabel('Model Output GPP')
 plt.ylabel('Predicted GPP')
-plt.xlim(1.7,2.7)
-plt.ylim(1.7,2.7)
+#plt.xlim(1.7,2.7)
+#plt.ylim(1.7,2.7)
 # trying to get a 1:1 line to show up (doesn't work)
 #ax.plot(ax.get_xlim(), ax.get_ylim(), ls="--", c=".3")
 #plt.savefig("validation_scatter.eps")

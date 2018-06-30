@@ -1,4 +1,4 @@
-*.npy
 bash_test
-*.csv
 figures/
+parameter_files/
+outputdata/
