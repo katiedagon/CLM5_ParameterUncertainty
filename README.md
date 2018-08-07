@@ -12,17 +12,14 @@ Install [tensorflow](https://www.tensorflow.org/) and [keras](https://keras.io/)
 
 ```bash
 # Create clone
-ncar_pylib -c 20180129 /glade/p/work/kdagon/ncar_pylib_clone
-cd /glade/p/work/kdagon/ncar_pylib_clone
-# Edit /bin/activate to change VIRTUAL_ENV variable to be /glade/p/work/kdagon/ncar_pylib_clone
+ncar_pylib -c 20180129 /glade/work/kdagon/ncar_pylib_clone
+cd /glade/work/kdagon/ncar_pylib_clone
 # Source the virtual environment
 source /bin/activate
 # Install packages with specified install dir
-pip install --upgrade -t /glade/p/work/kdagon/ncar_pylib_clone/lib/python3.6/site-packages pip
-pip install --upgrade -t /glade/p/work/kdagon/ncar_pylib_clone/lib/python3.6/site-packages pyDOE
-pip install --upgrade -t /glade/p/work/kdagon/ncar_pylib_clone/lib/python3.6/site-packages tensorflow
-pip install --upgrade -t /glade/p/work/kdagon/ncar_pylib_clone/lib/python3.6/site-packages keras
-pip install --upgrade -t /glade/p/work/kdagon/ncar_pylib_clone/lib/python3.6/site-packages pandas
+pip install --upgrade -t /glade/work/kdagon/ncar_pylib_clone/lib/python3.6/site-packages pyDOE
+pip install --upgrade -t /glade/work/kdagon/ncar_pylib_clone/lib/python3.6/site-packages tensorflow
+pip install --upgrade -t /glade/work/kdagon/ncar_pylib_clone/lib/python3.6/site-packages keras
 ```
 
 # Ensemble Generating Files
@@ -58,7 +55,7 @@ This also calls 3 python scripts to set parameter values:
 # Supplemental Files
 
 * LHC_invert.py inverts the existing parameter array (parameters.npy) back to the original LHC random sampling and writes out (lhc.npy)
-* process_outputdata.ncl processes the CLM output data to a suitable output array for the neural network (outputdata.csv)
+* process_outputdata.ncl processes the CLM output data to a suitable output array for the neural network
 * pft_var.ncl provides an NCL script for generating PFT-dependent param files
 * clm5_params.c171117.nc is the current CLM5 default parameter file
 * simple_model.py tests simpler models between LHC values and CLM output (correlation coefficients, scatterplots, multi-linear regression)
