@@ -51,6 +51,9 @@ This also calls 3 python scripts to set parameter values:
 * NN_create.py: Create and test out simple neural networks in Python with Keras.
 * NN_develop.py: Further refine and train neural networks using parameter values and CLM model output.
 * NN_multi-dim.py: Test out multidimensional output.
+* NN_test.py: Test out different NN configurations (# of layers, # of nodes).
+* NN_resample.py: Use resampling of the training data to better refine candidate NN models.
+* NN_finalize.py: Finalize best NN model.
 
 # Supplemental Files
 

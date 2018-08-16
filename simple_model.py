@@ -1,5 +1,7 @@
 # Try out some simpler models between parameter values (LHC) and CLM model
 # output
+# 6/29/18
+
 #source /glade/p/work/kdagon/ncar_pylib_clone/bin/activate
 
 from scipy import stats

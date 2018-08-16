@@ -2,6 +2,9 @@
 # Not sure how to execute within python script:
 #source /glade/work/kdagon/ncar_pylib_clone/bin/activate
 
+# Developing the 2-layer single output Neural Network
+# 6/29/18
+
 from keras.models import Sequential
 from keras.layers import Dense
 from keras.optimizers import SGD, Adam, RMSprop
@@ -34,7 +37,7 @@ inputdata = np.load(file="lhc_100.npy")
 #plt.show()
 
 # List of input variables
-#in_vars = ['medlynslope','dleaf','kmax','fff','dint','baseflow_scalar']
+in_vars = ['medlynslope','dleaf','kmax','fff','dint','baseflow_scalar']
 
 # Read in output array
 # use NCL script to generate global mean GPP array 
@@ -64,10 +67,10 @@ model = Sequential()
 # first layer with 4 nodes and rectified linear activation
 # specify input_dim as number of parameters, not number of simulations
 # l2 norm regularizer
-model.add(Dense(10, input_dim=inputdata.shape[1], activation='relu',
+model.add(Dense(4, input_dim=inputdata.shape[1], activation='relu',
     kernel_regularizer=l2(.001)))
-# second layer with 4 nodes and hyperbolic tangent activation
-model.add(Dense(2, activation='tanh', kernel_regularizer=l2(.001)))
+# second layer with 7 nodes and hyperbolic tangent activation
+model.add(Dense(7, activation='tanh', kernel_regularizer=l2(.001)))
 # output layer with linear activation
 model.add(Dense(1))
 #model.add(Dense(1, activation='relu')) 
@@ -104,7 +107,7 @@ y_val = outputdata[80:]
 #results = model.fit(x_train, y_train, epochs=38, batch_size=30,
 #        validation_data=(x_test,y_test))
 results = model.fit(x_train, y_train, epochs=500, batch_size=30,
-        validation_data=(x_test,y_test))
+        verbose=0, validation_data=(x_test,y_test))
 # fit with stopping criteria when val_loss starts increasing
 #es = EarlyStopping(monitor='val_loss', min_delta=0, 
 #        patience=0, verbose=1, mode='auto')
@@ -195,4 +198,25 @@ plt.show()
 slope, intercept, r_value, p_value, std_err = stats.linregress(y_val,
                 model_preds)
 print("r-squared:", r_value**2)
+
+
+# scatterplot input/output for kmax
+#plt.scatter(inputdata[:,2],outputdata)
+#plt.ylabel('CLM Output')
+#plt.xlabel('LHC Values')
+#plt.title('kmax')
+#plt.show()
+
+# scatterplots of NN vs input
+# this works because NN predictions can be 
+# stiched back together in the same order
+# (no resampling)
+total_preds = np.append(np.append(model_train,model_test),model_preds)
+for x, y in enumerate(in_vars):
+    plt.scatter(inputdata[:,x], total_preds)
+    plt.ylabel('NN Predictions') 
+    plt.xlabel('LHC Values')
+    plt.title(y)
+    plt.show()
+
 

@@ -2,6 +2,9 @@
 # Not sure how to execute within python script:
 #source /glade/p/work/kdagon/ncar_pylib_clone/bin/activate
 
+# NN with multiple output fields
+# 6/26/18
+
 from keras.models import Sequential
 from keras.layers import Dense
 from keras.optimizers import SGD, Adam
