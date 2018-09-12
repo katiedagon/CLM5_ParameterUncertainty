@@ -134,7 +134,7 @@ print("Validation Mean Error:", results.history['val_mean_sq_err'][-1])
 # Plot training history by epoch
 plt.plot(results.epoch, results.history['val_mean_sq_err'], label='test')
 plt.plot(results.epoch, results.history['mean_sq_err'], label='train')
-##plt.xticks(results.epoch)
+#plt.xticks(results.epoch)
 plt.legend()
 #plt.hlines(y=0,xmin=0,xmax=15)
 #plt.hlines(y=0,xmin=0,xmax=40)
@@ -153,7 +153,9 @@ plt.show()
 model_preds = model.predict(x_val)[:,0]
 model_test = model.predict(x_test)[:,0]
 model_train = model.predict(x_train)[:,0]
-#print(model_preds.shape)
+print(model_preds.shape)
+test = model.predict(x_val)
+print(test.shape)
 
 # model metric for predictions
 def mse_preds(y_true,y_pred):
@@ -192,7 +194,7 @@ plt.ylim(np.amin([y_val,model_preds])-0.1,np.amax([y_val,model_preds])+0.1)
 #plt.savefig("validation_scatter_logGPP_v3.eps")
 #plt.savefig("validation_scatter_logGPP_nonlinear.eps")
 #plt.savefig("validation_scatter_RMSprop.eps")
-plt.show()
+#plt.show()
 
 # linear regression of actual vs predicted
 slope, intercept, r_value, p_value, std_err = stats.linregress(y_val,
@@ -217,6 +219,7 @@ for x, y in enumerate(in_vars):
     plt.ylabel('NN Predictions') 
     plt.xlabel('LHC Values')
     plt.title(y)
+    #plt.savefig(y)
     plt.show()
 
 

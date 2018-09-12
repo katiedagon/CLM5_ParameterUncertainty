@@ -79,7 +79,7 @@ plt.xlabel('CLM Model Output')
 plt.ylabel('NN Predictions')
 plt.xlim(np.amin([outputdata,model_preds])-0.1,np.amax([outputdata,model_preds])+0.1)
 plt.ylim(np.amin([outputdata,model_preds])-0.1,np.amax([outputdata,model_preds])+0.1)
-plt.savefig("validation_scatter_finalize.eps")
+#plt.savefig("validation_scatter_finalize.eps")
 plt.show()
 
 # linear regression of actual vs predicted

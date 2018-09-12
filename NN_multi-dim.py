@@ -4,10 +4,12 @@
 
 # NN with multiple output fields
 # 6/26/18
+# Update with SVD output 
+# 9/12/18
 
 from keras.models import Sequential
 from keras.layers import Dense
-from keras.optimizers import SGD, Adam
+from keras.optimizers import SGD, Adam, RMSprop
 from keras.regularizers import l2
 
 import keras.backend as K
@@ -18,8 +20,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 # Fix random seed for reproducibility
-#np.random.seed(7) # ET, GPP IAV output
-np.random.seed(3) # GM ET, TSA output
+np.random.seed(7)
 
 # Read in input array
 inputdata = np.load(file="lhc_100.npy")
@@ -27,51 +28,35 @@ inputdata = np.load(file="lhc_100.npy")
 # List of input variables
 in_vars = ['medlynslope','dleaf','kmax','fff','dint','baseflow_scalar']
 
-# Read in output array
-#outputdata = np.loadtxt("outputdata_ET_IAV.csv")
-#outputdata = np.loadtxt("outputdata_ET.csv")
-#outputdata = np.loadtxt("outputdata_TSA.csv")
-#outputdata = np.loadtxt("outputdata_GPP_IAV.csv")
+# Read multi-dimensional output in .npy file
+outputdata = np.load(file="outputdata/outputdata_GPP_SVD.npy")
+nmodes = outputdata.shape[1]
 
-# multi-dimensional output
-out1 = np.loadtxt("outputdata_ET_IAV.csv")
-out2 = np.loadtxt("outputdata_GPP_IAV.csv")
-outputdata = np.column_stack([out1,out2])
-
-# histogram of 1D output
-#plt.hist(outputdata, bins=20)
-#plt.hist(outputdata, bins=10) #TSA
-#plt.xlabel('Global Mean 5-year ET IAV (mm/yr)')
-#plt.xlabel('Global Mean ET (mm/yr)')
-#plt.xlabel('Global Mean Temp (C)')
-#plt.xlabel('Global Mean 5-year GPP IAV (umol/m2s)')
-#plt.ylabel('Counts')
-#plt.savefig("dist_outputdata_ET-IAV.eps")
-#plt.savefig("dist_outputdata_ET.eps")
-#plt.savefig("dist_outputdata_TSA.eps")
-#plt.savefig("dist_outputdata_GPP-IAV.eps")
-#plt.show()
+# Read multi-dimensional output by stacking csv files
+#out1 = np.loadtxt("outputdata_ET_IAV.csv")
+#out2 = np.loadtxt("outputdata_GPP_IAV.csv")
+#outputdata = np.column_stack([out1,out2])
 
 # Create 2-layer simple model
 model = Sequential()
-# first layer with 4 nodes and rectified linear activation
+# first layer with 8 nodes and linear activation
 # specify input_dim as number of parameters, not number of simulations
 # l2 norm regularizer
-model.add(Dense(4, input_dim=inputdata.shape[1], 
-    activation='relu', kernel_regularizer=l2(.001)))
-# output layer with linear activation and 2 outputs
-model.add(Dense(2))
+model.add(Dense(8, input_dim=inputdata.shape[1], 
+    activation='linear', kernel_regularizer=l2(.001)))
+# second layer with 2 nodes and hyperbolic tangent activation
+model.add(Dense(2, activation='tanh', kernel_regularizer=l2(.001)))
+# output layer with linear activation and nmodes outputs
+model.add(Dense(nmodes))
 
 # Define model metrics
-#def mean_error(y_true,y_pred):
-#    return K.mean(y_true-y_pred)
 def mean_sq_err(y_true,y_pred):
     return K.mean((y_true-y_pred)**2)
 
 # Compile model
-# using a stochastic gradient descent optimizer
+# using a RMSprop optimizer
 # loss function is mean squared error
-opt_dense = SGD(lr=0.001, momentum=0.99, decay=1e-4, nesterov=True)
+opt_dense = RMSprop(lr=0.001, rho=0.9, epsilon=None, decay=0.0)
 model.compile(opt_dense, "mse", metrics=[mean_sq_err])
 model.summary()
 
@@ -84,8 +69,8 @@ y_test = outputdata[60:80]
 y_val = outputdata[80:]
 
 # Fit the model
-results = model.fit(x_train, y_train, epochs=51, batch_size=30,
-        validation_data=(x_test,y_test))
+results = model.fit(x_train, y_train, epochs=500, batch_size=30,
+        verbose=0, validation_data=(x_test,y_test))
 #print(results)
 print("Training Mean Error:", results.history['mean_sq_err'][-1])
 print("Validation Mean Error:", results.history['val_mean_sq_err'][-1])
@@ -108,24 +93,18 @@ print("Validation Mean Error:", results.history['val_mean_sq_err'][-1])
 plt.plot(results.epoch, results.history['val_mean_sq_err'], label='test')
 plt.plot(results.epoch, results.history['mean_sq_err'], label='train')
 plt.legend()
-plt.hlines(y=0,xmin=0,xmax=60)
+#plt.hlines(y=0,xmin=0,xmax=60)
 plt.ylabel('Mean Squared Error')
 plt.xlabel('Epoch')
 plt.title('Neural Network Training History')
-#plt.savefig("train_history_ET-IAV.eps")
-#plt.savefig("train_history_ET.eps")
-#plt.savefig("train_history_TSA.eps")
 #plt.savefig("train_history_GPP-IAV.eps")
-#plt.savefig("train_history_ET-GPP-IAV.eps")
 plt.show()
 
-# Evaluate the model using test data
-#score = model.evaluate(x_test, y_test, batch_size=10)
-#print(score)
-
 # Make predictions using validation
-#model_preds = model.predict(x_test)[:,0]
+model_train = model.predict(x_train)
+model_test = model.predict(x_test)
 model_preds = model.predict(x_val)
+#print(model_preds.shape)
 #print(model_preds)
 
 # plot histogram of predictions
@@ -135,47 +114,45 @@ model_preds = model.predict(x_val)
 #plt.show()
 
 # model metric for predictions
-def model_error_preds(y_true,y_pred):
+def mse_preds(y_true,y_pred):
     return np.mean((y_true-y_pred)**2)
 
 # calculate model mean error with predictions
-model_me = model_error_preds(y_val, model_preds)
+model_me = mse_preds(y_val, model_preds)
 print("Prediction Mean Error: ", model_me)
 
 # plot histogram of prediction error
-#plt.hist(y_test-model_preds, bins=10)
+#plt.hist((y_val-model_preds)**2, bins=10)
 #plt.xlabel('Prediction Error')
 #plt.ylabel('Counts')
 #plt.savefig("dist_preds.eps")
 #plt.show()
 
 # scatterplot actual versus predicted (validation set)
-plt.scatter(y_test[:,0], model_preds[:,0], label='ET IAV')
-plt.scatter(y_test[:,1], model_preds[:,1], label='GPP IAV')
+# first 2 modes only
+plt.scatter(y_val[:,0], model_preds[:,0], label='Mode 1 validation')
+plt.scatter(y_train[:,0], model_train[:,0], label='Mode 1 train')
+plt.scatter(y_test[:,0], model_test[:,0], label='Mode 1 test')
+#plt.scatter(y_val[:,1], model_preds[:,1], label='Mode 2')
 plt.legend()
-#plt.xlabel('CLM Output ET IAV')
-#plt.ylabel('NN Predicted ET IAV')
-plt.xlabel('CLM Output')
-plt.ylabel('NN Predicted')
-#plt.xlim(np.amin([y_test,model_preds])-0.01,np.amax([y_test,model_preds])+0.01)
-#plt.ylim(np.amin([y_test,model_preds])-0.01,np.amax([y_test,model_preds])+0.01)
-#plt.xlim(np.amin([y_test,model_preds])-0.1,np.amax([y_test,model_preds])+0.1)
-#plt.ylim(np.amin([y_test,model_preds])-0.1,np.amax([y_test,model_preds])+0.1)
-plt.xlim(np.amin([y_test,model_preds])-1,np.amax([y_test,model_preds])+1)
-plt.ylim(np.amin([y_test,model_preds])-1,np.amax([y_test,model_preds])+1)
-#plt.xlim(np.amin([y_test,model_preds])-10,np.amax([y_test,model_preds])+10)
-#plt.ylim(np.amin([y_test,model_preds])-10,np.amax([y_test,model_preds])+10)
-#plt.savefig("validation_scatter_ET-IAV.eps")
-#plt.savefig("validation_scatter_ET.eps")
-#plt.savefig("validation_scatter_TSA.eps")
+plt.xlabel('CLM Model Output')
+plt.ylabel('NN Predictions')
+plt.xlim(np.amin([y_val[:,0],model_preds[:,0]])-0.1,np.amax([y_val[:,0],model_preds[:,0]])+0.1)
+plt.ylim(np.amin([y_val[:,0],model_preds[:,0]])-0.1,np.amax([y_val[:,0],model_preds[:,0]])+0.1)
 #plt.savefig("validation_scatter_GPP-IAV.eps")
-#plt.savefig("validation_scatter_ET-GPP-IAV.eps")
 plt.show()
 
 # linear regression of actual vs predicted
-y_test_reshape = np.reshape(y_test, 20*2)
-model_preds_reshape = np.reshape(model_preds, 20*2)
-slope, intercept, r_value, p_value, std_err = stats.linregress(y_test_reshape,
-        model_preds_reshape)
+# reshape into a single vector?
+#y_test_reshape = np.reshape(y_test, 20*2)
+#model_preds_reshape = np.reshape(model_preds, 20*2)
+#slope, intercept, r_value, p_value, std_err = stats.linregress(y_test_reshape,
+#        model_preds_reshape)
+# Mode 1
+slope, intercept, r_value, p_value, std_err = stats.linregress(y_val[:,0],
+        model_preds[:,0])
 print("r-squared:", r_value**2)
-
+# Mode 2
+slope, intercept, r_value, p_value, std_err = stats.linregress(y_val[:,1],
+                model_preds[:,1])
+print("r-squared:", r_value**2)

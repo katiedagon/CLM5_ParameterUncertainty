@@ -17,7 +17,7 @@ inputdata = np.load(file="lhc_100.npy")
 in_vars = ['medlynslope','dleaf','kmax','fff','dint','baseflow_scalar']
 
 # Read in output array
-outputdata = np.loadtxt("outputdata_GPP.csv")
+outputdata = np.loadtxt("outputdata/outputdata_GPP.csv")
 
 # Simple scatterplots and correlation coeffs
 #for x in range(6):
