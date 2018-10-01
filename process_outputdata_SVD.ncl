@@ -77,8 +77,9 @@ begin
  ;wks = gsn_open_wks("x11","test")
  ;res = True
  ;res@cnFillOn = True
- ;plot = gsn_csm_contour_map(wks,V(:,:,1),res)
+ ;plot = gsn_csm_contour_map(wks,X(:,:,0),res)
  ;plot = gsn_csm_contour_map(wks,X(:,:,1),res)
+ ;plot = gsn_csm_contour_map(wks,X(:,:,99),res)
 
  ; trying to remove missing values (non-land) 
  ;X_mod = X ; metadata
@@ -108,9 +109,9 @@ begin
 
  ;ncdf = addfile("outputdata/outputdata_GPP_forSVD.nc", "c")
  ;ncdf = addfile("outputdata/outputdata_GPP_forSVD_20.nc", "c")
- ncdf = addfile("outputdata/outputdata_GPP_forSVD_100.nc", "c")
+ ;ncdf = addfile("outputdata/outputdata_GPP_forSVD_100.nc", "c")
  ;filedimdef(ncdf,"time",-1,True) 
- ncdf->X = X
+ ;ncdf->X = X
  
 
 end
