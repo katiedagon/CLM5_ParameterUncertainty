@@ -97,7 +97,7 @@ plt.legend()
 plt.ylabel('Mean Squared Error')
 plt.xlabel('Epoch')
 plt.title('Neural Network Training History')
-#plt.savefig("train_history_GPP-IAV.eps")
+plt.savefig("train_history_GPP-SVD.pdf")
 plt.show()
 
 # Make predictions using validation
@@ -129,17 +129,27 @@ print("Prediction Mean Error: ", model_me)
 #plt.show()
 
 # scatterplot actual versus predicted (validation set)
-# first 2 modes only
+# first mode only
 plt.scatter(y_val[:,0], model_preds[:,0], label='Mode 1 validation')
 plt.scatter(y_train[:,0], model_train[:,0], label='Mode 1 train')
 plt.scatter(y_test[:,0], model_test[:,0], label='Mode 1 test')
-#plt.scatter(y_val[:,1], model_preds[:,1], label='Mode 2')
 plt.legend()
 plt.xlabel('CLM Model Output')
 plt.ylabel('NN Predictions')
 plt.xlim(np.amin([y_val[:,0],model_preds[:,0]])-0.1,np.amax([y_val[:,0],model_preds[:,0]])+0.1)
 plt.ylim(np.amin([y_val[:,0],model_preds[:,0]])-0.1,np.amax([y_val[:,0],model_preds[:,0]])+0.1)
-#plt.savefig("validation_scatter_GPP-IAV.eps")
+plt.savefig("validation_scatter_GPP-SVD-mode1.pdf")
+plt.show()
+# last mode
+plt.scatter(y_val[:,9], model_preds[:,9], label='Mode 10 validation')
+plt.scatter(y_train[:,9], model_train[:,9], label='Mode 10 train')
+plt.scatter(y_test[:,9], model_test[:,9], label='Mode 10 test')
+plt.legend()
+plt.xlabel('CLM Model Output')
+plt.ylabel('NN Predictions')
+plt.xlim(np.amin([y_val[:,9],model_preds[:,9]])-0.1,np.amax([y_val[:,9],model_preds[:,9]])+0.1)
+plt.ylim(np.amin([y_val[:,9],model_preds[:,9]])-0.1,np.amax([y_val[:,9],model_preds[:,9]])+0.1)
+plt.savefig("validation_scatter_GPP-SVD-mode10.pdf")
 plt.show()
 
 # linear regression of actual vs predicted
@@ -152,7 +162,7 @@ plt.show()
 slope, intercept, r_value, p_value, std_err = stats.linregress(y_val[:,0],
         model_preds[:,0])
 print("r-squared:", r_value**2)
-# Mode 2
-slope, intercept, r_value, p_value, std_err = stats.linregress(y_val[:,1],
-                model_preds[:,1])
+# Mode 10
+slope, intercept, r_value, p_value, std_err = stats.linregress(y_val[:,9],
+                model_preds[:,9])
 print("r-squared:", r_value**2)

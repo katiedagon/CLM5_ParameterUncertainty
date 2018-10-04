@@ -20,7 +20,8 @@ begin
  ;var = "QFLX_EVAP_TOT"
 
  ; unit conversion (if needed)
- u = 12 * (3600 * 24 * 365) / 1000000 ; umol /m2 /s to g/m2/year
+ u = (12 * (3600 * 24 * 365) / 1000000) * 10^-15 ; umol /m2 /s to Pg/m2/year
+ ;u = 86400 ; mm/s to mm/day
 
  ; establish output array as U-vector from SVD
  ; dims = 10xniter
@@ -33,6 +34,8 @@ begin
 
  ; get gridcell areas
  grid_area = f_md->area 
+ grid_area_m = grid_area ; metadata
+ grid_area_m = grid_area*10^6 ; km^2 to m^2
 
  ; set up storage matrix
  O = new((/o_md_dims(1),o_md_dims(2),niter/),"float")
@@ -44,6 +47,7 @@ begin
 
  do i=1,niter
   y=tostring(i)
+  print(y)
   strs = (/path,"hydro_ensemble_LHC_",y,"/lnd/hist/*{001[6-9],20-}*"/)
   str_c = str_concat(strs)
   fils = systemfunc("ls "+str_c)
@@ -56,30 +60,59 @@ begin
   ; 5-year annual mean
   o_am = dim_avg_n_Wrap(o_c,0)
   ; area-weighted annual mean
-  o_am_area = o_am ; metadata
-  o_am_area = o_am * (1/grid_area)
+  o_am_area = o_am * grid_area_m
+  copy_VarMeta(o_am,o_am_area)
   ; append to ensemble collection
   O(:,:,i-1) = o_am_area
-  ;O(:,:,i-1) = o_am
+  ;O(:,:,i-1) = o_am ; unweighted
  end do
 
  ; ensemble mean
  O_em = dim_avg_n_Wrap(O,2)
  
- ; input to SVD
- X = O ; metadata
+ ; input to SVD - subtract ensemble mean
+ X = new((/o_md_dims(1),o_md_dims(2),niter/),"float")
+ copy_VarMeta(O,X)
  do i=1,niter
   X(:,:,i-1) = O(:,:,i-1)-O_em
  end do
+ X@units = "PgC/yr"
  ;printVarSummary(X)
  
  ; test plots
+ plot = new(4,graphic)
+
  ;wks = gsn_open_wks("x11","test")
- ;res = True
- ;res@cnFillOn = True
- ;plot = gsn_csm_contour_map(wks,X(:,:,0),res)
- ;plot = gsn_csm_contour_map(wks,X(:,:,1),res)
- ;plot = gsn_csm_contour_map(wks,X(:,:,99),res)
+ wks = gsn_open_wks("pdf","hydro_ensemble_LHC_GPP_forSVD")
+
+ res = True
+ res@gsnDraw = False
+ res@gsnFrame = False
+ res@cnFillOn = True
+ res@cnLinesOn           = False           ; turn off contour lines
+ res@cnLineLabelsOn      = False           ; turn off contour line labels
+ res@cnFillPalette       = "MPL_YlOrRd"
+ res@cnSpanFillPalette   = True            ; Fully span color palette
+ res@lbLabelBarOn        = False
+ res@gsnLeftString = "GPP"
+ res@gsnRightString = "PgC/yr"
+
+ ; check some random ensemble members
+ res@gsnCenterString = "Member 20 Anomaly"
+ plot(0) = gsn_csm_contour_map(wks,X(:,:,19),res)
+ res@gsnCenterString = "Member 34 Anomaly"
+ plot(1) = gsn_csm_contour_map(wks,X(:,:,33),res)
+ res@gsnCenterString = "Member 39 Anomaly"
+ plot(2) = gsn_csm_contour_map(wks,X(:,:,38),res)
+ res@gsnCenterString = "Member 66 Anomaly"
+ plot(3) = gsn_csm_contour_map(wks,X(:,:,65),res)
+
+ resP                     = True                ; modify the panel plot
+ resP@gsnMaximize         = True
+ resP@gsnPanelMainString = "5-year annual mean, area-weighted, anomaly from ensemble mean"
+ resP@gsnPanelLabelBar    = True                ; add common colorbar
+ resP@lbBoxLinesOn = False ; no boxes
+ gsn_panel(wks,plot,(/2,2/),resP) 
 
  ; trying to remove missing values (non-land) 
  ;X_mod = X ; metadata
@@ -104,14 +137,16 @@ begin
 ;************************************************
 ; write output file
 ;************************************************
+ ; writing as csv (not preferred)
  ;alist = [/X/]
  ;write_table("outputdata_GPP_SVD.csv", "w", alist, "%f")
 
- ;ncdf = addfile("outputdata/outputdata_GPP_forSVD.nc", "c")
- ;ncdf = addfile("outputdata/outputdata_GPP_forSVD_20.nc", "c")
- ;ncdf = addfile("outputdata/outputdata_GPP_forSVD_100.nc", "c")
+ ; writing as nc (preferred)
+ ncdf = addfile("outputdata/outputdata_GPP_forSVD_100.nc", "c")
+ ;ncdf = addfile("outputdata/outputdata_ET_forSVD_100.nc", "c")
+ ; define time as an unlimited dimension (optional?)
  ;filedimdef(ncdf,"time",-1,True) 
- ;ncdf->X = X
+ ncdf->X = X
  
 
 end
