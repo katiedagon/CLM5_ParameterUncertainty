@@ -35,7 +35,7 @@ nens=d.shape[2]
 #plt.show()
 
 # Mask NCL fillvalue (non-land gridpoints)
-#c = ma.masked_where(d == 1.e+36, d)
+c = ma.masked_where(d == 1.e+36, d)
 #plt.contourf(c[:,:,0])
 #plt.colorbar()
 #plt.show()
@@ -46,7 +46,7 @@ dr = np.reshape(d,(nens,nlat*nlon))
 #print(dr.shape)
 
 # Reshape masked array
-#cr = np.reshape(c,(nens,nlat*nlon))
+cr = np.reshape(c,(nens,nlat*nlon))
 #print(cr.shape)
 #print(cr.ndim)
 # The following gives rank 0?
@@ -76,9 +76,13 @@ smat = np.diag(s)
 print(np.allclose(dr, np.dot(U, np.dot(smat, Vh))))
 
 # No difference in SVD result when masking fillvalue
-#Uc,sc,Vhc = np.linalg.svd(cr, full_matrices=False)
-#print(Uc[0,:] - U[0,:])
-#print(Uc[99,:] - U[99,:])
+Uc,sc,Vhc = np.linalg.svd(cr, full_matrices=False)
+print(Uc[0,:] - U[0,:])
+print(Uc[99,:] - U[99,:])
+# Sanity check
+print(np.allclose(cr, np.dot(Uc*sc, Vhc)))
+smat = np.diag(sc)
+print(np.allclose(cr, np.dot(Uc, np.dot(smat, Vhc))))
 
 # What about reshape with input as (..N,M) so spatial data/larger dim comes first?
 er = np.reshape(d,(nlat*nlon,nens))
