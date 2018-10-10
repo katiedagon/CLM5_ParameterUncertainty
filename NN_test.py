@@ -30,7 +30,12 @@ import csv
 inputdata = np.load(file="lhc_100.npy")
 
 # Read in output array
-outputdata = np.loadtxt("outputdata/outputdata_GPP.csv")
+#outputdata = np.loadtxt("outputdata/outputdata_GPP.csv")
+outputdata_all = np.load("outputdata/outputdata_GPP_SVD.npy")
+
+# Specify mode (SVD only)
+mode = 1
+outputdata = outputdata_all[:,mode-1]
 
 # Separate training/test/val data: 60/20/20 split
 x_train = inputdata[0:60,:]
@@ -55,12 +60,12 @@ for i in range(1,11):
         # separately each time for a different node value
         np.random.seed(7)
 
-        # Create 1-layer simple model
+        # Create 2-layer simple model
         model = Sequential()
-        # first hidden layer with variable # nodes and hyperbolic tangent activation
+        # first hidden layer with variable # nodes and relu or linear activation
         # specify input_dim as number of parameters, not number of simulations
         # l2 norm regularizer
-        model.add(Dense(i, input_dim=inputdata.shape[1], activation='relu',
+        model.add(Dense(i, input_dim=inputdata.shape[1], activation='linear',
             kernel_regularizer=l2(.001)))
         # second layer with varible #  nodes and hyperbolic tangent activation
         model.add(Dense(j, activation='tanh', kernel_regularizer=l2(.001)))

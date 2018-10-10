@@ -29,17 +29,26 @@ inputdata = np.load(file="lhc_100.npy")
 in_vars = ['medlynslope','dleaf','kmax','fff','dint','baseflow_scalar']
 
 # Read in output array
-outputdata = np.loadtxt("outputdata/outputdata_GPP.csv")
+#outputdata = np.loadtxt("outputdata/outputdata_GPP.csv")
+outputdata_all = np.load("outputdata/outputdata_GPP_SVD.npy")
+
+# Specify mode (SVD only)
+mode = 1
+outputdata = outputdata_all[:,mode-1]
+#plt.hist(outputdata, bins=20)
+#plt.xlabel('Mode 1 of GPP SVD (U-vector)')
+#plt.ylabel('Counts')
+#plt.savefig("dist_outputdata_GPP_SVD_mode1.pdf")
+#plt.show()
 
 # Create 2-layer simple model
 model = Sequential()
-# first layer with 4 nodes and rectified linear activation
 # specify input_dim as number of parameters, not number of simulations
 # l2 norm regularizer
-model.add(Dense(8, input_dim=inputdata.shape[1], activation='linear',
+model.add(Dense(6, input_dim=inputdata.shape[1], activation='relu',
     kernel_regularizer=l2(.001)))
-# second layer with 7 nodes and hyperbolic tangent activation
-model.add(Dense(2, activation='tanh', kernel_regularizer=l2(.001)))
+# second layer with hyperbolic tangent activation
+model.add(Dense(6, activation='tanh', kernel_regularizer=l2(.001)))
 # output layer with linear activation
 model.add(Dense(1))
 
@@ -60,10 +69,10 @@ model.compile(opt_dense, "mse", metrics=[mean_sq_err])
 #y_test = outputdata[60:80]
 #y_val = outputdata[80:]
 
-# Fit the model
+# Fit the model using ALL data
 results = model.fit(inputdata, outputdata, epochs=500, batch_size=30, verbose=0)
 
-# Make predictions - using validation set
+# Make predictions
 model_preds = model.predict(inputdata)[:,0]
 
 # model metric for predictions
@@ -79,7 +88,7 @@ plt.xlabel('CLM Model Output')
 plt.ylabel('NN Predictions')
 plt.xlim(np.amin([outputdata,model_preds])-0.1,np.amax([outputdata,model_preds])+0.1)
 plt.ylim(np.amin([outputdata,model_preds])-0.1,np.amax([outputdata,model_preds])+0.1)
-#plt.savefig("validation_scatter_finalize.eps")
+plt.savefig("validation_scatter_finalize_SVD_mode1.pdf")
 plt.show()
 
 # linear regression of actual vs predicted

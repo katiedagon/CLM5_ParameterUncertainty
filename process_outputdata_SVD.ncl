@@ -38,12 +38,12 @@ begin
  grid_area_m = grid_area*10^6 ; km^2 to m^2
 
  ; set up storage matrix
- O = new((/o_md_dims(1),o_md_dims(2),niter/),"float")
- O!0 = "lat"
+ O = new((/niter,o_md_dims(1),o_md_dims(2)/),"float")
+ O!0 = "ens"
+ O!1 = "lat"
  O&lat = o_md&lat
- O!1 = "lon"
+ O!2 = "lon"
  O&lon = o_md&lon
- O!2 = "ens"
 
  do i=1,niter
   y=tostring(i)
@@ -63,18 +63,18 @@ begin
   o_am_area = o_am * grid_area_m
   copy_VarMeta(o_am,o_am_area)
   ; append to ensemble collection
-  O(:,:,i-1) = o_am_area
-  ;O(:,:,i-1) = o_am ; unweighted
+  O(i-1,:,:) = o_am_area
+  ;O(i-1,:,:) = o_am ; unweighted
  end do
 
  ; ensemble mean
- O_em = dim_avg_n_Wrap(O,2)
+ O_em = dim_avg_n_Wrap(O,0)
  
  ; input to SVD - subtract ensemble mean
- X = new((/o_md_dims(1),o_md_dims(2),niter/),"float")
+ X = new((/niter,o_md_dims(1),o_md_dims(2)/),"float")
  copy_VarMeta(O,X)
  do i=1,niter
-  X(:,:,i-1) = O(:,:,i-1)-O_em
+  X(i-1,:,:) = O(i-1,:,:)-O_em
  end do
  X@units = "PgC/yr"
  ;printVarSummary(X)
@@ -82,8 +82,8 @@ begin
  ; test plots
  plot = new(4,graphic)
 
- ;wks = gsn_open_wks("x11","test")
- wks = gsn_open_wks("pdf","hydro_ensemble_LHC_GPP_forSVD")
+ wks = gsn_open_wks("x11","test")
+ ;wks = gsn_open_wks("pdf","hydro_ensemble_LHC_GPP_forSVD")
 
  res = True
  res@gsnDraw = False
@@ -98,14 +98,14 @@ begin
  res@gsnRightString = "PgC/yr"
 
  ; check some random ensemble members
- res@gsnCenterString = "Member 20 Anomaly"
- plot(0) = gsn_csm_contour_map(wks,X(:,:,19),res)
- res@gsnCenterString = "Member 34 Anomaly"
- plot(1) = gsn_csm_contour_map(wks,X(:,:,33),res)
- res@gsnCenterString = "Member 39 Anomaly"
- plot(2) = gsn_csm_contour_map(wks,X(:,:,38),res)
- res@gsnCenterString = "Member 66 Anomaly"
- plot(3) = gsn_csm_contour_map(wks,X(:,:,65),res)
+ res@gsnCenterString = "Member 9 Anomaly"
+ plot(0) = gsn_csm_contour_map(wks,X(8,:,:),res)
+ res@gsnCenterString = "Member 17 Anomaly"
+ plot(1) = gsn_csm_contour_map(wks,X(16,:,:),res)
+ res@gsnCenterString = "Member 77 Anomaly"
+ plot(2) = gsn_csm_contour_map(wks,X(76,:,:),res)
+ res@gsnCenterString = "Member 99 Anomaly"
+ plot(3) = gsn_csm_contour_map(wks,X(98,:,:),res)
 
  resP                     = True                ; modify the panel plot
  resP@gsnMaximize         = True

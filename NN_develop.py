@@ -42,9 +42,14 @@ in_vars = ['medlynslope','dleaf','kmax','fff','dint','baseflow_scalar']
 # Read in output array
 # use NCL script to generate global mean GPP array 
 # from 100-member ensemble in python readable format
-outputdata = np.loadtxt("outputdata/outputdata_GPP.csv")
+#outputdata = np.loadtxt("outputdata/outputdata_GPP.csv")
 #outputdata = np.loadtxt("outputdata_ET_IAV.csv")
 #print(outputdata)
+outputdata_all = np.load("outputdata/outputdata_GPP_SVD.npy")
+
+# Specify mode (SVD only)
+mode = 1
+outputdata = outputdata_all[:,mode-1]
 
 # transform GPP to reduce left skew
 #outputdata = outputdata**10
@@ -64,13 +69,13 @@ outputdata = np.loadtxt("outputdata/outputdata_GPP.csv")
 
 # Create 2-layer simple model
 model = Sequential()
-# first layer with 4 nodes and rectified linear activation
+# first layer with x nodes and rectified linear activation
 # specify input_dim as number of parameters, not number of simulations
 # l2 norm regularizer
-model.add(Dense(4, input_dim=inputdata.shape[1], activation='relu',
+model.add(Dense(6, input_dim=inputdata.shape[1], activation='relu',
     kernel_regularizer=l2(.001)))
-# second layer with 7 nodes and hyperbolic tangent activation
-model.add(Dense(7, activation='tanh', kernel_regularizer=l2(.001)))
+# second layer with y nodes and hyperbolic tangent activation
+model.add(Dense(6, activation='tanh', kernel_regularizer=l2(.001)))
 # output layer with linear activation
 model.add(Dense(1))
 #model.add(Dense(1, activation='relu')) 
@@ -194,7 +199,7 @@ plt.ylim(np.amin([y_val,model_preds])-0.1,np.amax([y_val,model_preds])+0.1)
 #plt.savefig("validation_scatter_logGPP_v3.eps")
 #plt.savefig("validation_scatter_logGPP_nonlinear.eps")
 #plt.savefig("validation_scatter_RMSprop.eps")
-#plt.show()
+plt.show()
 
 # linear regression of actual vs predicted
 slope, intercept, r_value, p_value, std_err = stats.linregress(y_val,

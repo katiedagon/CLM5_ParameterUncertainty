@@ -28,7 +28,12 @@ import matplotlib.axes as ax
 inputdata = np.load(file="lhc_100.npy")
 
 # Read in output array
-outputdata = np.loadtxt("outputdata/outputdata_GPP.csv")
+#outputdata = np.loadtxt("outputdata/outputdata_GPP.csv")
+outputdata_all = np.load("outputdata/outputdata_GPP_SVD.npy")
+
+# Specify mode (SVD only)
+mode = 1
+outputdata = outputdata_all[:,mode-1]
 
 metricsME = []
 metricsRsq = []
@@ -42,13 +47,12 @@ for k in range(1,11):
 
     # Create 2-layer simple model
     model = Sequential()
-    # first layer with 4 nodes and rectified linear activation
     # specify input_dim as number of parameters, not number of simulations
     # l2 norm regularizer
-    model.add(Dense(10, input_dim=inputdata.shape[1], activation='relu',
+    model.add(Dense(8, input_dim=inputdata.shape[1], activation='relu',
         kernel_regularizer=l2(.001)))
-    # second layer with 7 nodes and hyperbolic tangent activation
-    model.add(Dense(2, activation='tanh', kernel_regularizer=l2(.001)))
+    # second layer with hyperbolic tangent activation
+    model.add(Dense(9, activation='tanh', kernel_regularizer=l2(.001)))
     # output layer with linear activation
     model.add(Dense(1))
 
