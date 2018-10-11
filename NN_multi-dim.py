@@ -1,6 +1,6 @@
 # For now run this ncar python env in the command line (or bash script)
 # Not sure how to execute within python script:
-#source /glade/p/work/kdagon/ncar_pylib_clone/bin/activate
+#source /glade/work/kdagon/ncar_pylib_clone/bin/activate
 
 # NN with multiple output fields
 # 6/26/18
@@ -29,7 +29,9 @@ inputdata = np.load(file="lhc_100.npy")
 in_vars = ['medlynslope','dleaf','kmax','fff','dint','baseflow_scalar']
 
 # Read multi-dimensional output in .npy file
-outputdata = np.load(file="outputdata/outputdata_GPP_SVD.npy")
+outputdata_raw = np.load(file="outputdata/outputdata_GPP_SVD.npy")
+# First 3 modes account for over 97% of variance
+outputdata = outputdata_raw[:,:3]
 nmodes = outputdata.shape[1]
 
 # Read multi-dimensional output by stacking csv files
@@ -39,13 +41,13 @@ nmodes = outputdata.shape[1]
 
 # Create 2-layer simple model
 model = Sequential()
-# first layer with 8 nodes and linear activation
+# first layer with x nodes and relu/linear activation
 # specify input_dim as number of parameters, not number of simulations
 # l2 norm regularizer
-model.add(Dense(8, input_dim=inputdata.shape[1], 
-    activation='linear', kernel_regularizer=l2(.001)))
-# second layer with 2 nodes and hyperbolic tangent activation
-model.add(Dense(2, activation='tanh', kernel_regularizer=l2(.001)))
+model.add(Dense(6, input_dim=inputdata.shape[1], 
+    activation='relu', kernel_regularizer=l2(.001)))
+# second layer with y nodes and hyperbolic tangent activation
+model.add(Dense(6, activation='tanh', kernel_regularizer=l2(.001)))
 # output layer with linear activation and nmodes outputs
 model.add(Dense(nmodes))
 
@@ -140,16 +142,27 @@ plt.xlim(np.amin([y_val[:,0],model_preds[:,0]])-0.1,np.amax([y_val[:,0],model_pr
 plt.ylim(np.amin([y_val[:,0],model_preds[:,0]])-0.1,np.amax([y_val[:,0],model_preds[:,0]])+0.1)
 plt.savefig("validation_scatter_GPP-SVD-mode1.pdf")
 plt.show()
-# last mode
-plt.scatter(y_val[:,9], model_preds[:,9], label='Mode 10 validation')
-plt.scatter(y_train[:,9], model_train[:,9], label='Mode 10 train')
-plt.scatter(y_test[:,9], model_test[:,9], label='Mode 10 test')
+# mode 2
+plt.scatter(y_val[:,1], model_preds[:,1], label='Mode 2 validation')
+plt.scatter(y_train[:,1], model_train[:,1], label='Mode 2 train')
+plt.scatter(y_test[:,1], model_test[:,1], label='Mode 2 test')
 plt.legend()
 plt.xlabel('CLM Model Output')
 plt.ylabel('NN Predictions')
-plt.xlim(np.amin([y_val[:,9],model_preds[:,9]])-0.1,np.amax([y_val[:,9],model_preds[:,9]])+0.1)
-plt.ylim(np.amin([y_val[:,9],model_preds[:,9]])-0.1,np.amax([y_val[:,9],model_preds[:,9]])+0.1)
-plt.savefig("validation_scatter_GPP-SVD-mode10.pdf")
+plt.xlim(np.amin([y_val[:,1],model_preds[:,1]])-0.1,np.amax([y_val[:,1],model_preds[:,1]])+0.1)
+plt.ylim(np.amin([y_val[:,1],model_preds[:,1]])-0.1,np.amax([y_val[:,1],model_preds[:,1]])+0.1)
+plt.savefig("validation_scatter_GPP-SVD-mode2.pdf")
+plt.show()
+# mode 3
+plt.scatter(y_val[:,2], model_preds[:,2], label='Mode 3 validation')
+plt.scatter(y_train[:,2], model_train[:,2], label='Mode 3 train')
+plt.scatter(y_test[:,2], model_test[:,2], label='Mode 3 test')
+plt.legend()
+plt.xlabel('CLM Model Output')
+plt.ylabel('NN Predictions')
+plt.xlim(np.amin([y_val[:,2],model_preds[:,2]])-0.1,np.amax([y_val[:,2],model_preds[:,2]])+0.1)
+plt.ylim(np.amin([y_val[:,2],model_preds[:,2]])-0.1,np.amax([y_val[:,2],model_preds[:,2]])+0.1)
+plt.savefig("validation_scatter_GPP-SVD-mode3.pdf")
 plt.show()
 
 # linear regression of actual vs predicted
@@ -162,7 +175,11 @@ plt.show()
 slope, intercept, r_value, p_value, std_err = stats.linregress(y_val[:,0],
         model_preds[:,0])
 print("r-squared:", r_value**2)
-# Mode 10
-slope, intercept, r_value, p_value, std_err = stats.linregress(y_val[:,9],
-                model_preds[:,9])
+# Mode 2
+slope, intercept, r_value, p_value, std_err = stats.linregress(y_val[:,1],
+                model_preds[:,1])
+print("r-squared:", r_value**2)
+# Mode 3
+slope, intercept, r_value, p_value, std_err = stats.linregress(y_val[:,2],
+                        model_preds[:,2])
 print("r-squared:", r_value**2)

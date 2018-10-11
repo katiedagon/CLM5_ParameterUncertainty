@@ -2,7 +2,7 @@
 # output
 # 6/29/18
 
-#source /glade/p/work/kdagon/ncar_pylib_clone/bin/activate
+#source /glade/work/kdagon/ncar_pylib_clone/bin/activate
 
 from scipy import stats
 from sklearn import linear_model

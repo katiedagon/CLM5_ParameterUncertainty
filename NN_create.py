@@ -1,6 +1,6 @@
 # For now run this ncar python env in the command line (or bash script)
 # Not sure how to execute within python script:
-#source /glade/p/work/kdagon/ncar_pylib_clone/bin/activate
+#source /glade/work/kdagon/ncar_pylib_clone/bin/activate
 
 # First attempt at NN creation in python
 # 6/5/18

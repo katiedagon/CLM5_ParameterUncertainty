@@ -24,12 +24,12 @@ echo "number of samples = "$niter
 # Source python env only for python command, then exit
 # otherwise it messes up the case configuration in some unknown way
 # causing qsub submit errors
-source /glade/p/work/$USER/ncar_pylib_clone/bin/activate
+source /glade/work/$USER/ncar_pylib_clone/bin/activate
 python LHC_write.py $niter
 # leave python env
 deactivate
 
-cd /glade/p/work/$USER/$CODENAME
+cd /glade/work/$USER/$CODENAME
 pwd
 
 cd cime/scripts
@@ -56,7 +56,7 @@ pwd
 
 #cd ..
 # back to python
-#source /glade/p/work/$USER/ncar_pylib_clone/bin/activate
+#source /glade/work/$USER/ncar_pylib_clone/bin/activate
 ##
 
 ## Control run: uncomment this for a simulation with default values
@@ -186,7 +186,7 @@ rm -f $pftfile
 cp /glade/p/cesmdata/cseg/inputdata/lnd/clm2/paramdata/clm5_params.c171117.nc $pftfile
 
 # Make changes to netcdf file through python script
-source /glade/p/work/$USER/ncar_pylib_clone/bin/activate
+source /glade/work/$USER/ncar_pylib_clone/bin/activate
 python /glade/u/home/$USER/CLM5hydro_LHC/LHC_read_pft.py $(( i - 1 )) $pftfile
 deactivate
 
@@ -197,7 +197,7 @@ echo  $uclm >> user_nl_clm
 # If not PFT-dependent, edit the namelist appropriately
 # Call LHC_read_nl.py to write out nl parameter values
 # For each case (i), write out all nl params at once
-source /glade/p/work/$USER/ncar_pylib_clone/bin/activate
+source /glade/work/$USER/ncar_pylib_clone/bin/activate
 python /glade/u/home/$USER/CLM5hydro_LHC/LHC_read_nl.py $(( i - 1 )) >> user_nl_clm
 deactivate
 
