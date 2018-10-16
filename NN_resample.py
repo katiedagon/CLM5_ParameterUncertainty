@@ -32,7 +32,7 @@ inputdata = np.load(file="lhc_100.npy")
 outputdata_all = np.load("outputdata/outputdata_GPP_SVD.npy")
 
 # Specify mode (SVD only)
-mode = 1
+mode = 3
 outputdata = outputdata_all[:,mode-1]
 
 metricsME = []
@@ -49,10 +49,10 @@ for k in range(1,11):
     model = Sequential()
     # specify input_dim as number of parameters, not number of simulations
     # l2 norm regularizer
-    model.add(Dense(8, input_dim=inputdata.shape[1], activation='relu',
+    model.add(Dense(3, input_dim=inputdata.shape[1], activation='linear',
         kernel_regularizer=l2(.001)))
     # second layer with hyperbolic tangent activation
-    model.add(Dense(9, activation='tanh', kernel_regularizer=l2(.001)))
+    model.add(Dense(5, activation='tanh', kernel_regularizer=l2(.001)))
     # output layer with linear activation
     model.add(Dense(1))
 
@@ -61,7 +61,8 @@ for k in range(1,11):
         return K.mean((y_true-y_pred)**2)
 
     # Compile model
-    opt_dense = RMSprop(lr=0.001, rho=0.9, epsilon=None, decay=0.0)
+    #opt_dense = RMSprop(lr=0.001, rho=0.9, epsilon=None, decay=0.0)
+    opt_dense = SGD(lr=0.001, momentum=0.99, decay=1e-4, nesterov=True)
     model.compile(opt_dense, "mse", metrics=[mean_sq_err])
     #model.summary()
 

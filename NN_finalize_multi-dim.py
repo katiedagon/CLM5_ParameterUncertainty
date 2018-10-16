@@ -38,10 +38,10 @@ nmodes = outputdata.shape[1]
 model = Sequential()
 # specify input_dim as number of parameters, not number of simulations
 # l2 norm regularizer
-model.add(Dense(6, input_dim=inputdata.shape[1], activation='relu',
+model.add(Dense(9, input_dim=inputdata.shape[1], activation='relu',
     kernel_regularizer=l2(.001)))
 # second layer with hyperbolic tangent activation
-model.add(Dense(6, activation='tanh', kernel_regularizer=l2(.001)))
+model.add(Dense(4, activation='tanh', kernel_regularizer=l2(.001)))
 # output layer with linear activation
 model.add(Dense(nmodes))
 
@@ -73,21 +73,21 @@ plt.xlabel('CLM Model Output')
 plt.ylabel('NN Predictions')
 plt.xlim(np.amin([outputdata[:,0],model_preds[:,0]])-0.1,np.amax([outputdata[:,0],model_preds[:,0]])+0.1)
 plt.ylim(np.amin([outputdata[:,0],model_preds[:,0]])-0.1,np.amax([outputdata[:,0],model_preds[:,0]])+0.1)
-plt.savefig("validation_scatter_finalize_SVD_md_mode1.pdf")
+plt.savefig("validation_scatter_finalize_SVD_md_mode1_c3.pdf")
 plt.show()
 plt.scatter(outputdata[:,1], model_preds[:,1])
 plt.xlabel('CLM Model Output')
 plt.ylabel('NN Predictions')
 plt.xlim(np.amin([outputdata[:,1],model_preds[:,1]])-0.1,np.amax([outputdata[:,1],model_preds[:,1]])+0.1)
 plt.ylim(np.amin([outputdata[:,1],model_preds[:,1]])-0.1,np.amax([outputdata[:,1],model_preds[:,1]])+0.1)
-plt.savefig("validation_scatter_finalize_SVD_md_mode2.pdf")
+plt.savefig("validation_scatter_finalize_SVD_md_mode2_c3.pdf")
 plt.show()
 plt.scatter(outputdata[:,2], model_preds[:,2])
 plt.xlabel('CLM Model Output')
 plt.ylabel('NN Predictions')
 plt.xlim(np.amin([outputdata[:,2],model_preds[:,2]])-0.1,np.amax([outputdata[:,2],model_preds[:,2]])+0.1)
 plt.ylim(np.amin([outputdata[:,2],model_preds[:,2]])-0.1,np.amax([outputdata[:,2],model_preds[:,2]])+0.1)
-plt.savefig("validation_scatter_finalize_SVD_md_mode3.pdf")
+plt.savefig("validation_scatter_finalize_SVD_md_mode3_c3.pdf")
 plt.show()
 
 print("Model Mean Error:", results.history['mean_sq_err'][-1])

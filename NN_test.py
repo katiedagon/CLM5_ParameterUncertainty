@@ -34,8 +34,14 @@ inputdata = np.load(file="lhc_100.npy")
 outputdata_all = np.load("outputdata/outputdata_GPP_SVD.npy")
 
 # Specify mode (SVD only)
-mode = 1
+mode = 3
 outputdata = outputdata_all[:,mode-1]
+#plt.hist(outputdata, bins=20)
+#plt.xlabel('Mode 3 of GPP SVD (U-vector)')
+#plt.ylabel('Counts')
+#plt.savefig("dist_outputdata_GPP_SVD_mode3.pdf")
+#plt.show()
+
 
 # Separate training/test/val data: 60/20/20 split
 x_train = inputdata[0:60,:]
@@ -65,7 +71,7 @@ for i in range(1,11):
         # first hidden layer with variable # nodes and relu or linear activation
         # specify input_dim as number of parameters, not number of simulations
         # l2 norm regularizer
-        model.add(Dense(i, input_dim=inputdata.shape[1], activation='linear',
+        model.add(Dense(i, input_dim=inputdata.shape[1], activation='relu',
             kernel_regularizer=l2(.001)))
         # second layer with varible #  nodes and hyperbolic tangent activation
         model.add(Dense(j, activation='tanh', kernel_regularizer=l2(.001)))
@@ -78,7 +84,8 @@ for i in range(1,11):
 
         # Compile model
         # using RMSprop optimizer
-        opt_dense = RMSprop(lr=0.001, rho=0.9, epsilon=None, decay=0.0)
+        #opt_dense = RMSprop(lr=0.001, rho=0.9, epsilon=None, decay=0.0)
+        opt_dense = SGD(lr=0.001, momentum=0.99, decay=1e-4, nesterov=True)
         model.compile(opt_dense, "mse", metrics=[mean_sq_err])
         #model.summary()
 

@@ -33,7 +33,7 @@ in_vars = ['medlynslope','dleaf','kmax','fff','dint','baseflow_scalar']
 outputdata_all = np.load("outputdata/outputdata_GPP_SVD.npy")
 
 # Specify mode (SVD only)
-mode = 1
+mode = 3
 outputdata = outputdata_all[:,mode-1]
 #plt.hist(outputdata, bins=20)
 #plt.xlabel('Mode 1 of GPP SVD (U-vector)')
@@ -45,10 +45,10 @@ outputdata = outputdata_all[:,mode-1]
 model = Sequential()
 # specify input_dim as number of parameters, not number of simulations
 # l2 norm regularizer
-model.add(Dense(6, input_dim=inputdata.shape[1], activation='relu',
+model.add(Dense(9, input_dim=inputdata.shape[1], activation='relu',
     kernel_regularizer=l2(.001)))
 # second layer with hyperbolic tangent activation
-model.add(Dense(6, activation='tanh', kernel_regularizer=l2(.001)))
+model.add(Dense(4, activation='tanh', kernel_regularizer=l2(.001)))
 # output layer with linear activation
 model.add(Dense(1))
 
@@ -71,6 +71,20 @@ model.compile(opt_dense, "mse", metrics=[mean_sq_err])
 
 # Fit the model using ALL data
 results = model.fit(inputdata, outputdata, epochs=500, batch_size=30, verbose=0)
+#print(results.history)
+
+# Plot training history by epoch - are these lines the same?
+#plt.plot(results.epoch, results.history['loss'], label='test')
+#plt.plot(results.epoch, results.history['mean_sq_err'], label='train')
+#plt.xticks(results.epoch)
+#plt.legend()
+#plt.hlines(y=0,xmin=0,xmax=15)
+#plt.hlines(y=0,xmin=0,xmax=40)
+#plt.ylabel('Mean Squared Error')
+#plt.xlabel('Epoch')
+#plt.title('Neural Network Training History')                                                                                                  
+#plt.savefig("train_history_RMSprop.eps")
+#plt.show()
 
 # Make predictions
 model_preds = model.predict(inputdata)[:,0]
@@ -88,7 +102,9 @@ plt.xlabel('CLM Model Output')
 plt.ylabel('NN Predictions')
 plt.xlim(np.amin([outputdata,model_preds])-0.1,np.amax([outputdata,model_preds])+0.1)
 plt.ylim(np.amin([outputdata,model_preds])-0.1,np.amax([outputdata,model_preds])+0.1)
-plt.savefig("validation_scatter_finalize_SVD_mode1.pdf")
+#plt.savefig("validation_scatter_finalize_SVD_mode1.pdf")
+#plt.savefig("validation_scatter_finalize_SVD_mode2.pdf")
+plt.savefig("validation_scatter_finalize_SVD_mode3.pdf")
 plt.show()
 
 # linear regression of actual vs predicted

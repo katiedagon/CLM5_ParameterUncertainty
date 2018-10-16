@@ -42,14 +42,14 @@ in_vars = ['medlynslope','dleaf','kmax','fff','dint','baseflow_scalar']
 # Read in output array
 # use NCL script to generate global mean GPP array 
 # from 100-member ensemble in python readable format
-#outputdata = np.loadtxt("outputdata/outputdata_GPP.csv")
+outputdata = np.loadtxt("outputdata/outputdata_GPP.csv")
 #outputdata = np.loadtxt("outputdata_ET_IAV.csv")
 #print(outputdata)
-outputdata_all = np.load("outputdata/outputdata_GPP_SVD.npy")
+#outputdata_all = np.load("outputdata/outputdata_GPP_SVD.npy")
 
 # Specify mode (SVD only)
-mode = 1
-outputdata = outputdata_all[:,mode-1]
+#mode = 1
+#outputdata = outputdata_all[:,mode-1]
 
 # transform GPP to reduce left skew
 #outputdata = outputdata**10
@@ -72,10 +72,10 @@ model = Sequential()
 # first layer with x nodes and rectified linear activation
 # specify input_dim as number of parameters, not number of simulations
 # l2 norm regularizer
-model.add(Dense(6, input_dim=inputdata.shape[1], activation='relu',
+model.add(Dense(8, input_dim=inputdata.shape[1], activation='linear',
     kernel_regularizer=l2(.001)))
 # second layer with y nodes and hyperbolic tangent activation
-model.add(Dense(6, activation='tanh', kernel_regularizer=l2(.001)))
+model.add(Dense(2, activation='tanh', kernel_regularizer=l2(.001)))
 # output layer with linear activation
 model.add(Dense(1))
 #model.add(Dense(1, activation='relu')) 
@@ -218,13 +218,13 @@ print("r-squared:", r_value**2)
 # this works because NN predictions can be 
 # stiched back together in the same order
 # (no resampling)
-total_preds = np.append(np.append(model_train,model_test),model_preds)
-for x, y in enumerate(in_vars):
-    plt.scatter(inputdata[:,x], total_preds)
-    plt.ylabel('NN Predictions') 
-    plt.xlabel('LHC Values')
-    plt.title(y)
-    #plt.savefig(y)
-    plt.show()
+#total_preds = np.append(np.append(model_train,model_test),model_preds)
+#for x, y in enumerate(in_vars):
+#    plt.scatter(inputdata[:,x], total_preds)
+#    plt.ylabel('NN Predictions') 
+#    plt.xlabel('LHC Values')
+#    plt.title(y)
+#    #plt.savefig(y)
+#    plt.show()
 
 
