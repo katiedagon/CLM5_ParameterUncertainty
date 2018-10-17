@@ -34,14 +34,17 @@ outputdata_raw = np.load(file="outputdata/outputdata_GPP_SVD.npy")
 outputdata = outputdata_raw[:,:3]
 nmodes = outputdata.shape[1]
 
+# Percent of variance (for weighted avg R^2)
+svd_var = [0.771, 0.1914, 0.0128]
+
 # Create 2-layer simple model
 model = Sequential()
 # specify input_dim as number of parameters, not number of simulations
 # l2 norm regularizer
-model.add(Dense(9, input_dim=inputdata.shape[1], activation='relu',
+model.add(Dense(8, input_dim=inputdata.shape[1], activation='relu',
     kernel_regularizer=l2(.001)))
 # second layer with hyperbolic tangent activation
-model.add(Dense(4, activation='tanh', kernel_regularizer=l2(.001)))
+model.add(Dense(8, activation='tanh', kernel_regularizer=l2(.001)))
 # output layer with linear activation
 model.add(Dense(nmodes))
 
@@ -73,33 +76,39 @@ plt.xlabel('CLM Model Output')
 plt.ylabel('NN Predictions')
 plt.xlim(np.amin([outputdata[:,0],model_preds[:,0]])-0.1,np.amax([outputdata[:,0],model_preds[:,0]])+0.1)
 plt.ylim(np.amin([outputdata[:,0],model_preds[:,0]])-0.1,np.amax([outputdata[:,0],model_preds[:,0]])+0.1)
-plt.savefig("validation_scatter_finalize_SVD_md_mode1_c3.pdf")
+plt.savefig("validation_scatter_finalize_SVD_md_mode1_c4.pdf")
 plt.show()
 plt.scatter(outputdata[:,1], model_preds[:,1])
 plt.xlabel('CLM Model Output')
 plt.ylabel('NN Predictions')
 plt.xlim(np.amin([outputdata[:,1],model_preds[:,1]])-0.1,np.amax([outputdata[:,1],model_preds[:,1]])+0.1)
 plt.ylim(np.amin([outputdata[:,1],model_preds[:,1]])-0.1,np.amax([outputdata[:,1],model_preds[:,1]])+0.1)
-plt.savefig("validation_scatter_finalize_SVD_md_mode2_c3.pdf")
+plt.savefig("validation_scatter_finalize_SVD_md_mode2_c4.pdf")
 plt.show()
 plt.scatter(outputdata[:,2], model_preds[:,2])
 plt.xlabel('CLM Model Output')
 plt.ylabel('NN Predictions')
 plt.xlim(np.amin([outputdata[:,2],model_preds[:,2]])-0.1,np.amax([outputdata[:,2],model_preds[:,2]])+0.1)
 plt.ylim(np.amin([outputdata[:,2],model_preds[:,2]])-0.1,np.amax([outputdata[:,2],model_preds[:,2]])+0.1)
-plt.savefig("validation_scatter_finalize_SVD_md_mode3_c3.pdf")
+plt.savefig("validation_scatter_finalize_SVD_md_mode3_c4.pdf")
 plt.show()
 
-print("Model Mean Error:", results.history['mean_sq_err'][-1])
-print("Prediction Mean Error: ", model_me)
+print("Model Mean Error: %.2g" % results.history['mean_sq_err'][-1])
+print("Prediction Mean Error: %.2g" % model_me)
 
+r_array = []
 # linear regression of actual vs predicted
 slope, intercept, r_value, p_value, std_err = stats.linregress(outputdata[:,0],
         model_preds[:,0])
-print("r-squared:", r_value**2)
+print("r-squared: %.2g" % r_value**2)
+r_array.append(r_value**2)
 slope, intercept, r_value, p_value, std_err = stats.linregress(outputdata[:,1],
         model_preds[:,1])
-print("r-squared:", r_value**2)
+print("r-squared: %.2g" % r_value**2)
+r_array.append(r_value**2)
 slope, intercept, r_value, p_value, std_err = stats.linregress(outputdata[:,2],
         model_preds[:,2])
-print("r-squared:", r_value**2)
+print("r-squared: %.2g" % r_value**2)
+r_array.append(r_value**2)
+
+print("wgt avg. r-squared: %.2g" % np.average(r_array,weights=svd_var))

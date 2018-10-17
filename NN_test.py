@@ -34,29 +34,36 @@ inputdata = np.load(file="lhc_100.npy")
 outputdata_all = np.load("outputdata/outputdata_GPP_SVD.npy")
 
 # Specify mode (SVD only)
-mode = 3
-outputdata = outputdata_all[:,mode-1]
+#mode = 1
+#outputdata = outputdata_all[:,mode-1]
 #plt.hist(outputdata, bins=20)
 #plt.xlabel('Mode 3 of GPP SVD (U-vector)')
 #plt.ylabel('Counts')
 #plt.savefig("dist_outputdata_GPP_SVD_mode3.pdf")
 #plt.show()
 
+# Multi-dimension
+outputdata = outputdata_all[:,:3]
+nmodes = outputdata.shape[1]
 
 # Separate training/test/val data: 60/20/20 split
-x_train = inputdata[0:60,:]
-x_test = inputdata[60:80,:]
-x_val = inputdata[80:,:]
+x_train = inputdata[0:60]
+x_test = inputdata[60:80]
+x_val = inputdata[80:]
 y_train = outputdata[0:60]
 y_test = outputdata[60:80]
 y_val = outputdata[80:]
 
+# Max # of nodes
+maxnode = 10
+#maxnode = 2
+
 # Loop over # of nodes
 metrics=[]
 # First layer
-for i in range(1,11):
+for i in range(1,maxnode+1):
     # Second layer
-    for j in range(1,11):
+    for j in range(1,maxnode+1):
 
         print(i,j)
 
@@ -71,12 +78,13 @@ for i in range(1,11):
         # first hidden layer with variable # nodes and relu or linear activation
         # specify input_dim as number of parameters, not number of simulations
         # l2 norm regularizer
-        model.add(Dense(i, input_dim=inputdata.shape[1], activation='relu',
+        model.add(Dense(i, input_dim=inputdata.shape[1], activation='linear',
             kernel_regularizer=l2(.001)))
         # second layer with varible #  nodes and hyperbolic tangent activation
         model.add(Dense(j, activation='tanh', kernel_regularizer=l2(.001)))
         # output layer with linear activation
-        model.add(Dense(1))
+        #model.add(Dense(1))
+        model.add(Dense(nmodes))
 
         # Define model metrics
         def mean_sq_err(y_true,y_pred):
@@ -84,8 +92,8 @@ for i in range(1,11):
 
         # Compile model
         # using RMSprop optimizer
-        #opt_dense = RMSprop(lr=0.001, rho=0.9, epsilon=None, decay=0.0)
-        opt_dense = SGD(lr=0.001, momentum=0.99, decay=1e-4, nesterov=True)
+        opt_dense = RMSprop(lr=0.001, rho=0.9, epsilon=None, decay=0.0)
+        #opt_dense = SGD(lr=0.001, momentum=0.99, decay=1e-4, nesterov=True)
         model.compile(opt_dense, "mse", metrics=[mean_sq_err])
         #model.summary()
 
@@ -93,10 +101,14 @@ for i in range(1,11):
         results = model.fit(x_train, y_train, epochs=500, batch_size=30,
             verbose=0, validation_data=(x_test,y_test))
 
-        # Make predictions - using validation set
-        model_preds = model.predict(x_val)[:,0]
-        model_test = model.predict(x_test)[:,0]
-        model_train = model.predict(x_train)[:,0]
+        # Make predictions - using validation set (single dim)
+        #model_preds = model.predict(x_val)[:,0]
+        #model_test = model.predict(x_test)[:,0]
+        #model_train = model.predict(x_train)[:,0]
+        # Prediction - multi-dim
+        model_preds = model.predict(x_val)
+        model_test = model.predict(x_test)
+        model_train = model.predict(x_train)
 
         # model metric for predictions
         def mse_preds(y_true,y_pred):
@@ -105,11 +117,25 @@ for i in range(1,11):
         # calculate model mean error with predictions
         model_me = mse_preds(y_val, model_preds)
 
-        # linear regression of actual vs predicted
-        slope, intercept, r_value, p_value, std_err = stats.linregress(y_val,
-            model_preds)
+        # linear regression of actual vs predicted - single dim
+        #slope, intercept, r_value, p_value, std_err = stats.linregress(y_val,
+        #    model_preds)
+
+        # linear regression - multi-dim
+        r_array = []
+        for k in range(0,nmodes):
+            #print(k)
+            slope, intercept, r_value, p_value, std_err = stats.linregress(y_val[:,k],model_preds[:,k])
+            r_array.append(r_value**2)
+
+        # save out metrics - single dim
+        #metrics.append([results.history['mean_sq_err'][-1],
+        #    results.history['val_mean_sq_err'][-1], model_me, r_value**2])
+
+        # save metrics - multi-dim (can't figure a cleaner way to save r's)
         metrics.append([results.history['mean_sq_err'][-1],
-            results.history['val_mean_sq_err'][-1], model_me, r_value**2])
+            results.history['val_mean_sq_err'][-1],model_me,r_array[0],
+            r_array[1],r_array[2]])
 
 # Different formatting for printing out metrics (2 sig figs)
 #metricsFormat = [["%.2f" % m for m in msub] for msub in metrics]
