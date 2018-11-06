@@ -15,17 +15,14 @@ begin
  path = "/glade/scratch/kdagon/archive/"
 
  ; set variable(s) of interest
- var = "FPSN"
+ ;var = "FPSN"
  ;var = "TSA"
- ;var = "QFLX_EVAP_TOT"
+ var = "QFLX_EVAP_TOT"
 
  ; unit conversion (if needed)
- u = (12 * (3600 * 24 * 365) / 1000000) * 10^-15 ; umol /m2 /s to Pg/m2/year
- ;u = 86400 ; mm/s to mm/day
-
- ; establish output array as U-vector from SVD
- ; dims = 10xniter
- ;out = new((/10,niter/),float)
+ ;u = (12 * (3600 * 24 * 365) / 1000000) * 10^-15 ; umol /m2 /s to Pg/m2/year
+ ;u = (3600 * 24 * 365) / 1000 ; mm/s to m/year
+ u = 0.001 ; mm/s to m/s
 
  ; get sample file for metadata
  f_md = addfile("/glade/scratch/kdagon/archive/hydro_ensemble_LHC_1/lnd/hist/hydro_ensemble_LHC_1.clm2.h0.0016-01.nc","r")
@@ -76,14 +73,16 @@ begin
  do i=1,niter
   X(i-1,:,:) = O(i-1,:,:)-O_em
  end do
- X@units = "PgC/yr"
+ ;X@units = "PgC/yr"
+ X@units = "m^3/s" 
  ;printVarSummary(X)
  
  ; test plots
  plot = new(4,graphic)
 
- wks = gsn_open_wks("x11","test")
+ ;wks = gsn_open_wks("x11","test")
  ;wks = gsn_open_wks("pdf","hydro_ensemble_LHC_GPP_forSVD")
+ wks = gsn_open_wks("pdf","hydro_ensemble_LHC_ET_forSVD")
 
  res = True
  res@gsnDraw = False
@@ -94,18 +93,26 @@ begin
  res@cnFillPalette       = "MPL_YlOrRd"
  res@cnSpanFillPalette   = True            ; Fully span color palette
  res@lbLabelBarOn        = False
- res@gsnLeftString = "GPP"
- res@gsnRightString = "PgC/yr"
+ ;res@gsnLeftString = "GPP"
+ ;res@gsnRightString = "PgC/yr"
+ res@gsnLeftString = "ET"
+ res@gsnRightString = "m~S~3~N~/s"
+
+ ; set the contour bounds
+ res@cnLevelSelectionMode = "ManualLevels"
+ res@cnMinLevelValF  = -1000
+ res@cnMaxLevelValF  = 1000
+ res@cnLevelSpacingF = 50
 
  ; check some random ensemble members
  res@gsnCenterString = "Member 9 Anomaly"
  plot(0) = gsn_csm_contour_map(wks,X(8,:,:),res)
- res@gsnCenterString = "Member 17 Anomaly"
- plot(1) = gsn_csm_contour_map(wks,X(16,:,:),res)
  res@gsnCenterString = "Member 77 Anomaly"
- plot(2) = gsn_csm_contour_map(wks,X(76,:,:),res)
- res@gsnCenterString = "Member 99 Anomaly"
- plot(3) = gsn_csm_contour_map(wks,X(98,:,:),res)
+ plot(1) = gsn_csm_contour_map(wks,X(76,:,:),res)
+ res@gsnCenterString = "Member 20 Anomaly"
+ plot(2) = gsn_csm_contour_map(wks,X(19,:,:),res)
+ res@gsnCenterString = "Member 55 Anomaly"
+ plot(3) = gsn_csm_contour_map(wks,X(54,:,:),res)
 
  resP                     = True                ; modify the panel plot
  resP@gsnMaximize         = True
@@ -142,8 +149,8 @@ begin
  ;write_table("outputdata_GPP_SVD.csv", "w", alist, "%f")
 
  ; writing as nc (preferred)
- ncdf = addfile("outputdata/outputdata_GPP_forSVD_100.nc", "c")
- ;ncdf = addfile("outputdata/outputdata_ET_forSVD_100.nc", "c")
+ ;ncdf = addfile("outputdata/outputdata_GPP_forSVD_100.nc", "c")
+ ncdf = addfile("outputdata/outputdata_ET_forSVD_100.nc", "c")
  ; define time as an unlimited dimension (optional?)
  ;filedimdef(ncdf,"time",-1,True) 
  ncdf->X = X

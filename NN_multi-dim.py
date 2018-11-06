@@ -31,7 +31,14 @@ in_vars = ['medlynslope','dleaf','kmax','fff','dint','baseflow_scalar']
 # Read multi-dimensional output in .npy file
 outputdata_raw = np.load(file="outputdata/outputdata_GPP_SVD.npy")
 # First 3 modes account for over 97% of variance
-outputdata = outputdata_raw[:,:3]
+#outputdata = outputdata_raw[:,:3]
+#nmodes = outputdata.shape[1]
+
+# Second output variable
+outputdata_raw_2 = np.load(file="outputdata/outputdata_ET_SVD.npy")
+
+# String together first two modes
+outputdata = np.column_stack((outputdata_raw[:,0], outputdata_raw_2[:,0]))
 nmodes = outputdata.shape[1]
 
 # Read multi-dimensional output by stacking csv files
@@ -99,7 +106,8 @@ plt.legend()
 plt.ylabel('Mean Squared Error')
 plt.xlabel('Epoch')
 plt.title('Neural Network Training History')
-plt.savefig("train_history_GPP-SVD.pdf")
+#plt.savefig("train_history_GPP-SVD.pdf")
+plt.savefig("train_history_GPP_ET_SVD-mode1.pdf")
 plt.show()
 
 # Make predictions using validation
@@ -132,38 +140,40 @@ print("Prediction Mean Error: ", model_me)
 
 # scatterplot actual versus predicted (validation set)
 # first mode only
-plt.scatter(y_val[:,0], model_preds[:,0], label='Mode 1 validation')
-plt.scatter(y_train[:,0], model_train[:,0], label='Mode 1 train')
-plt.scatter(y_test[:,0], model_test[:,0], label='Mode 1 test')
+plt.scatter(y_val[:,0], model_preds[:,0], label='GPP Mode 1 validation')
+plt.scatter(y_train[:,0], model_train[:,0], label='GPP Mode 1 train')
+plt.scatter(y_test[:,0], model_test[:,0], label='GPP Mode 1 test')
 plt.legend()
 plt.xlabel('CLM Model Output')
 plt.ylabel('NN Predictions')
 plt.xlim(np.amin([y_val[:,0],model_preds[:,0]])-0.1,np.amax([y_val[:,0],model_preds[:,0]])+0.1)
 plt.ylim(np.amin([y_val[:,0],model_preds[:,0]])-0.1,np.amax([y_val[:,0],model_preds[:,0]])+0.1)
-plt.savefig("validation_scatter_GPP-SVD-mode1.pdf")
+#plt.savefig("validation_scatter_GPP-SVD-mode1.pdf")
+plt.savefig("validation_scatter_GPP_ET_SVD-mode1GPP.pdf")
 plt.show()
 # mode 2
-plt.scatter(y_val[:,1], model_preds[:,1], label='Mode 2 validation')
-plt.scatter(y_train[:,1], model_train[:,1], label='Mode 2 train')
-plt.scatter(y_test[:,1], model_test[:,1], label='Mode 2 test')
+plt.scatter(y_val[:,1], model_preds[:,1], label='ET Mode 1 validation')
+plt.scatter(y_train[:,1], model_train[:,1], label='ET Mode 1 train')
+plt.scatter(y_test[:,1], model_test[:,1], label='ET Mode 1 test')
 plt.legend()
 plt.xlabel('CLM Model Output')
 plt.ylabel('NN Predictions')
 plt.xlim(np.amin([y_val[:,1],model_preds[:,1]])-0.1,np.amax([y_val[:,1],model_preds[:,1]])+0.1)
 plt.ylim(np.amin([y_val[:,1],model_preds[:,1]])-0.1,np.amax([y_val[:,1],model_preds[:,1]])+0.1)
-plt.savefig("validation_scatter_GPP-SVD-mode2.pdf")
+#plt.savefig("validation_scatter_GPP-SVD-mode2.pdf")
+plt.savefig("validation_scatter_GPP_ET_SVD-mode1ET.pdf")
 plt.show()
 # mode 3
-plt.scatter(y_val[:,2], model_preds[:,2], label='Mode 3 validation')
-plt.scatter(y_train[:,2], model_train[:,2], label='Mode 3 train')
-plt.scatter(y_test[:,2], model_test[:,2], label='Mode 3 test')
-plt.legend()
-plt.xlabel('CLM Model Output')
-plt.ylabel('NN Predictions')
-plt.xlim(np.amin([y_val[:,2],model_preds[:,2]])-0.1,np.amax([y_val[:,2],model_preds[:,2]])+0.1)
-plt.ylim(np.amin([y_val[:,2],model_preds[:,2]])-0.1,np.amax([y_val[:,2],model_preds[:,2]])+0.1)
-plt.savefig("validation_scatter_GPP-SVD-mode3.pdf")
-plt.show()
+#plt.scatter(y_val[:,2], model_preds[:,2], label='Mode 3 validation')
+#plt.scatter(y_train[:,2], model_train[:,2], label='Mode 3 train')
+#plt.scatter(y_test[:,2], model_test[:,2], label='Mode 3 test')
+#plt.legend()
+#plt.xlabel('CLM Model Output')
+#plt.ylabel('NN Predictions')
+#plt.xlim(np.amin([y_val[:,2],model_preds[:,2]])-0.1,np.amax([y_val[:,2],model_preds[:,2]])+0.1)
+#plt.ylim(np.amin([y_val[:,2],model_preds[:,2]])-0.1,np.amax([y_val[:,2],model_preds[:,2]])+0.1)
+#plt.savefig("validation_scatter_GPP-SVD-mode3.pdf")
+#plt.show()
 
 # linear regression of actual vs predicted
 # reshape into a single vector?
@@ -180,6 +190,6 @@ slope, intercept, r_value, p_value, std_err = stats.linregress(y_val[:,1],
                 model_preds[:,1])
 print("r-squared:", r_value**2)
 # Mode 3
-slope, intercept, r_value, p_value, std_err = stats.linregress(y_val[:,2],
-                        model_preds[:,2])
-print("r-squared:", r_value**2)
+#slope, intercept, r_value, p_value, std_err = stats.linregress(y_val[:,2],
+#                        model_preds[:,2])
+#print("r-squared:", r_value**2)

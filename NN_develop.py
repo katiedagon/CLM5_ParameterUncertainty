@@ -42,40 +42,43 @@ in_vars = ['medlynslope','dleaf','kmax','fff','dint','baseflow_scalar']
 # Read in output array
 # use NCL script to generate global mean GPP array 
 # from 100-member ensemble in python readable format
-outputdata = np.loadtxt("outputdata/outputdata_GPP.csv")
+#outputdata = np.loadtxt("outputdata/outputdata_GPP.csv")
 #outputdata = np.loadtxt("outputdata_ET_IAV.csv")
 #print(outputdata)
 #outputdata_all = np.load("outputdata/outputdata_GPP_SVD.npy")
+outputdata_all = np.load("outputdata/outputdata_ET_SVD.npy")
 
 # Specify mode (SVD only)
-#mode = 1
-#outputdata = outputdata_all[:,mode-1]
+mode = 1
+outputdata = outputdata_all[:,mode-1]
 
 # transform GPP to reduce left skew
 #outputdata = outputdata**10
 #outputdata = np.log(outputdata)
 #outputdata = 1/outputdata
 
-#plt.hist(outputdata, bins=20)
+plt.hist(outputdata, bins=20)
 #plt.xlabel('Global Mean GPP (umol/m2s)')
 #plt.xlabel('log(Global Mean GPP)')
 #plt.xlabel('inv(Global Mean GPP)')
 #plt.xlabel('Global Mean GPP^10')
 #plt.xlabel('Global Mean 5-year ET IAV (mm/yr)')
-#plt.ylabel('Counts')
+plt.xlabel('Mode 1 of ET SVD (U-vector)')
+plt.ylabel('Counts')
 #plt.savefig("dist_outputdata_GPP.eps")
 #plt.savefig("dist_outputdata_logGPP.eps")
-#plt.show()
+plt.savefig("dist_outputdata_ET_SVD_mode1.pdf")
+plt.show()
 
 # Create 2-layer simple model
 model = Sequential()
-# first layer with x nodes and rectified linear activation
+# first layer with x nodes and linear/rectified linear activation
 # specify input_dim as number of parameters, not number of simulations
 # l2 norm regularizer
-model.add(Dense(8, input_dim=inputdata.shape[1], activation='linear',
+model.add(Dense(6, input_dim=inputdata.shape[1], activation='relu',
     kernel_regularizer=l2(.001)))
 # second layer with y nodes and hyperbolic tangent activation
-model.add(Dense(2, activation='tanh', kernel_regularizer=l2(.001)))
+model.add(Dense(6, activation='tanh', kernel_regularizer=l2(.001)))
 # output layer with linear activation
 model.add(Dense(1))
 #model.add(Dense(1, activation='relu')) 
@@ -152,15 +155,16 @@ plt.title('Neural Network Training History')
 #plt.savefig("train_history_logGPP_v3.eps")
 #plt.savefig("train_history_logGPP_nonlinear.eps")
 #plt.savefig("train_history_RMSprop.eps")
+plt.savefig("train_history_ET_SVD_mode1.pdf")
 plt.show()
 
 # Make predictions - using validation set
 model_preds = model.predict(x_val)[:,0]
 model_test = model.predict(x_test)[:,0]
 model_train = model.predict(x_train)[:,0]
-print(model_preds.shape)
-test = model.predict(x_val)
-print(test.shape)
+#print(model_preds.shape)
+#test = model.predict(x_val)
+#print(test.shape)
 
 # model metric for predictions
 def mse_preds(y_true,y_pred):
@@ -199,6 +203,7 @@ plt.ylim(np.amin([y_val,model_preds])-0.1,np.amax([y_val,model_preds])+0.1)
 #plt.savefig("validation_scatter_logGPP_v3.eps")
 #plt.savefig("validation_scatter_logGPP_nonlinear.eps")
 #plt.savefig("validation_scatter_RMSprop.eps")
+plt.savefig("validation_scatter_ET_SVD_mode1.pdf")
 plt.show()
 
 # linear regression of actual vs predicted

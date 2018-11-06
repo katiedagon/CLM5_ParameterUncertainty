@@ -104,7 +104,7 @@ plt.xlim(np.amin([outputdata,model_preds])-0.1,np.amax([outputdata,model_preds])
 plt.ylim(np.amin([outputdata,model_preds])-0.1,np.amax([outputdata,model_preds])+0.1)
 #plt.savefig("validation_scatter_finalize_SVD_mode1.pdf")
 #plt.savefig("validation_scatter_finalize_SVD_mode2.pdf")
-plt.savefig("validation_scatter_finalize_SVD_mode3.pdf")
+#plt.savefig("validation_scatter_finalize_SVD_mode3.pdf")
 plt.show()
 
 # linear regression of actual vs predicted
