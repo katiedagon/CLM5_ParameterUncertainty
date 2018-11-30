@@ -20,7 +20,7 @@ import matplotlib.pyplot as plt
 import matplotlib.axes as ax
 
 # Fix random seed for reproducibility
-#np.random.seed(7)
+np.random.seed(7)
 
 # Read in input array
 inputdata = np.load(file="lhc_100.npy")
@@ -29,12 +29,12 @@ inputdata = np.load(file="lhc_100.npy")
 in_vars = ['medlynslope','dleaf','kmax','fff','dint','baseflow_scalar']
 
 # Read in output array
-#outputdata = np.loadtxt("outputdata/outputdata_GPP.csv")
-outputdata_all = np.load("outputdata/outputdata_GPP_SVD.npy")
+outputdata = np.loadtxt("outputdata/outputdata_GPP.csv")
+#outputdata_all = np.load("outputdata/outputdata_GPP_SVD.npy")
 
 # Specify mode (SVD only)
-mode = 3
-outputdata = outputdata_all[:,mode-1]
+#mode = 3
+#outputdata = outputdata_all[:,mode-1]
 #plt.hist(outputdata, bins=20)
 #plt.xlabel('Mode 1 of GPP SVD (U-vector)')
 #plt.ylabel('Counts')
@@ -45,10 +45,10 @@ outputdata = outputdata_all[:,mode-1]
 model = Sequential()
 # specify input_dim as number of parameters, not number of simulations
 # l2 norm regularizer
-model.add(Dense(9, input_dim=inputdata.shape[1], activation='relu',
+model.add(Dense(8, input_dim=inputdata.shape[1], activation='linear',
     kernel_regularizer=l2(.001)))
 # second layer with hyperbolic tangent activation
-model.add(Dense(4, activation='tanh', kernel_regularizer=l2(.001)))
+model.add(Dense(2, activation='tanh', kernel_regularizer=l2(.001)))
 # output layer with linear activation
 model.add(Dense(1))
 
@@ -105,6 +105,7 @@ plt.ylim(np.amin([outputdata,model_preds])-0.1,np.amax([outputdata,model_preds])
 #plt.savefig("validation_scatter_finalize_SVD_mode1.pdf")
 #plt.savefig("validation_scatter_finalize_SVD_mode2.pdf")
 #plt.savefig("validation_scatter_finalize_SVD_mode3.pdf")
+plt.savefig("validation_scatter_finalize_GM_GPP_002.pdf")
 plt.show()
 
 # linear regression of actual vs predicted
@@ -115,3 +116,44 @@ print("Model Mean Error:", results.history['mean_sq_err'][-1])
 print("Prediction Mean Error: ", model_me)
 print("r-squared:", r_value**2)
 
+##
+
+# Predictions with inflated ensemble
+inputdata_inflate = np.load(file="lhc_1000.npy")
+model_preds_inflate = model.predict(inputdata_inflate)[:,0]
+
+# GM GPP from process_obs_GM.ncl
+GPP_obs_GM = 2.356544
+
+# without obs line
+plt.hist(model_preds_inflate,bins=20)
+plt.xlabel('NN Predicted GM GPP')
+plt.ylabel('Counts')
+plt.savefig("dist_outputdata_GM_GPP_inflate1000_002.pdf")
+plt.show()
+# with obs line
+plt.hist(model_preds_inflate,bins=20)
+plt.xlabel('NN Predicted GM GPP')
+plt.ylabel('Counts')
+plt.axvline(x=GPP_obs_GM, color='r', linestyle='dashed', linewidth=2)
+plt.savefig("dist_outputdata_GM_GPP_withobs_inflate1000_002.pdf")
+plt.show()
+
+# Read in actual parameter values
+parameters = np.load(file="parameter_files/parameters_LHC_1000.npy")
+
+# Isolate "best match" parameter set
+diff = abs(model_preds_inflate - GPP_obs_GM)
+#print(diff)
+pset = np.argmin(diff)
+print(pset)
+print(model_preds_inflate[pset])
+
+# Print best match (scaling values)
+print(inputdata_inflate[pset,:])
+# Print best match (parameter values)
+print(parameters[pset,:])
+
+
+# Next: run CLM with the above parameter values
+# Calculate resulting GM GPP and plot on histogram as above

@@ -46,6 +46,7 @@ begin
  printVarSummary(v_obs_c_area_am)
 
  ; input to SVD - subtract "ensemble" mean
+ ; where ensemble mean is 5-year mean
  v_obs_anom = v_obs_c_area ; metadata
  do i=1,nyrs
   v_obs_anom(i-1,:,:) = v_obs_c_area(i-1,:,:)-v_obs_c_area_am

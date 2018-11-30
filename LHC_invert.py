@@ -35,7 +35,8 @@ def gen_LHC():
     :return: numpy.ndarray
     """
     #sets = read_params()
-    sets = read_params("parameters_LHC_100.npy")
+    #sets = read_params("parameters_LHC_100.npy")
+    sets = read_params("parameters.npy")
     #print(sets)
 
     # condense down sets

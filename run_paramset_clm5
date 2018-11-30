@@ -1,0 +1,89 @@
+#!/bin/bash
+
+# Clone latest development branch from CTSM repository
+#git clone --origin escomp https://github.com/ESCOMP/ctsm.git ctsm_ParamEns
+#cd ctsm_ParamEns
+#git checkout -b ctsm_ParamEns master
+#./manage_externals/checkout_externals
+
+export USER="kdagon"
+
+#export CODENAME="clm5.0"
+export CODENAME="ctsm_ParamEns"
+export NAME="hydro_ensemble_LHC"
+
+cd /glade/work/$USER/$CODENAME
+pwd
+
+cd cime/scripts
+pwd
+
+cd $NAME
+pwd
+
+#export EXPTNAME=${NAME}_$i
+#export EXPTNAME=${NAME}_${i}_hybrid
+export EXPTNAME="test_paramset_002"
+echo $EXPTNAME
+
+# Remove existing output
+rm -rf /glade/scratch/$USER/$EXPTNAME
+rm -rf /glade/scratch/$USER/archive/$EXPTNAME
+
+# Remove existing working directories
+rm -rf $EXPTNAME
+
+../create_newcase --run-unsupported --compset I2000Clm50Sp --res f45_f45 --case $EXPTNAME --project P08010000
+
+cd $EXPTNAME
+
+./xmlchange JOB_QUEUE=regular
+./xmlchange JOB_WALLCLOCK_TIME=4:00:00
+
+./xmlchange NTASKS_CPL=-4
+./xmlchange NTASKS_OCN=-4
+./xmlchange NTASKS_WAV=-4
+./xmlchange NTASKS_GLC=-4
+./xmlchange NTASKS_ICE=-4
+./xmlchange NTASKS_ROF=-4
+./xmlchange NTASKS_LND=-4
+
+./xmlchange CONTINUE_RUN=FALSE
+./xmlchange RESUBMIT=0
+./xmlchange STOP_N=20
+./xmlchange STOP_OPTION=nyears
+
+./xmlchange BUILD_COMPLETE="TRUE"
+./xmlchange EXEROOT="/glade/scratch/$USER/codebase_$NAME/bld"
+
+./xmlchange DATM_CLMNCEP_YR_START=2000
+./xmlchange DATM_CLMNCEP_YR_END=2004
+
+# Modify wallclock, project, queue as necessary
+# To change mail options; this works with Cheyenne only:
+./xmlchange --file env_batch.xml --subgroup case.run --id BATCH_COMMAND_FLAGS --val '-m abe -l walltime=4:00:00 -A P08010000 -q regular'
+
+# Setup case (creates user_nl_* files)
+./case.setup
+
+# Generate param files for PFT-dependent params - do this ahead (for now)
+# Set params file
+pftfile="/glade/u/home/$USER/pft_files/hydro_ensemble_LHC/${EXPTNAME}.nc"
+# Remove existing file
+#rm -f $pftfile
+# Copy default 
+#cp /glade/p/cesmdata/cseg/inputdata/lnd/clm2/paramdata/clm5_params.c171117.nc $pftfile
+
+# Make changes to netcdf file through ncl script pft_var_2.ncl
+
+# Set params file in namelist
+uclm="paramfile='$pftfile'"               
+echo  $uclm >> user_nl_clm
+
+# If not PFT-dependent, edit the namelist appropriately
+echo "fff=2.64" >> user_nl_clm
+echo "dint=0.77" >> user_nl_clm
+echo "baseflow_scalar=0.0067" >> user_nl_clm
+
+./case.submit
+

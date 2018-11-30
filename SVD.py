@@ -9,8 +9,8 @@ import matplotlib.pyplot as plt
 from numpy.linalg import matrix_rank
 
 # Read netcdf file (pre-processed in NCL)
-#f=nc.netcdf_file("outputdata/outputdata_GPP_forSVD_100.nc",'r',mmap=False)
-f=nc.netcdf_file("outputdata/outputdata_ET_forSVD_100.nc",'r',mmap=False)
+f=nc.netcdf_file("outputdata/outputdata_GPP_forSVD_100.nc",'r',mmap=False)
+#f=nc.netcdf_file("outputdata/outputdata_ET_forSVD_100.nc",'r',mmap=False)
 # Read variable data
 X=f.variables['X']
 # Convert to numpy array
@@ -35,19 +35,19 @@ d_em = np.mean(d,axis=0)
 # Reshape so input is (..,M,N) which is important svd 
 # Where M=nens, N=ngrid=nlat*nlon
 dr = np.reshape(d,(nens,nlat*nlon))
-#print(dr.shape)
+print(dr.shape)
 #plt.contourf(dr)
 #plt.colorbar()
 #plt.show()
 
 # SVD command (no trunc option)
 U,s,Vh = np.linalg.svd(dr, full_matrices=False)
-#print(U.shape)
+print(U.shape)
 #print(np.linalg.matrix_rank(U))
-print(U[:,0]) # first mode
-#print(s.shape)
+#print(U[:,0]) # first mode
+print(s.shape)
 #print(s) # singular values
-#print(Vh.shape)
+print(Vh.shape)
 # Columns of U are modes of variability
 # And the rows are ensemble members
 # Singular values are in s
@@ -66,9 +66,9 @@ from sklearn.decomposition import TruncatedSVD
 svd = TruncatedSVD(n_components=10)
 svd.fit(dr)
 #print(svd.explained_variance_)
-print(svd.explained_variance_ratio_)
-print(svd.explained_variance_ratio_.sum())
-print(svd.singular_values_) # equivalent to s array
+#print(svd.explained_variance_ratio_)
+#print(svd.explained_variance_ratio_.sum())
+#print(svd.singular_values_) # equivalent to s array
 #print(svd.components_.shape) # equivalent to Vh (sign flip?)
 # The above doesn't explicitly produce U matrix
 # or I don't know how to produce U
@@ -78,21 +78,21 @@ from sklearn.utils.extmath import randomized_svd
 Uk, sk, Vhk = randomized_svd(dr, n_components=10)
 #print(Uk.shape)
 #print(np.linalg.matrix_rank(Uk))
-print(Uk[:,0])
+#print(Uk[:,0])
 #print(sk.shape)
 #print(Vhk.shape)
 
 # Sanity checks - partial reconstruction
-sanity_check = np.dot(Uk*sk, Vhk)
+#sanity_check = np.dot(Uk*sk, Vhk)
 # probably have to set tols high enough for this not to fail
 #print(np.allclose(dr, sanity_check, rtol=1e-05, atol=1e-07))
-print(np.allclose(dr, sanity_check))
+#print(np.allclose(dr, sanity_check))
 # clearly some parts of the matrix do not close
 # likely because of truncation
 # another reason to use U from the full SVD
-skmat = np.diag(sk)
-sanity_check_2 = np.dot(Uk, np.dot(skmat, Vhk))
-print(np.allclose(dr, sanity_check_2))
+#skmat = np.diag(sk)
+#sanity_check_2 = np.dot(Uk, np.dot(skmat, Vhk))
+#print(np.allclose(dr, sanity_check_2))
 
 # Testing the difference between U vectors for full/partial SVDs
 #plt.contourf(Uk - U[:,0:10])
@@ -103,6 +103,29 @@ print(np.allclose(dr, sanity_check_2))
 # Note: cannot save masked array to file (this way)
 # Full SVD
 #np.save("outputdata/outputdata_GPP_SVD", U[:,0:10])
-np.save("outputdata/outputdata_ET_SVD", U[:,0:10])
+#np.save("outputdata/outputdata_ET_SVD", U[:,0:10])
 # Truncated SVD
 #np.save("outputdata/outputdata_GPP_SVD", Uk)
+
+# Compare with Observations
+# Read netcdf file (pre-processed in NCL)
+fo=nc.netcdf_file("obs/obs_GPP_anom_forSVD.nc",'r',mmap=False)
+# Read variable data
+Xo=fo.variables['GPP']
+# Convert to numpy array
+do = Xo[:]
+print(do.shape)
+nyrs=do.shape[0]
+nlato=do.shape[1]
+nlono=do.shape[2]
+# Replace FillValue with zero (shouldn't impact SVD?)
+do[do == 1.e+36] = 0
+# Reshape so input is (..,M,N) which is important svd 
+# Where M=nyrs, N=ngrid=nlato*nlono
+dro = np.reshape(do,(nyrs,nlato*nlono))
+print(dro.shape)
+
+# Project obs into SVD space
+from numpy.linalg import inv
+U_obs = dro*inv(s*Vh)
+print(U_obs.shape)
