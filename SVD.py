@@ -28,9 +28,9 @@ d[d == 1.e+36] = 0
 # Ensemble mean
 d_em = np.mean(d,axis=0)
 #print(d_em.shape)
-#plt.contourf(d_em)
-#plt.colorbar()
-#plt.show()
+plt.contourf(d_em)
+plt.colorbar()
+plt.show()
 
 # Reshape so input is (..,M,N) which is important svd 
 # Where M=nens, N=ngrid=nlat*nlon
@@ -109,13 +109,14 @@ Uk, sk, Vhk = randomized_svd(dr, n_components=10)
 
 # Compare with Observations
 # Read netcdf file (pre-processed in NCL)
-fo=nc.netcdf_file("obs/obs_GPP_anom_forSVD.nc",'r',mmap=False)
+fo=nc.netcdf_file("obs/obs_GPP_4x5_anom_forSVD.nc",'r',mmap=False)
 # Read variable data
 Xo=fo.variables['GPP']
 # Convert to numpy array
 do = Xo[:]
 print(do.shape)
 nyrs=do.shape[0]
+#nyrs=1
 nlato=do.shape[1]
 nlono=do.shape[2]
 # Replace FillValue with zero (shouldn't impact SVD?)
@@ -126,6 +127,11 @@ dro = np.reshape(do,(nyrs,nlato*nlono))
 print(dro.shape)
 
 # Project obs into SVD space
-from numpy.linalg import inv
-U_obs = dro*inv(s*Vh)
+from numpy.linalg import pinv
+test = np.dot(smat,Vh)
+print(test.shape)
+U_obs = np.dot(dro,pinv(np.dot(smat,Vh)))
 print(U_obs.shape)
+print(U_obs)
+plt.hist(U_obs[0,:],bins=20)
+plt.show()

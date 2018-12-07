@@ -7,7 +7,7 @@ begin
 ; read in data
 ;************************************************
  ; set param set number
- pset = "001"
+ pset = "002"
 
  ; set model path
  path = "/glade/scratch/kdagon/archive/"
@@ -24,6 +24,8 @@ begin
 
  ; get hist files (last 5 years)
  strs = (/path,"test_paramset_",pset,"/lnd/hist/*{001[6-9],20-}*"/)
+ ;strs = (/path,"hydro_ensemble0/lnd/hist/*{001[6-9],20-}*"/)
+ ;strs = (/path,"hydro_ensemble_rootprof_beta_min/lnd/hist/*{001[6-9],20-}*"/)
  str_c = str_concat(strs)
  print(str_c)
  fils = systemfunc("ls "+str_c)
@@ -47,5 +49,24 @@ begin
  v_gm_am = dim_avg_n_Wrap(wgt_areaave_Wrap(v,clat,1,0),0)
  
  print(v_gm_am)
+
+ ; annual mean across years
+ v_am = dim_avg_n_Wrap(v,0)
+
+ wks = gsn_open_wks("x11","test")
+
+ res = True
+ ;res@gsnDraw = False
+ ;res@gsnFrame = False
+ res@cnFillOn = True
+ res@cnLinesOn           = False           ; turn off contour lines
+ res@cnLineLabelsOn      = False
+ res@cnSpanFillPalette   = True            ; Fully span color palette
+ ;res@lbLabelBarOn        = False           ; Turn off individual cb's
+ res@lbBoxLinesOn = False ; no boxes
+ res@gsnLeftString = var
+ res@gsnRightString = v@units
+
+ plot = gsn_csm_contour_map(wks,v_am,res) 
 
 end

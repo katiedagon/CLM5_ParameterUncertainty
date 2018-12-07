@@ -9,16 +9,16 @@ import matplotlib.pyplot as plt
 from numpy.linalg import matrix_rank
 
 # Read netcdf file (pre-processed in NCL)
-f=nc.netcdf_file("obs/obs_GPP_anom_forSVD.nc",'r',mmap=False)
+f=nc.netcdf_file("obs/obs_GPP_4x5_forSVD.nc",'r',mmap=False)
 # Read variable data
 X=f.variables['GPP']
 # Convert to numpy array
 d = X[:]
 # Get dimensions
 # the order here is important
-ntime=d.shape[0]
-nlat=d.shape[1]
-nlon=d.shape[2]
+#ntime=d.shape[0]
+nlat=d.shape[0]
+nlon=d.shape[1]
 
 # Replace FillValue with zero (shouldn't impact SVD?)
 d[d == -9999] = 0

@@ -105,7 +105,7 @@ plt.ylim(np.amin([outputdata,model_preds])-0.1,np.amax([outputdata,model_preds])
 #plt.savefig("validation_scatter_finalize_SVD_mode1.pdf")
 #plt.savefig("validation_scatter_finalize_SVD_mode2.pdf")
 #plt.savefig("validation_scatter_finalize_SVD_mode3.pdf")
-plt.savefig("validation_scatter_finalize_GM_GPP_002.pdf")
+#plt.savefig("validation_scatter_finalize_GM_GPP_002.pdf")
 plt.show()
 
 # linear regression of actual vs predicted
@@ -129,14 +129,14 @@ GPP_obs_GM = 2.356544
 plt.hist(model_preds_inflate,bins=20)
 plt.xlabel('NN Predicted GM GPP')
 plt.ylabel('Counts')
-plt.savefig("dist_outputdata_GM_GPP_inflate1000_002.pdf")
+#plt.savefig("dist_outputdata_GM_GPP_inflate1000_002.pdf")
 plt.show()
 # with obs line
 plt.hist(model_preds_inflate,bins=20)
 plt.xlabel('NN Predicted GM GPP')
 plt.ylabel('Counts')
 plt.axvline(x=GPP_obs_GM, color='r', linestyle='dashed', linewidth=2)
-plt.savefig("dist_outputdata_GM_GPP_withobs_inflate1000_002.pdf")
+#plt.savefig("dist_outputdata_GM_GPP_withobs_inflate1000_002.pdf")
 plt.show()
 
 # Read in actual parameter values
@@ -154,6 +154,34 @@ print(inputdata_inflate[pset,:])
 # Print best match (parameter values)
 print(parameters[pset,:])
 
-
 # Next: run CLM with the above parameter values
 # Calculate resulting GM GPP and plot on histogram as above
+GPP_GM_002 = 2.444088
+plt.hist(model_preds_inflate,bins=20)
+plt.xlabel('NN Predicted GM GPP')
+plt.ylabel('Counts')
+plt.axvline(x=GPP_obs_GM, color='r', linestyle='dashed', linewidth=2)
+plt.axvline(x=GPP_GM_002, color='b', linestyle='dashed', linewidth=2)
+#plt.savefig("dist_outputdata_GM_GPP_withobs_andmodel_inflate1000_002.pdf")
+plt.show()
+
+# Add NN prediction vs. model output to scatter plot
+plt.scatter(outputdata, model_preds, c='silver')
+plt.plot(GPP_GM_002, model_preds_inflate[pset], 'b*', markersize=12)
+plt.xlabel('CLM Model Output')
+plt.ylabel('NN Predictions')
+plt.xlim(np.amin([outputdata,model_preds])-0.1,np.amax([outputdata,model_preds])+0.1)
+plt.ylim(np.amin([outputdata,model_preds])-0.1,np.amax([outputdata,model_preds])+0.1)
+plt.savefig("validation_scatter_finalize_GM_GPP_002_OOSP.pdf")
+plt.show()
+
+# How do default model params compare?
+GPP_GM_default = 2.614403
+plt.hist(model_preds_inflate,bins=20)
+plt.xlabel('NN Predicted GM GPP')
+plt.ylabel('Counts')
+plt.axvline(x=GPP_obs_GM, color='r', linestyle='dashed', linewidth=2)
+plt.axvline(x=GPP_GM_002, color='b', linestyle='dashed', linewidth=2)
+plt.axvline(x=GPP_GM_default, color='k', linestyle='dashed', linewidth=2) 
+#plt.savefig("dist_outputdata_GM_GPP_withobs_andmodel_anddefault_inflate1000_002.pdf")
+plt.show()

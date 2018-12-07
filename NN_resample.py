@@ -28,19 +28,19 @@ import matplotlib.axes as ax
 inputdata = np.load(file="lhc_100.npy")
 
 # Read in output array
-#outputdata = np.loadtxt("outputdata/outputdata_GPP.csv")
-outputdata_all = np.load("outputdata/outputdata_GPP_SVD.npy")
+outputdata = np.loadtxt("outputdata/outputdata_GPP.csv")
+#outputdata_all = np.load("outputdata/outputdata_GPP_SVD.npy")
 
 # Specify mode (SVD only)
 #mode = 3
 #outputdata = outputdata_all[:,mode-1]
 
 # Multi-dimension
-outputdata = outputdata_all[:,:3]
-nmodes = outputdata.shape[1]
+#outputdata = outputdata_all[:,:3]
+#nmodes = outputdata.shape[1]
 
 # Percent of variance (for weighted avg R^2)
-svd_var = [0.771, 0.1914, 0.0128]
+#svd_var = [0.771, 0.1914, 0.0128]
 
 metricsME = []
 metricsRsq = []
@@ -56,13 +56,13 @@ for k in range(1,11):
     model = Sequential()
     # specify input_dim as number of parameters, not number of simulations
     # l2 norm regularizer
-    model.add(Dense(8, input_dim=inputdata.shape[1], activation='relu',
+    model.add(Dense(8, input_dim=inputdata.shape[1], activation='linear',
         kernel_regularizer=l2(.001)))
     # second layer with hyperbolic tangent activation
-    model.add(Dense(6, activation='tanh', kernel_regularizer=l2(.001)))
+    model.add(Dense(2, activation='tanh', kernel_regularizer=l2(.001)))
     # output layer with linear activation
-    #model.add(Dense(1))
-    model.add(Dense(nmodes))
+    model.add(Dense(1))
+    #model.add(Dense(nmodes))
 
     # Define model metrics
     def mean_sq_err(y_true,y_pred):
@@ -91,14 +91,14 @@ for k in range(1,11):
     #plt.show()
 
     # Make predictions - using validation set (single dim)
-    #model_preds = model.predict(x_val)[:,0]
-    #model_test = model.predict(x_test)[:,0]
-    #model_train = model.predict(x_train)[:,0]
+    model_preds = model.predict(x_val)[:,0]
+    model_test = model.predict(x_test)[:,0]
+    model_train = model.predict(x_train)[:,0]
 
     # Predictions - multi-dim
-    model_preds = model.predict(x_val)
-    model_test = model.predict(x_test)
-    model_train = model.predict(x_train)
+    #model_preds = model.predict(x_val)
+    #model_test = model.predict(x_test)
+    #model_train = model.predict(x_train)
 
     # model metric for predictions
     def mse_preds(y_true,y_pred):
@@ -123,25 +123,24 @@ for k in range(1,11):
     #plt.show()
 
     # linear regression of actual vs predicted - single dim
-    #slope, intercept, r_value, p_value, std_err = stats.linregress(y_val,
-    #    model_preds)
+    slope, intercept, r_value, p_value, std_err = stats.linregress(y_val,model_preds)
 
     # linear regression - multi-dim
-    r_array = []
-    for k in range(0,nmodes):
-        #print(k)
-        slope, intercept, r_value, p_value, std_err = stats.linregress(y_val[:,k],
-                model_preds[:,k])
-        r_array.append(r_value**2)
+    #r_array = []
+    #for k in range(0,nmodes):
+    #    #print(k)
+    #    slope, intercept, r_value, p_value, std_err = stats.linregress(y_val[:,k],
+    #            model_preds[:,k])
+    #    r_array.append(r_value**2)
 
     print("Prediction Mean Error: %.2g" % model_me)
-    #print("r-squared: %.2g" % r_value**2)
+    print("r-squared: %.2g" % r_value**2)
     #print("avg. r-squared: %.2g" % np.mean(r_array))
-    print("wgt avg. r-squared: %.2g" % np.average(r_array,weights=svd_var))
+    #print("wgt avg. r-squared: %.2g" % np.average(r_array,weights=svd_var))
     metricsME.append(model_me)
-    #metricsRsq.append(r_value**2)
+    metricsRsq.append(r_value**2)
     #metricsRsq.append(np.mean(r_array))
-    metricsRsq.append(np.average(r_array,weights=svd_var))
+    #metricsRsq.append(np.average(r_array,weights=svd_var))
 
 print("%.2g (+/- %.2g)" % (np.mean(metricsME), np.std(metricsME)))
 print("%.2g (+/- %.2g)" % (np.mean(metricsRsq), np.std(metricsRsq)))
