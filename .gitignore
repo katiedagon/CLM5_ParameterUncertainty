@@ -1,4 +1,5 @@
 bash_test
 figures/
 parameter_files/
-obs/
+obs/figures/
+outputdata/figures/

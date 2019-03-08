@@ -16,13 +16,13 @@ begin
 
  ; set variable(s) of interest
  ;var = "FPSN"
- ;var = "TSA"
- var = "QFLX_EVAP_TOT"
+ var = "TSA"
+ ;var = "QFLX_EVAP_TOT"
 
  ; unit conversion (if needed)
- ;u = (12 * (3600 * 24 * 365) / 1000000) * 10^-15 ; umol /m2 /s to Pg/m2/year
+ u = (12 * (3600 * 24 * 365) / 1000000) * 10^-15 ; umol /m2 /s to Pg/m2/year
  ;u = (3600 * 24 * 365) / 1000 ; mm/s to m/year
- u = 0.001 ; mm/s to m/s
+ ;u = 0.001 ; mm/s to m/s
 
  ; get sample file for metadata
  f_md = addfile("/glade/scratch/kdagon/archive/hydro_ensemble_LHC_1/lnd/hist/hydro_ensemble_LHC_1.clm2.h0.0016-01.nc","r")
@@ -33,6 +33,10 @@ begin
  grid_area = f_md->area 
  grid_area_m = grid_area ; metadata
  grid_area_m = grid_area*10^6 ; km^2 to m^2
+
+ ; get obs datamask
+ f_obs = addfile("/glade/u/home/kdagon/CLM5hydro_LHC/obs/MR_GPP_4x5_2000_2004.nc","r")
+ datamask_obs = f_obs->datamask
 
  ; set up storage matrix
  O = new((/niter,o_md_dims(1),o_md_dims(2)/),"float")
@@ -50,10 +54,12 @@ begin
   fils = systemfunc("ls "+str_c)
   f = addfiles(fils,"r")
   o = f[:]->$var$
+  ; mask model output to match obs
+  o_m = mask(o,datamask_obs.eq.0,False)
+  copy_VarMeta(o,o_m)
   ; unit conversion
-  o_c = o*u
-  ; copy metadata
-  copy_VarMeta(o,o_c)
+  o_c = o_m*u
+  copy_VarMeta(o_m,o_c)
   ; 5-year annual mean
   o_am = dim_avg_n_Wrap(o_c,0)
   ; area-weighted annual mean
@@ -73,16 +79,16 @@ begin
  do i=1,niter
   X(i-1,:,:) = O(i-1,:,:)-O_em
  end do
- ;X@units = "PgC/yr"
- X@units = "m^3/s" 
+ X@units = "PgC/yr"
+ ;X@units = "m^3/s" 
  ;printVarSummary(X)
  
  ; test plots
  plot = new(4,graphic)
 
  ;wks = gsn_open_wks("x11","test")
- ;wks = gsn_open_wks("pdf","hydro_ensemble_LHC_GPP_forSVD")
- wks = gsn_open_wks("pdf","hydro_ensemble_LHC_ET_forSVD")
+ wks = gsn_open_wks("pdf","hydro_ensemble_LHC_GPP_forSVD")
+ ;wks = gsn_open_wks("pdf","hydro_ensemble_LHC_ET_forSVD")
 
  res = True
  res@gsnDraw = False
@@ -93,16 +99,16 @@ begin
  res@cnFillPalette       = "MPL_YlOrRd"
  res@cnSpanFillPalette   = True            ; Fully span color palette
  res@lbLabelBarOn        = False
- ;res@gsnLeftString = "GPP"
- ;res@gsnRightString = "PgC/yr"
- res@gsnLeftString = "ET"
- res@gsnRightString = "m~S~3~N~/s"
+ res@gsnLeftString = "GPP"
+ res@gsnRightString = "PgC/yr"
+ ;res@gsnLeftString = "ET"
+ ;res@gsnRightString = "m~S~3~N~/s"
 
- ; set the contour bounds
- res@cnLevelSelectionMode = "ManualLevels"
- res@cnMinLevelValF  = -1000
- res@cnMaxLevelValF  = 1000
- res@cnLevelSpacingF = 50
+ ; set the contour bounds (ET)
+ ;res@cnLevelSelectionMode = "ManualLevels"
+ ;res@cnMinLevelValF  = -1000
+ ;res@cnMaxLevelValF  = 1000
+ ;res@cnLevelSpacingF = 50
 
  ; check some random ensemble members
  res@gsnCenterString = "Member 9 Anomaly"
@@ -149,11 +155,12 @@ begin
  ;write_table("outputdata_GPP_SVD.csv", "w", alist, "%f")
 
  ; writing as nc (preferred)
- ;ncdf = addfile("outputdata/outputdata_GPP_forSVD_100.nc", "c")
- ncdf = addfile("outputdata/outputdata_ET_forSVD_100.nc", "c")
+ ncdf = addfile("outputdata_GPP_forSVD_100.nc", "c")
+ ;ncdf = addfile("outputdata_ET_forSVD_100.nc", "c")
  ; define time as an unlimited dimension (optional?)
  ;filedimdef(ncdf,"time",-1,True) 
- ncdf->X = X
+ ncdf->O = O ; masked, unit converted, annual mean, area wgt
+ ncdf->X = X ; anomalies from annual mean (input to SVD)
  
 
 end

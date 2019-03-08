@@ -6,6 +6,9 @@
 #git checkout -b ctsm_ParamEns master
 #./manage_externals/checkout_externals
 
+# Note: do not run this while in python 3 env
+# CESM builds and submit need to be on python 2
+
 export USER="kdagon"
 
 #export CODENAME="clm5.0"
@@ -23,7 +26,10 @@ pwd
 
 #export EXPTNAME=${NAME}_$i
 #export EXPTNAME=${NAME}_${i}_hybrid
-export EXPTNAME="test_paramset_002"
+#export EXPTNAME="test_paramset_002"
+#export EXPTNAME="test_paramset_005"
+export EXPTNAME="test_paramset_006"
+#export EXPTNAME="${NAME}_default_params"
 echo $EXPTNAME
 
 # Remove existing output
@@ -61,6 +67,7 @@ cd $EXPTNAME
 
 # Modify wallclock, project, queue as necessary
 # To change mail options; this works with Cheyenne only:
+# UPDATE: This is causing a submit error as of 2/7/19:
 ./xmlchange --file env_batch.xml --subgroup case.run --id BATCH_COMMAND_FLAGS --val '-m abe -l walltime=4:00:00 -A P08010000 -q regular'
 
 # Setup case (creates user_nl_* files)
@@ -69,7 +76,8 @@ cd $EXPTNAME
 # Generate param files for PFT-dependent params - do this ahead (for now)
 # Set params file
 pftfile="/glade/u/home/$USER/pft_files/hydro_ensemble_LHC/${EXPTNAME}.nc"
-# Remove existing file
+
+# Remove existing file - comment this out for now
 #rm -f $pftfile
 # Copy default 
 #cp /glade/p/cesmdata/cseg/inputdata/lnd/clm2/paramdata/clm5_params.c171117.nc $pftfile
@@ -81,9 +89,9 @@ uclm="paramfile='$pftfile'"
 echo  $uclm >> user_nl_clm
 
 # If not PFT-dependent, edit the namelist appropriately
-echo "fff=2.64" >> user_nl_clm
-echo "dint=0.77" >> user_nl_clm
-echo "baseflow_scalar=0.0067" >> user_nl_clm
+echo "fff=0.95" >> user_nl_clm
+echo "dint=0.83" >> user_nl_clm
+echo "baseflow_scalar=0.02" >> user_nl_clm
 
 ./case.submit
 

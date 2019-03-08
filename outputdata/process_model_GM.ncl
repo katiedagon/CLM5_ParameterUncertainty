@@ -7,7 +7,7 @@ begin
 ; read in data
 ;************************************************
  ; set param set number
- pset = "002"
+ pset = "006"
 
  ; set model path
  path = "/glade/scratch/kdagon/archive/"

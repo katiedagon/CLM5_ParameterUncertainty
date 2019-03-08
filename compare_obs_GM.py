@@ -17,7 +17,7 @@ plt.hist(GPP_PPE_GM, bins=20)
 plt.xlabel('Global Mean GPP (umol/m2s)')
 plt.ylabel('Counts')
 plt.axvline(x=GPP_obs_GM, color='r', linestyle='dashed', linewidth=2)
-plt.savefig("dist_outputdata_GPP_withobs.pdf")
+#plt.savefig("dist_outputdata_GPP_withobs.pdf")
 plt.show()
 
 # Read in parameter scalings (input to NN) and actual values (input to CLM PPE)

@@ -28,9 +28,9 @@ d[d == 1.e+36] = 0
 # Ensemble mean
 d_em = np.mean(d,axis=0)
 #print(d_em.shape)
-plt.contourf(d_em)
-plt.colorbar()
-plt.show()
+#plt.contourf(d_em)
+#plt.colorbar()
+#plt.show()
 
 # Reshape so input is (..,M,N) which is important svd 
 # Where M=nens, N=ngrid=nlat*nlon
@@ -44,13 +44,19 @@ print(dr.shape)
 U,s,Vh = np.linalg.svd(dr, full_matrices=False)
 print(U.shape)
 #print(np.linalg.matrix_rank(U))
-#print(U[:,0]) # first mode
+print(U[:,0]) # first mode
+plt.hist(U[:,0], bins=20)
+plt.show()
 print(s.shape)
 #print(s) # singular values
 print(Vh.shape)
 # Columns of U are modes of variability
 # And the rows are ensemble members
 # Singular values are in s
+
+# Scatterplot first 2 modes
+plt.scatter(U[:,0],U[:,1])
+plt.show()
 
 # Sanity check - reconstruction
 print(np.allclose(dr, np.dot(U*s, Vh)))
@@ -62,9 +68,9 @@ print(np.allclose(dr, np.dot(U, np.dot(smat, Vh))))
 
 # Alternate function using sklearn
 # used to calculate % variance
-from sklearn.decomposition import TruncatedSVD
-svd = TruncatedSVD(n_components=10)
-svd.fit(dr)
+#from sklearn.decomposition import TruncatedSVD
+#svd = TruncatedSVD(n_components=10)
+#svd.fit(dr)
 #print(svd.explained_variance_)
 #print(svd.explained_variance_ratio_)
 #print(svd.explained_variance_ratio_.sum())
@@ -74,8 +80,8 @@ svd.fit(dr)
 # or I don't know how to produce U
 
 # Workaround to produce U matrix
-from sklearn.utils.extmath import randomized_svd
-Uk, sk, Vhk = randomized_svd(dr, n_components=10)
+#from sklearn.utils.extmath import randomized_svd
+#Uk, sk, Vhk = randomized_svd(dr, n_components=10)
 #print(Uk.shape)
 #print(np.linalg.matrix_rank(Uk))
 #print(Uk[:,0])
@@ -115,23 +121,23 @@ Xo=fo.variables['GPP']
 # Convert to numpy array
 do = Xo[:]
 print(do.shape)
-nyrs=do.shape[0]
-#nyrs=1
-nlato=do.shape[1]
-nlono=do.shape[2]
+nenso=1
+nlato=do.shape[0]
+nlono=do.shape[1]
 # Replace FillValue with zero (shouldn't impact SVD?)
 do[do == 1.e+36] = 0
 # Reshape so input is (..,M,N) which is important svd 
 # Where M=nyrs, N=ngrid=nlato*nlono
-dro = np.reshape(do,(nyrs,nlato*nlono))
+dro = np.reshape(do,(nenso,nlato*nlono))
 print(dro.shape)
 
 # Project obs into SVD space
 from numpy.linalg import pinv
-test = np.dot(smat,Vh)
-print(test.shape)
+#test = np.dot(smat,Vh)
+#print(test.shape)
 U_obs = np.dot(dro,pinv(np.dot(smat,Vh)))
 print(U_obs.shape)
 print(U_obs)
+#print(U_obs[0,:])
 plt.hist(U_obs[0,:],bins=20)
 plt.show()

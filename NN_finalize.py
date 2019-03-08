@@ -20,7 +20,8 @@ import matplotlib.pyplot as plt
 import matplotlib.axes as ax
 
 # Fix random seed for reproducibility
-np.random.seed(7)
+#np.random.seed(7) #002
+np.random.seed(5) #006
 
 # Read in input array
 inputdata = np.load(file="lhc_100.npy")
@@ -97,16 +98,16 @@ def mse_preds(y_true,y_pred):
 model_me = mse_preds(outputdata, model_preds)
 
 # scatterplot actual versus predicted
-plt.scatter(outputdata, model_preds)
-plt.xlabel('CLM Model Output')
-plt.ylabel('NN Predictions')
-plt.xlim(np.amin([outputdata,model_preds])-0.1,np.amax([outputdata,model_preds])+0.1)
-plt.ylim(np.amin([outputdata,model_preds])-0.1,np.amax([outputdata,model_preds])+0.1)
+#plt.scatter(outputdata, model_preds)
+#plt.xlabel('CLM Model Output')
+#plt.ylabel('NN Predictions')
+#plt.xlim(np.amin([outputdata,model_preds])-0.1,np.amax([outputdata,model_preds])+0.1)
+#plt.ylim(np.amin([outputdata,model_preds])-0.1,np.amax([outputdata,model_preds])+0.1)
 #plt.savefig("validation_scatter_finalize_SVD_mode1.pdf")
 #plt.savefig("validation_scatter_finalize_SVD_mode2.pdf")
 #plt.savefig("validation_scatter_finalize_SVD_mode3.pdf")
 #plt.savefig("validation_scatter_finalize_GM_GPP_002.pdf")
-plt.show()
+#plt.show()
 
 # linear regression of actual vs predicted
 slope, intercept, r_value, p_value, std_err = stats.linregress(outputdata,
@@ -137,6 +138,7 @@ plt.xlabel('NN Predicted GM GPP')
 plt.ylabel('Counts')
 plt.axvline(x=GPP_obs_GM, color='r', linestyle='dashed', linewidth=2)
 #plt.savefig("dist_outputdata_GM_GPP_withobs_inflate1000_002.pdf")
+#plt.savefig("dist_outputdata_GM_GPP_withobs_inflate1000_006.pdf")
 plt.show()
 
 # Read in actual parameter values
@@ -156,24 +158,27 @@ print(parameters[pset,:])
 
 # Next: run CLM with the above parameter values
 # Calculate resulting GM GPP and plot on histogram as above
-GPP_GM_002 = 2.444088
-plt.hist(model_preds_inflate,bins=20)
-plt.xlabel('NN Predicted GM GPP')
-plt.ylabel('Counts')
-plt.axvline(x=GPP_obs_GM, color='r', linestyle='dashed', linewidth=2)
-plt.axvline(x=GPP_GM_002, color='b', linestyle='dashed', linewidth=2)
+#GPP_GM_002 = 2.444088
+#GPP_GM_005 = 2.327848
+GPP_GM_006 = 2.34726
+#plt.hist(model_preds_inflate,bins=20)
+#plt.xlabel('NN Predicted GM GPP')
+#plt.ylabel('Counts')
+#plt.axvline(x=GPP_obs_GM, color='r', linestyle='dashed', linewidth=2)
+#plt.axvline(x=GPP_GM_002, color='b', linestyle='dashed', linewidth=2)
+#plt.axvline(x=GPP_GM_006, color='g', linestyle='dashed', linewidth=2)
 #plt.savefig("dist_outputdata_GM_GPP_withobs_andmodel_inflate1000_002.pdf")
-plt.show()
+#plt.show()
 
 # Add NN prediction vs. model output to scatter plot
-plt.scatter(outputdata, model_preds, c='silver')
-plt.plot(GPP_GM_002, model_preds_inflate[pset], 'b*', markersize=12)
-plt.xlabel('CLM Model Output')
-plt.ylabel('NN Predictions')
-plt.xlim(np.amin([outputdata,model_preds])-0.1,np.amax([outputdata,model_preds])+0.1)
-plt.ylim(np.amin([outputdata,model_preds])-0.1,np.amax([outputdata,model_preds])+0.1)
-plt.savefig("validation_scatter_finalize_GM_GPP_002_OOSP.pdf")
-plt.show()
+#plt.scatter(outputdata, model_preds, c='silver')
+#plt.plot(GPP_GM_006, model_preds_inflate[pset], 'b*', markersize=12)
+#plt.xlabel('CLM Model Output')
+#plt.ylabel('NN Predictions')
+#plt.xlim(np.amin([outputdata,model_preds])-0.1,np.amax([outputdata,model_preds])+0.1)
+#plt.ylim(np.amin([outputdata,model_preds])-0.1,np.amax([outputdata,model_preds])+0.1)
+#plt.savefig("validation_scatter_finalize_GM_GPP_002_OOSP.pdf")
+#plt.show()
 
 # How do default model params compare?
 GPP_GM_default = 2.614403
@@ -181,7 +186,9 @@ plt.hist(model_preds_inflate,bins=20)
 plt.xlabel('NN Predicted GM GPP')
 plt.ylabel('Counts')
 plt.axvline(x=GPP_obs_GM, color='r', linestyle='dashed', linewidth=2)
-plt.axvline(x=GPP_GM_002, color='b', linestyle='dashed', linewidth=2)
+#plt.axvline(x=GPP_GM_002, color='b', linestyle='dashed', linewidth=2)
+plt.axvline(x=GPP_GM_006, color='g', linestyle='dashed', linewidth=2)
 plt.axvline(x=GPP_GM_default, color='k', linestyle='dashed', linewidth=2) 
 #plt.savefig("dist_outputdata_GM_GPP_withobs_andmodel_anddefault_inflate1000_002.pdf")
+plt.savefig("dist_outputdata_GM_GPP_withobs_andmodel_anddefault_inflate1000_006.pdf")
 plt.show()

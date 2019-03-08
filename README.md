@@ -10,6 +10,8 @@ Install [pyDOE package](https://pythonhosted.org/pyDOE/randomized.html#latin-hyp
 
 Install [tensorflow](https://www.tensorflow.org/) and [keras](https://keras.io/) packages for machine learning (neural networks).
 
+Install [eofs](https://ajdawson.github.io/eofs/index.html) for SVD analysis.
+
 ```bash
 # Create clone
 ncar_pylib -c 20180129 /glade/work/kdagon/ncar_pylib_clone
@@ -20,6 +22,7 @@ source /bin/activate
 pip install --upgrade -t /glade/work/kdagon/ncar_pylib_clone/lib/python3.6/site-packages pyDOE
 pip install --upgrade -t /glade/work/kdagon/ncar_pylib_clone/lib/python3.6/site-packages tensorflow
 pip install --upgrade -t /glade/work/kdagon/ncar_pylib_clone/lib/python3.6/site-packages keras
+pip install --upgrade -t /glade/work/kdagon/ncar_pylib_clone/lib/python3.6/site-packages eofs
 ```
 
 # Ensemble Generating Files
@@ -53,12 +56,16 @@ This also calls 3 python scripts to set parameter values:
 * NN_multi-dim.py: Test out multidimensional output.
 * NN_test.py: Test out different NN configurations (# of layers, # of nodes).
 * NN_resample.py: Use resampling of the training data to better refine candidate NN models.
-* NN_finalize.py: Finalize best NN model.
+* NN_finalize.py: Finalize best NN model (single and multidimensional versions).
 
 # Supplemental Files
 
-* LHC_invert.py inverts the existing parameter array (parameters.npy) back to the original LHC random sampling and writes out (lhc.npy)
-* process_outputdata.ncl processes the CLM output data to a suitable output array for the neural network
+* LHC_invert.py inverts the existing parameter array (parameters.npy) back to the original LHC random sampling and writes out these values (lhc.npy)
+* outputdata/process_outputdata.ncl and associated scripts process the CLM output data to a suitable output array for the neural network
 * pft_var.ncl provides an NCL script for generating PFT-dependent param files
-* clm5_params.c171117.nc is the current CLM5 default parameter file
-* simple_model.py tests simpler models between LHC values and CLM output (correlation coefficients, scatterplots, multi-linear regression)
+* clm5_params.c171117.nc is the current CLM5 default parameter file for reference
+* simple_model.py tests simpler models between LHC values and CLM output (e.g., correlation coefficients, scatterplots, multi-linear regression)
+* compare_obs_GM.py compares observational data with distributions of global mean model output
+* obs/process_obs.ncl and associated scripts process the observational data
+* run_paramset_clm5 provides a script to run a single parameter set test in CLM5
+* SVD.py and associated scripts perform a singular value decomposition on observations and model output 
