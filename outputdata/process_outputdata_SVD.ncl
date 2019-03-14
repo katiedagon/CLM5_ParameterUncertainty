@@ -15,8 +15,8 @@ begin
  path = "/glade/scratch/kdagon/archive/"
 
  ; set variable(s) of interest
- ;var = "FPSN"
- var = "TSA"
+ var = "FPSN"
+ ;var = "TSA"
  ;var = "QFLX_EVAP_TOT"
 
  ; unit conversion (if needed)
@@ -35,7 +35,7 @@ begin
  grid_area_m = grid_area*10^6 ; km^2 to m^2
 
  ; get obs datamask
- f_obs = addfile("/glade/u/home/kdagon/CLM5hydro_LHC/obs/MR_GPP_4x5_2000_2004.nc","r")
+ f_obs = addfile("../obs/MR_GPP_4x5_2000_2004.nc","r")
  datamask_obs = f_obs->datamask
 
  ; set up storage matrix
@@ -159,8 +159,9 @@ begin
  ;ncdf = addfile("outputdata_ET_forSVD_100.nc", "c")
  ; define time as an unlimited dimension (optional?)
  ;filedimdef(ncdf,"time",-1,True) 
+ ncdf->datamask = datamask_obs
  ncdf->O = O ; masked, unit converted, annual mean, area wgt
- ncdf->X = X ; anomalies from annual mean (input to SVD)
+ ncdf->GPP = X ; anomalies from annual mean (input to SVD)
  
 
 end

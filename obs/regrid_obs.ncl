@@ -51,7 +51,11 @@ begin
 
   printVarSummary(newarea)
  
-  newdatam = linint2_Wrap(lon,lat,datamask,True,lon_res,lat_res,0)
+  ; regridding the datamask creates values between 0 and 1
+  ;newdatam = linint2_Wrap(lon,lat,datamask,True,lon_res,lat_res,0)
+  ; instead, create datamask based on regridded gpp
+  newdatam = where(ismissing(newgpp(0,:,:)),0.,1.)
+  printVarSummary(newdatam)
   newdatam!0 = "lat"
   newdatam!1 = "lon"
   newdatam&lat = lat_res

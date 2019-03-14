@@ -170,10 +170,10 @@ begin
 ; write output file
 ;************************************************
  ; writing as nc (preferred)
- ;ncdf = addfile("obs_GPP_4x5_anom_forSVD.nc", "c")
+ ncdf = addfile("obs_GPP_4x5_anom_forSVD.nc", "c")
  ; define time as an unlimited dimension (optional?)
  ;filedimdef(ncdf,"time",-1,True) 
- ;ncdf->GPP = v_obs_anom
- ;ncdf->datamask = datamask_obs
+ ncdf->GPP = v_obs_anom
+ ncdf->datamask = datamask_obs
 
 end
