@@ -9,10 +9,11 @@ import matplotlib.pyplot as plt
 
 # Read netcdf file (pre-processed in NCL)
 f = nc.netcdf_file("outputdata/outputdata_GPP_forSVD_100.nc",'r',mmap=False)
-#f = nc.netcdf_file("outputdata/outputdata_ET_forSVD_100.nc",'r',mmap=False)
+#f = nc.netcdf_file("outputdata/outputdata_LHF_forSVD_100.nc",'r',mmap=False)
 
 # Read variable data
 X = f.variables['GPP']
+#X = f.variables['LHF']
 mask = f.variables['datamask']
 
 # Convert to numpy array
@@ -60,11 +61,17 @@ print(np.allclose(dr, np.dot(U, np.dot(smat, Vh))))
 #np.save("outputdata/outputdata_ET_SVD", U[:,0:10])
 
 # Compare with Observations
+
 # Read netcdf file (pre-processed in NCL)
+# anomalies from ensemble mean where ensemble includes obs (n=101)
 fo = nc.netcdf_file("obs/obs_GPP_4x5_anom_forSVD.nc",'r',mmap=False)
+#fo = nc.netcdf_file("obs/obs_LHF_4x5_anom_forSVD.nc",'r',mmap=False)
+# anomalies from ensemble mean where ensemble does NOT include obs (n=100)
+#fo = nc.netcdf_file("obs/obs_GPP_4x5_anom_forSVD_alt.nc",'r',mmap=False)
 
 # Read variable data
 Xo = fo.variables['GPP']
+#Xo = fo.variables['LHF']
 masko = fo.variables['datamask']
 
 # Convert to numpy array
@@ -83,7 +90,7 @@ do[mo==0] = 0
 do[do==-9999] = 0
 
 # Reshape so input is (..,M,N) which is important svd 
-# Where M=nyrs, N=ngrid=nlato*nlono
+# Where M=nenso, N=ngrid=nlato*nlono
 dro = np.reshape(do,(nenso,nlato*nlono))
 #print(dro.shape)
 
@@ -96,7 +103,23 @@ print(U_obs)
 # Plot first mode of model U-vector (distribution) with U_obs (vertical line)
 plt.hist(U[:,0], bins=20)
 plt.xlabel('Mode 1 of GPP SVD (U-vector)')
+#plt.xlabel('Mode 1 of LHF SVD (U-vector)')
 plt.ylabel('Counts')
 plt.axvline(x=U_obs[:,0], color='r', linestyle='dashed', linewidth=2)
 #plt.savefig("dist_outputdata_GPP_SVD_mode1_withobs.pdf")
+#plt.savefig("dist_outputdata_LHF_SVD_mode1_withobs.pdf")
+plt.show()
+
+# Second mode
+plt.hist(U[:,1], bins=20)
+plt.xlabel('Mode 2 of GPP SVD (U-vector)')
+plt.ylabel('Counts')
+plt.axvline(x=U_obs[:,1], color='r', linestyle='dashed', linewidth=2)
+plt.show()
+
+# Third mode
+plt.hist(U[:,2], bins=20)
+plt.xlabel('Mode 3 of GPP SVD (U-vector)')
+plt.ylabel('Counts')
+plt.axvline(x=U_obs[:,2], color='r', linestyle='dashed', linewidth=2)
 plt.show()
