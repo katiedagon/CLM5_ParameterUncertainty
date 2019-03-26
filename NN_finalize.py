@@ -21,7 +21,7 @@ import matplotlib.axes as ax
 
 # Fix random seed for reproducibility
 #np.random.seed(7) #002
-np.random.seed(5) #006
+#np.random.seed(5) #006
 
 # Read in input array
 inputdata = np.load(file="lhc_100.npy")
@@ -30,12 +30,12 @@ inputdata = np.load(file="lhc_100.npy")
 in_vars = ['medlynslope','dleaf','kmax','fff','dint','baseflow_scalar']
 
 # Read in output array
-outputdata = np.loadtxt("outputdata/outputdata_GPP.csv")
-#outputdata_all = np.load("outputdata/outputdata_GPP_SVD.npy")
+#outputdata = np.loadtxt("outputdata/outputdata_GPP.csv")
+outputdata_all = np.load("outputdata/outputdata_GPP_SVD.npy")
 
 # Specify mode (SVD only)
-#mode = 3
-#outputdata = outputdata_all[:,mode-1]
+mode = 1
+outputdata = outputdata_all[:,mode-1]
 #plt.hist(outputdata, bins=20)
 #plt.xlabel('Mode 1 of GPP SVD (U-vector)')
 #plt.ylabel('Counts')
@@ -46,10 +46,10 @@ outputdata = np.loadtxt("outputdata/outputdata_GPP.csv")
 model = Sequential()
 # specify input_dim as number of parameters, not number of simulations
 # l2 norm regularizer
-model.add(Dense(8, input_dim=inputdata.shape[1], activation='linear',
+model.add(Dense(6, input_dim=inputdata.shape[1], activation='relu',
     kernel_regularizer=l2(.001)))
 # second layer with hyperbolic tangent activation
-model.add(Dense(2, activation='tanh', kernel_regularizer=l2(.001)))
+model.add(Dense(6, activation='tanh', kernel_regularizer=l2(.001)))
 # output layer with linear activation
 model.add(Dense(1))
 
@@ -98,16 +98,16 @@ def mse_preds(y_true,y_pred):
 model_me = mse_preds(outputdata, model_preds)
 
 # scatterplot actual versus predicted
-#plt.scatter(outputdata, model_preds)
-#plt.xlabel('CLM Model Output')
-#plt.ylabel('NN Predictions')
-#plt.xlim(np.amin([outputdata,model_preds])-0.1,np.amax([outputdata,model_preds])+0.1)
-#plt.ylim(np.amin([outputdata,model_preds])-0.1,np.amax([outputdata,model_preds])+0.1)
-#plt.savefig("validation_scatter_finalize_SVD_mode1.pdf")
+plt.scatter(outputdata, model_preds)
+plt.xlabel('CLM Model Output')
+plt.ylabel('NN Predictions')
+plt.xlim(np.amin([outputdata,model_preds])-0.1,np.amax([outputdata,model_preds])+0.1)
+plt.ylim(np.amin([outputdata,model_preds])-0.1,np.amax([outputdata,model_preds])+0.1)
+plt.savefig("validation_scatter_finalize_SVD_mode1.pdf")
 #plt.savefig("validation_scatter_finalize_SVD_mode2.pdf")
 #plt.savefig("validation_scatter_finalize_SVD_mode3.pdf")
 #plt.savefig("validation_scatter_finalize_GM_GPP_002.pdf")
-#plt.show()
+plt.show()
 
 # linear regression of actual vs predicted
 slope, intercept, r_value, p_value, std_err = stats.linregress(outputdata,
@@ -124,7 +124,9 @@ inputdata_inflate = np.load(file="lhc_1000.npy")
 model_preds_inflate = model.predict(inputdata_inflate)[:,0]
 
 # GM GPP from process_obs_GM.ncl
-GPP_obs_GM = 2.356544
+#GPP_obs_GM = 2.356544
+# SVD GPP Mode 1 from SVD.py
+GPP_obs_SVD_mode1 = 0.73506486
 
 # without obs line
 plt.hist(model_preds_inflate,bins=20)
@@ -134,33 +136,36 @@ plt.ylabel('Counts')
 plt.show()
 # with obs line
 plt.hist(model_preds_inflate,bins=20)
-plt.xlabel('NN Predicted GM GPP')
+#plt.xlabel('NN Predicted GM GPP')
+plt.xlabel('NN Predicted Mode 1 of GPP SVD')
 plt.ylabel('Counts')
-plt.axvline(x=GPP_obs_GM, color='r', linestyle='dashed', linewidth=2)
+#plt.axvline(x=GPP_obs_GM, color='r', linestyle='dashed', linewidth=2)
+plt.axvline(x=GPP_obs_SVD_mode1, color='r', linestyle='dashed', linewidth=2) 
 #plt.savefig("dist_outputdata_GM_GPP_withobs_inflate1000_002.pdf")
 #plt.savefig("dist_outputdata_GM_GPP_withobs_inflate1000_006.pdf")
+plt.savefig("dist_outputdata_GPP_SVD_mode1_withobs_inflate1000.pdf")
 plt.show()
 
 # Read in actual parameter values
-parameters = np.load(file="parameter_files/parameters_LHC_1000.npy")
+#parameters = np.load(file="parameter_files/parameters_LHC_1000.npy")
 
 # Isolate "best match" parameter set
-diff = abs(model_preds_inflate - GPP_obs_GM)
+#diff = abs(model_preds_inflate - GPP_obs_GM)
 #print(diff)
-pset = np.argmin(diff)
-print(pset)
-print(model_preds_inflate[pset])
+#pset = np.argmin(diff)
+#print(pset)
+#print(model_preds_inflate[pset])
 
 # Print best match (scaling values)
-print(inputdata_inflate[pset,:])
+#print(inputdata_inflate[pset,:])
 # Print best match (parameter values)
-print(parameters[pset,:])
+#print(parameters[pset,:])
 
 # Next: run CLM with the above parameter values
 # Calculate resulting GM GPP and plot on histogram as above
 #GPP_GM_002 = 2.444088
 #GPP_GM_005 = 2.327848
-GPP_GM_006 = 2.34726
+#GPP_GM_006 = 2.34726
 #plt.hist(model_preds_inflate,bins=20)
 #plt.xlabel('NN Predicted GM GPP')
 #plt.ylabel('Counts')
@@ -181,14 +186,14 @@ GPP_GM_006 = 2.34726
 #plt.show()
 
 # How do default model params compare?
-GPP_GM_default = 2.614403
-plt.hist(model_preds_inflate,bins=20)
-plt.xlabel('NN Predicted GM GPP')
-plt.ylabel('Counts')
-plt.axvline(x=GPP_obs_GM, color='r', linestyle='dashed', linewidth=2)
+#GPP_GM_default = 2.614403
+#plt.hist(model_preds_inflate,bins=20)
+#plt.xlabel('NN Predicted GM GPP')
+#plt.ylabel('Counts')
+#plt.axvline(x=GPP_obs_GM, color='r', linestyle='dashed', linewidth=2)
 #plt.axvline(x=GPP_GM_002, color='b', linestyle='dashed', linewidth=2)
-plt.axvline(x=GPP_GM_006, color='g', linestyle='dashed', linewidth=2)
-plt.axvline(x=GPP_GM_default, color='k', linestyle='dashed', linewidth=2) 
+#plt.axvline(x=GPP_GM_006, color='g', linestyle='dashed', linewidth=2)
+#plt.axvline(x=GPP_GM_default, color='k', linestyle='dashed', linewidth=2) 
 #plt.savefig("dist_outputdata_GM_GPP_withobs_andmodel_anddefault_inflate1000_002.pdf")
-plt.savefig("dist_outputdata_GM_GPP_withobs_andmodel_anddefault_inflate1000_006.pdf")
-plt.show()
+#plt.savefig("dist_outputdata_GM_GPP_withobs_andmodel_anddefault_inflate1000_006.pdf")
+#plt.show()

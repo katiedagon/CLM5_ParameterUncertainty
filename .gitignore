@@ -2,4 +2,5 @@ bash_test
 figures/
 parameter_files/
 obs/figures/
-outputdata/figures/
+outputdata/figures
+.ipynb_checkpoints/

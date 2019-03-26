@@ -18,6 +18,9 @@ mask = f.variables['datamask']
 
 # Convert to numpy array
 d = X[:]
+#plt.contourf(d[0,:,:])
+#plt.colorbar()
+#plt.show()
 m = mask[:]
 
 # Get dimensions
@@ -32,12 +35,22 @@ dr = np.reshape(d,(nens,nlat*nlon))
 mr = np.reshape(m,nlat*nlon)
 
 # Replace masked gridpoints with zero (shouldn't impact SVD?)
-dr[:,mr==0] = 0
+#dr[:,mr==0] = 0
 # Replace FillValue with zero (shouldn't impact SVD?)
-dr[dr==1.e+36] = 0
+#dr[dr==1.e+36] = 0
+
+# Alternate: subset dr for land only grid points
+drm = dr[:,mr==1]
+#print(drm.shape)
+# Still need to get rid of lingering FillValues (why do they not match the mask?
+drm[drm==1.e+36] = 0
+# Test plot
+#plt.contourf(drm)
+#plt.colorbar()
+#plt.show()
 
 # SVD command (no trunc option)
-U,s,Vh = np.linalg.svd(dr, full_matrices=False)
+U,s,Vh = np.linalg.svd(drm, full_matrices=False)
 #print(U.shape)
 print(U[:,0]) # first mode
 #plt.hist(U[:,0], bins=20)
@@ -50,9 +63,18 @@ print(U[:,0]) # first mode
 # Singular values are in s
 
 # Sanity check - reconstruction
-print(np.allclose(dr, np.dot(U*s, Vh)))
+print(np.allclose(drm, np.dot(U*s, Vh)))
 smat = np.diag(s)
-print(np.allclose(dr, np.dot(U, np.dot(smat, Vh))))
+print(np.allclose(drm, np.dot(U, np.dot(smat, Vh))))
+
+# Plot first mode of model U-vector (distribution)
+plt.hist(U[:,0], bins=20)
+plt.xlabel('Mode 1 of GPP SVD (U-vector)')
+#plt.xlabel('Mode 1 of LHF SVD (U-vector)')
+plt.ylabel('Counts')
+#plt.savefig("dist_outputdata_GPP_SVD_mode1.pdf")
+#plt.savefig("dist_outputdata_LHF_SVD_mode1.pdf")
+plt.show()
 
 # Save out first 10 modes from SVD
 # Note: cannot save masked array to file (this way)
@@ -76,29 +98,44 @@ masko = fo.variables['datamask']
 
 # Convert to numpy array
 do = Xo[:]
-print(do.shape)
+#print(do.shape)
 mo = masko[:]
+#print(mo.shape)
 
 # Get dims
 nenso=1
 nlato=do.shape[0]
 nlono=do.shape[1]
 
-# Replace masked gridpoints with zero (shouldn't impact SVD?)
-do[mo==0] = 0
-# Replace FillValue with zero (shouldn't impact SVD?)
-do[do==-9999] = 0
-
 # Reshape so input is (..,M,N) which is important svd 
 # Where M=nenso, N=ngrid=nlato*nlono
 dro = np.reshape(do,(nenso,nlato*nlono))
 #print(dro.shape)
+mro = np.reshape(mo,nlat*nlon)
+#print(mro.shape)
+
+# Replace masked gridpoints with zero (shouldn't impact SVD?)
+#do[mo==0] = 0
+# Replace FillValue with zero (shouldn't impact SVD?)
+#do[do==-9999] = 0
+
+# Alternate: subset do for land only grid points
+drom = dro[:,mro==1]
+#print(drom.shape)
+# FillValues persist
+drom[drom==-9999] = 0
+# Test plot
+#plt.plot(drom[0,:])
+#plt.show()
 
 # Project obs into SVD space
 from numpy.linalg import pinv
-U_obs = np.dot(dro,pinv(np.dot(smat,Vh)))
+U_obs = np.dot(drom,pinv(np.dot(smat,Vh)))
 #print(U_obs.shape)
-print(U_obs)
+#print(U_obs)
+
+# Print out U_obs for first mode
+print(U_obs[:,0])
 
 # Plot first mode of model U-vector (distribution) with U_obs (vertical line)
 plt.hist(U[:,0], bins=20)
@@ -111,15 +148,15 @@ plt.axvline(x=U_obs[:,0], color='r', linestyle='dashed', linewidth=2)
 plt.show()
 
 # Second mode
-plt.hist(U[:,1], bins=20)
-plt.xlabel('Mode 2 of GPP SVD (U-vector)')
-plt.ylabel('Counts')
-plt.axvline(x=U_obs[:,1], color='r', linestyle='dashed', linewidth=2)
-plt.show()
+#plt.hist(U[:,1], bins=20)
+#plt.xlabel('Mode 2 of GPP SVD (U-vector)')
+#plt.ylabel('Counts')
+#plt.axvline(x=U_obs[:,1], color='r', linestyle='dashed', linewidth=2)
+#plt.show()
 
 # Third mode
-plt.hist(U[:,2], bins=20)
-plt.xlabel('Mode 3 of GPP SVD (U-vector)')
-plt.ylabel('Counts')
-plt.axvline(x=U_obs[:,2], color='r', linestyle='dashed', linewidth=2)
-plt.show()
+#plt.hist(U[:,2], bins=20)
+#plt.xlabel('Mode 3 of GPP SVD (U-vector)')
+#plt.ylabel('Counts')
+#plt.axvline(x=U_obs[:,2], color='r', linestyle='dashed', linewidth=2)
+#plt.show()

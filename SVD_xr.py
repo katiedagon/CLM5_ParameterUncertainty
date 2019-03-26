@@ -7,40 +7,48 @@
 import numpy as np
 import xarray as xr
 from eofs.xarray import Eof
-from scipy.io import netcdf as nc
+#from scipy.io import netcdf as nc
 import matplotlib.pyplot as plt
-from numpy.linalg import matrix_rank
 
 # Read netcdf file (pre-processed in NCL)
 f=xr.open_dataset("outputdata/outputdata_GPP_forSVD_100.nc")
 # Read variable data
-d=f['X']
+d=f.GPP
+m=f.datamask
 
 # Try to create an eof solver
 # Do I need to specify weights due to pre-processing in NCL?
 # This function needs to see time as first dimension (coordinate)
-solver = Eof(d)
+#solver = Eof(d)
 
 # Get dimensions
 # the order here is important
-nens=d.shape[0]
-nlat=d.shape[1]
-nlon=d.shape[2]
-
-# Ensemble mean
-#d_em = np.mean(d,axis=0)
-#print(d_em.shape)
-#plt.contourf(d_em)
-#plt.colorbar()
-#plt.show()
+#nens=d.shape[0]
+#nlat=d.shape[1]
+#nlon=d.shape[2]
 
 # Reshape so input is (..,M,N) which is important svd 
 # Where M=nens, N=ngrid=nlat*nlon
-#dr = np.reshape(d,(nens,nlat*nlon))
+dr = d.stack(ngrid=('lat','lon'))
 print(dr.shape)
+#print(dr.ndim)
 #plt.contourf(dr)
 #plt.colorbar()
 #plt.show()
+mr = m.stack(ngrid=('lat','lon'))
+print(mr.shape)
+
+# Subset reshaped data by reshaped mask
+drm = dr[:,mr==1]
+print(drm.shape)
+plt.contourf(drm)
+plt.colorbar()
+plt.show()
+
+# SVD
+U,s,Vh = np.linalg.svd(drm, full_matrices=False)
+#print(U.shape)
+print(U[:,0]) # first mode
 
 # Compare with Observations
 # Read netcdf file (pre-processed in NCL)
