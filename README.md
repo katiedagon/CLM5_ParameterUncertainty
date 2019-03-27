@@ -12,6 +12,8 @@ Install [tensorflow](https://www.tensorflow.org/) and [keras](https://keras.io/)
 
 Install [eofs](https://ajdawson.github.io/eofs/index.html) for SVD analysis.
 
+Install [PyMC](https://docs.pymc.io/) for MCMC analysis.
+
 ```bash
 # Create clone
 ncar_pylib -c 20180129 /glade/work/kdagon/ncar_pylib_clone
@@ -23,6 +25,7 @@ pip install --upgrade -t /glade/work/kdagon/ncar_pylib_clone/lib/python3.6/site-
 pip install --upgrade -t /glade/work/kdagon/ncar_pylib_clone/lib/python3.6/site-packages tensorflow
 pip install --upgrade -t /glade/work/kdagon/ncar_pylib_clone/lib/python3.6/site-packages keras
 pip install --upgrade -t /glade/work/kdagon/ncar_pylib_clone/lib/python3.6/site-packages eofs
+pip install --upgrade -t /glade/work/kdagon/ncar_pylib_clone/lib/python3.6/site-packages pymc3
 ```
 
 # Ensemble Generating Files
