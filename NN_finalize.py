@@ -20,8 +20,9 @@ import matplotlib.pyplot as plt
 import matplotlib.axes as ax
 
 # Fix random seed for reproducibility
-#np.random.seed(7) #002
-#np.random.seed(5) #006
+#np.random.seed(7) #GM 002
+#np.random.seed(5) #GM 006
+np.random.seed(3) # SVD 001
 
 # Read in input array
 inputdata = np.load(file="lhc_100.npy")
@@ -103,7 +104,7 @@ plt.xlabel('CLM Model Output')
 plt.ylabel('NN Predictions')
 plt.xlim(np.amin([outputdata,model_preds])-0.1,np.amax([outputdata,model_preds])+0.1)
 plt.ylim(np.amin([outputdata,model_preds])-0.1,np.amax([outputdata,model_preds])+0.1)
-plt.savefig("validation_scatter_finalize_SVD_mode1.pdf")
+#plt.savefig("validation_scatter_finalize_SVD_mode1.pdf")
 #plt.savefig("validation_scatter_finalize_SVD_mode2.pdf")
 #plt.savefig("validation_scatter_finalize_SVD_mode3.pdf")
 #plt.savefig("validation_scatter_finalize_GM_GPP_002.pdf")
@@ -143,37 +144,47 @@ plt.ylabel('Counts')
 plt.axvline(x=GPP_obs_SVD_mode1, color='r', linestyle='dashed', linewidth=2) 
 #plt.savefig("dist_outputdata_GM_GPP_withobs_inflate1000_002.pdf")
 #plt.savefig("dist_outputdata_GM_GPP_withobs_inflate1000_006.pdf")
-plt.savefig("dist_outputdata_GPP_SVD_mode1_withobs_inflate1000.pdf")
+#plt.savefig("dist_outputdata_GPP_SVD_mode1_withobs_inflate1000_001.pdf")
 plt.show()
 
 # Read in actual parameter values
-#parameters = np.load(file="parameter_files/parameters_LHC_1000.npy")
+parameters = np.load(file="parameter_files/parameters_LHC_1000.npy")
 
 # Isolate "best match" parameter set
 #diff = abs(model_preds_inflate - GPP_obs_GM)
+diff = abs(model_preds_inflate - GPP_obs_SVD_mode1)
 #print(diff)
-#pset = np.argmin(diff)
-#print(pset)
-#print(model_preds_inflate[pset])
+pset = np.argmin(diff)
+print(pset)
+print(model_preds_inflate[pset])
 
 # Print best match (scaling values)
-#print(inputdata_inflate[pset,:])
+print(inputdata_inflate[pset,:])
 # Print best match (parameter values)
-#print(parameters[pset,:])
+print(parameters[pset,:])
 
 # Next: run CLM with the above parameter values
 # Calculate resulting GM GPP and plot on histogram as above
 #GPP_GM_002 = 2.444088
 #GPP_GM_005 = 2.327848
 #GPP_GM_006 = 2.34726
-#plt.hist(model_preds_inflate,bins=20)
+# Calculate resulting SVD mode 1 GPP and plot on histogram
+GPP_SVD_mode1_001 = 0.37745455
+plt.hist(model_preds_inflate,bins=20)
 #plt.xlabel('NN Predicted GM GPP')
-#plt.ylabel('Counts')
+plt.xlabel('NN Predicted Mode 1 of GPP SVD')
+plt.ylabel('Counts')
 #plt.axvline(x=GPP_obs_GM, color='r', linestyle='dashed', linewidth=2)
+plt.axvline(x=GPP_obs_SVD_mode1, color='r', linestyle='dashed', linewidth=2)
 #plt.axvline(x=GPP_GM_002, color='b', linestyle='dashed', linewidth=2)
 #plt.axvline(x=GPP_GM_006, color='g', linestyle='dashed', linewidth=2)
+# Also plot best match from inflated ensemble
+plt.axvline(x=model_preds_inflate[pset], color='c', linestyle='dashed',
+        linewidth=2) 
+plt.axvline(x=GPP_SVD_mode1_001, color='b', linestyle='dashed', linewidth=2)
 #plt.savefig("dist_outputdata_GM_GPP_withobs_andmodel_inflate1000_002.pdf")
-#plt.show()
+plt.savefig("dist_outputdata_GPP_SVD_mode1_withobs_andmodel_inflate1000_001.pdf")
+plt.show()
 
 # Add NN prediction vs. model output to scatter plot
 #plt.scatter(outputdata, model_preds, c='silver')
@@ -187,13 +198,21 @@ plt.show()
 
 # How do default model params compare?
 #GPP_GM_default = 2.614403
-#plt.hist(model_preds_inflate,bins=20)
+GPP_SVD_mode1_default = -0.06415711
+plt.hist(model_preds_inflate,bins=20)
 #plt.xlabel('NN Predicted GM GPP')
-#plt.ylabel('Counts')
+plt.xlabel('NN Predicted Mode 1 of GPP SVD')
+plt.ylabel('Counts')
 #plt.axvline(x=GPP_obs_GM, color='r', linestyle='dashed', linewidth=2)
 #plt.axvline(x=GPP_GM_002, color='b', linestyle='dashed', linewidth=2)
 #plt.axvline(x=GPP_GM_006, color='g', linestyle='dashed', linewidth=2)
 #plt.axvline(x=GPP_GM_default, color='k', linestyle='dashed', linewidth=2) 
+plt.axvline(x=GPP_obs_SVD_mode1, color='r', linestyle='dashed', linewidth=2)
+plt.axvline(x=model_preds_inflate[pset], color='c', linestyle='dashed',
+                linewidth=2)
+plt.axvline(x=GPP_SVD_mode1_001, color='b', linestyle='dashed', linewidth=2)
+plt.axvline(x=GPP_SVD_mode1_default, color='k', linestyle='dashed', linewidth=2)
 #plt.savefig("dist_outputdata_GM_GPP_withobs_andmodel_anddefault_inflate1000_002.pdf")
 #plt.savefig("dist_outputdata_GM_GPP_withobs_andmodel_anddefault_inflate1000_006.pdf")
-#plt.show()
+plt.savefig("dist_outputdata_GPP_SVD_mode1_withobs_andmodel_anddefault_inflate1000_001.pdf")
+plt.show()

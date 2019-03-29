@@ -28,8 +28,9 @@ pwd
 #export EXPTNAME=${NAME}_${i}_hybrid
 #export EXPTNAME="test_paramset_002"
 #export EXPTNAME="test_paramset_005"
-export EXPTNAME="test_paramset_006"
+#export EXPTNAME="test_paramset_006"
 #export EXPTNAME="${NAME}_default_params"
+export EXPTNAME="test_paramset_SVD_001"
 echo $EXPTNAME
 
 # Remove existing output
@@ -89,9 +90,9 @@ uclm="paramfile='$pftfile'"
 echo  $uclm >> user_nl_clm
 
 # If not PFT-dependent, edit the namelist appropriately
-echo "fff=0.95" >> user_nl_clm
-echo "dint=0.83" >> user_nl_clm
-echo "baseflow_scalar=0.02" >> user_nl_clm
+echo "fff=1.67" >> user_nl_clm
+echo "dint=0.8" >> user_nl_clm
+echo "baseflow_scalar=0.06" >> user_nl_clm
 
 ./case.submit
 

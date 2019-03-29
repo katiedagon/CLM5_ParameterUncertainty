@@ -111,7 +111,7 @@ nlono=do.shape[1]
 # Where M=nenso, N=ngrid=nlato*nlono
 dro = np.reshape(do,(nenso,nlato*nlono))
 #print(dro.shape)
-mro = np.reshape(mo,nlat*nlon)
+mro = np.reshape(mo,nlato*nlono)
 #print(mro.shape)
 
 # Replace masked gridpoints with zero (shouldn't impact SVD?)
@@ -145,6 +145,51 @@ plt.ylabel('Counts')
 plt.axvline(x=U_obs[:,0], color='r', linestyle='dashed', linewidth=2)
 #plt.savefig("dist_outputdata_GPP_SVD_mode1_withobs.pdf")
 #plt.savefig("dist_outputdata_LHF_SVD_mode1_withobs.pdf")
+plt.show()
+
+# Project test paramset into SVD space
+ft = nc.netcdf_file("outputdata/test_paramset_001_GPP_forSVD.nc",'r',mmap=False)
+Xt = ft.variables['GPP']
+maskt = ft.variables['datamask']
+dt = Xt[:]
+mt = maskt[:]
+drt = np.reshape(dt,(nenso,nlato*nlono))
+mrt = np.reshape(mt,nlato*nlono)
+drtm = drt[:,mrt==1]
+#print(drtm.shape)
+drtm[drtm==1.e+36] = 0
+U_test = np.dot(drtm,pinv(np.dot(smat,Vh)))
+print(U_test[:,0])
+
+# Plot distribution with U_obs and U_test
+plt.hist(U[:,0], bins=20)
+plt.xlabel('Mode 1 of GPP SVD (U-vector)')
+plt.ylabel('Counts')
+plt.axvline(x=U_obs[:,0], color='r', linestyle='dashed', linewidth=2)
+plt.axvline(x=U_test[:,0], color='b', linestyle='dashed', linewidth=2)
+plt.show()
+
+# Project model with default params into SVD space
+fd= nc.netcdf_file("outputdata/CLM_default_GPP_forSVD.nc",'r',mmap=False)
+Xd = fd.variables['GPP']
+maskd = fd.variables['datamask']
+dd = Xd[:]
+md = maskd[:]
+drd = np.reshape(dd,(nenso,nlato*nlono))
+mrd = np.reshape(md,nlato*nlono)
+drdm = drd[:,mrd==1]
+#print(drdm.shape)
+drdm[drdm==1.e+36] = 0
+U_default = np.dot(drdm,pinv(np.dot(smat,Vh)))
+print(U_default[:,0])
+
+# Plot distribution with U_default
+plt.hist(U[:,0], bins=20)
+plt.xlabel('Mode 1 of GPP SVD (U-vector)')
+plt.ylabel('Counts')
+plt.axvline(x=U_obs[:,0], color='r', linestyle='dashed', linewidth=2)
+plt.axvline(x=U_test[:,0], color='b', linestyle='dashed', linewidth=2)
+plt.axvline(x=U_default[:,0], color='k', linestyle='dashed', linewidth=2)
 plt.show()
 
 # Second mode
