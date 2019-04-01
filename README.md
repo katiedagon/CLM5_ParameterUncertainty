@@ -10,9 +10,9 @@ Install [pyDOE package](https://pythonhosted.org/pyDOE/randomized.html#latin-hyp
 
 Install [tensorflow](https://www.tensorflow.org/) and [keras](https://keras.io/) packages for machine learning (neural networks).
 
-Install [eofs](https://ajdawson.github.io/eofs/index.html) for SVD analysis.
+(Optional) Install [eofs](https://ajdawson.github.io/eofs/index.html) for SVD analysis.
 
-Install [PyMC](https://docs.pymc.io/) for MCMC analysis.
+(Optional) Install [PyMC3](https://docs.pymc.io/) or [emcee](http://dfm.io/emcee/current/) for MCMC analysis.
 
 ```bash
 # Create clone
@@ -24,8 +24,6 @@ source /bin/activate
 pip install --upgrade -t /glade/work/kdagon/ncar_pylib_clone/lib/python3.6/site-packages pyDOE
 pip install --upgrade -t /glade/work/kdagon/ncar_pylib_clone/lib/python3.6/site-packages tensorflow
 pip install --upgrade -t /glade/work/kdagon/ncar_pylib_clone/lib/python3.6/site-packages keras
-pip install --upgrade -t /glade/work/kdagon/ncar_pylib_clone/lib/python3.6/site-packages eofs
-pip install --upgrade -t /glade/work/kdagon/ncar_pylib_clone/lib/python3.6/site-packages pymc3
 ```
 
 # Ensemble Generating Files
@@ -52,6 +50,15 @@ This also calls 3 python scripts to set parameter values:
 * Put them in the namelist in the proper format
 * Do this for each ensemble simulation
 
+There is also a script for testing a single parameter set in CLM5: run_paramset_clm5 (bash). This does not rely on the above python scripts and parameter values are set manually in this script and by providing a modified params file.
+
+# Data Processing Files
+
+* outputdata/process_outputdata.ncl and associated scripts process CLM output for training the neural network
+* obs/process_obs.ncl and associated scripts process the observational data  
+* SVD.py and associated scripts perform a singular value decomposition on observations and model output   
+* compare_obs_GM.py compares observational data with distributions of global mean model output
+
 # Machine Learning Files
 
 * NN_create.py: Create and test out simple neural networks in Python with Keras.
@@ -64,11 +71,6 @@ This also calls 3 python scripts to set parameter values:
 # Supplemental Files
 
 * LHC_invert.py inverts the existing parameter array (parameters.npy) back to the original LHC random sampling and writes out these values (lhc.npy)
-* outputdata/process_outputdata.ncl and associated scripts process the CLM output data to a suitable output array for the neural network
-* pft_var.ncl provides an NCL script for generating PFT-dependent param files
+* pft_var.ncl provides an NCL script for generating PFT-dependent parameter files
 * clm5_params.c171117.nc is the current CLM5 default parameter file for reference
 * simple_model.py tests simpler models between LHC values and CLM output (e.g., correlation coefficients, scatterplots, multi-linear regression)
-* compare_obs_GM.py compares observational data with distributions of global mean model output
-* obs/process_obs.ncl and associated scripts process the observational data
-* run_paramset_clm5 provides a script to run a single parameter set test in CLM5
-* SVD.py and associated scripts perform a singular value decomposition on observations and model output 
