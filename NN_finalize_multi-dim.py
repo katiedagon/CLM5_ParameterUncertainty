@@ -20,7 +20,7 @@ import matplotlib.pyplot as plt
 import matplotlib.axes as ax
 
 # Fix random seed for reproducibility
-#np.random.seed(7)
+np.random.seed(6)
 
 # Read in input array
 inputdata = np.load(file="lhc_100.npy")
@@ -29,22 +29,25 @@ inputdata = np.load(file="lhc_100.npy")
 in_vars = ['medlynslope','dleaf','kmax','fff','dint','baseflow_scalar']
 
 # Read in output array
-outputdata_raw = np.load(file="outputdata/outputdata_GPP_SVD.npy")
-# First 3 modes account for over 97% of variance
-outputdata = outputdata_raw[:,:3]
+#outputdata_raw = np.load(file="outputdata/outputdata_GPP_SVD.npy")
+#outputdata = outputdata_raw[:,:3]
+# First 3 modes account for over 98% of variance
+outputdata = np.load(file="outputdata/outputdata_GPP_SVD_3modes.npy")
 nmodes = outputdata.shape[1]
 
 # Percent of variance (for weighted avg R^2)
-svd_var = [0.771, 0.1914, 0.0128]
+# Calculated in SVD.py
+#svd_var = [0.771, 0.1914, 0.0128]
+svd_var = [0.8341, 0.1349, 0.0119]
 
 # Create 2-layer simple model
 model = Sequential()
 # specify input_dim as number of parameters, not number of simulations
 # l2 norm regularizer
-model.add(Dense(8, input_dim=inputdata.shape[1], activation='relu',
+model.add(Dense(7, input_dim=inputdata.shape[1], activation='relu',
     kernel_regularizer=l2(.001)))
 # second layer with hyperbolic tangent activation
-model.add(Dense(8, activation='tanh', kernel_regularizer=l2(.001)))
+model.add(Dense(9, activation='tanh', kernel_regularizer=l2(.001)))
 # output layer with linear activation
 model.add(Dense(nmodes))
 
@@ -62,6 +65,10 @@ results = model.fit(inputdata, outputdata, epochs=500, batch_size=30, verbose=0)
 
 # Make predictions
 model_preds = model.predict(inputdata)
+print(model_preds.shape)
+
+# Save out predictions
+np.save("outputdata/emulated_GPP_SVD_3modes.npy", model_preds)
 
 # model metric for predictions
 def mse_preds(y_true,y_pred):
@@ -76,21 +83,21 @@ plt.xlabel('CLM Model Output')
 plt.ylabel('NN Predictions')
 plt.xlim(np.amin([outputdata[:,0],model_preds[:,0]])-0.1,np.amax([outputdata[:,0],model_preds[:,0]])+0.1)
 plt.ylim(np.amin([outputdata[:,0],model_preds[:,0]])-0.1,np.amax([outputdata[:,0],model_preds[:,0]])+0.1)
-plt.savefig("validation_scatter_finalize_SVD_md_mode1_c4.pdf")
+#plt.savefig("validation_scatter_finalize_GPP_SVD_md_mode1.pdf")
 plt.show()
 plt.scatter(outputdata[:,1], model_preds[:,1])
 plt.xlabel('CLM Model Output')
 plt.ylabel('NN Predictions')
 plt.xlim(np.amin([outputdata[:,1],model_preds[:,1]])-0.1,np.amax([outputdata[:,1],model_preds[:,1]])+0.1)
 plt.ylim(np.amin([outputdata[:,1],model_preds[:,1]])-0.1,np.amax([outputdata[:,1],model_preds[:,1]])+0.1)
-plt.savefig("validation_scatter_finalize_SVD_md_mode2_c4.pdf")
+#plt.savefig("validation_scatter_finalize_GPP_SVD_md_mode2.pdf")
 plt.show()
 plt.scatter(outputdata[:,2], model_preds[:,2])
 plt.xlabel('CLM Model Output')
 plt.ylabel('NN Predictions')
 plt.xlim(np.amin([outputdata[:,2],model_preds[:,2]])-0.1,np.amax([outputdata[:,2],model_preds[:,2]])+0.1)
 plt.ylim(np.amin([outputdata[:,2],model_preds[:,2]])-0.1,np.amax([outputdata[:,2],model_preds[:,2]])+0.1)
-plt.savefig("validation_scatter_finalize_SVD_md_mode3_c4.pdf")
+#plt.savefig("validation_scatter_finalize_GPP_SVD_md_mode3.pdf")
 plt.show()
 
 print("Model Mean Error: %.2g" % results.history['mean_sq_err'][-1])
@@ -111,4 +118,5 @@ slope, intercept, r_value, p_value, std_err = stats.linregress(outputdata[:,2],
 print("r-squared: %.2g" % r_value**2)
 r_array.append(r_value**2)
 
+print("avg. r-squared: %.2g" % np.mean(r_array))
 print("wgt avg. r-squared: %.2g" % np.average(r_array,weights=svd_var))

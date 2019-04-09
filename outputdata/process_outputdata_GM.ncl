@@ -14,9 +14,9 @@ begin
  path = "/glade/scratch/kdagon/archive/"
 
  ; set variable(s) of interest
- ;var = "FPSN"
+ var = "FPSN"
  ;var = "TSA"
- var = "QFLX_EVAP_TOT"
+ ;var = "QFLX_EVAP_TOT"
 
  ; gauss weights for global mean
  ;lats = 46 ; number of latitudes at 4x5
@@ -36,9 +36,21 @@ begin
  lat = f_lat->lat
  clat = cos(lat*rad)
  ;print(clat)
- 
+
+ ; get landfrac & area
+ landf = f_lat->landfrac
+ ;printVarSummary(landf)
+ area = f_lat->area
+
+ ; wgt variable
+ arwt = area
+ arwt = area * landf
+ arwt = arwt/max(arwt)
+ printVarSummary(arwt) 
+
  ; establish output array
  out = new((/niter/),float)
+ out2 = out
 
  do i=1,niter
   y=tostring(i)
@@ -47,11 +59,13 @@ begin
   fils = systemfunc("ls "+str_c)
   f = addfiles(fils,"r")
   v = f[:]->$var$
-  ; global mean, annual mean
+  ; global, annual mean
   v_gm_am = dim_avg_n_Wrap(wgt_areaave_Wrap(v,clat,1,0),0)
-  v_gm_am = v_gm_am*86400*365 ; QFLX_EVAP_TOT
+  v_gm_am_alt = dim_avg_n_Wrap(wgt_areaave2(v,arwt,0),0)
+  ;v_gm_am = v_gm_am*86400*365 ; QFLX_EVAP_TOT
   ;v_gm_am = v_gm_am - 273 ; TSA
   out(i-1) = v_gm_am
+  out2(i-1) = v_gm_am_alt
   ; 5-year IAV
   ;v_am_sd_gm = wgt_areaave_Wrap(dim_stddev_n_Wrap(month_to_annual(v,1),0),clat,1,0)
   ;v_am_sd_gm = v_am_sd_gm*86400*365
@@ -59,6 +73,7 @@ begin
  end do
 
  print(out)
+ print(out2)
  
 ;************************************************
 ; write output file

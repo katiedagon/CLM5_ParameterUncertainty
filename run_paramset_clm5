@@ -24,13 +24,15 @@ pwd
 cd $NAME
 pwd
 
+## IMPORTANT TO MODIFY THIS EACH TIME ##
 #export EXPTNAME=${NAME}_$i
 #export EXPTNAME=${NAME}_${i}_hybrid
 #export EXPTNAME="test_paramset_002"
 #export EXPTNAME="test_paramset_005"
 #export EXPTNAME="test_paramset_006"
 #export EXPTNAME="${NAME}_default_params"
-export EXPTNAME="test_paramset_SVD_001"
+#export EXPTNAME="test_paramset_SVD_001"
+export EXPTNAME="test_paramset_SVD_002"
 echo $EXPTNAME
 
 # Remove existing output
@@ -69,7 +71,7 @@ cd $EXPTNAME
 # Modify wallclock, project, queue as necessary
 # To change mail options; this works with Cheyenne only:
 # UPDATE: This is causing a submit error as of 2/7/19:
-./xmlchange --file env_batch.xml --subgroup case.run --id BATCH_COMMAND_FLAGS --val '-m abe -l walltime=4:00:00 -A P08010000 -q regular'
+#./xmlchange --file env_batch.xml --subgroup case.run --id BATCH_COMMAND_FLAGS --val '-m abe -l walltime=4:00:00 -A P08010000 -q regular'
 
 # Setup case (creates user_nl_* files)
 ./case.setup
@@ -90,9 +92,9 @@ uclm="paramfile='$pftfile'"
 echo  $uclm >> user_nl_clm
 
 # If not PFT-dependent, edit the namelist appropriately
-echo "fff=1.67" >> user_nl_clm
-echo "dint=0.8" >> user_nl_clm
-echo "baseflow_scalar=0.06" >> user_nl_clm
+echo "fff=3.91" >> user_nl_clm
+echo "dint=0.52" >> user_nl_clm
+echo "baseflow_scalar=0.036" >> user_nl_clm
 
 ./case.submit
 

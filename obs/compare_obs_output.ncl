@@ -51,9 +51,12 @@ begin
 
  ; get model output
  ; set param set number
+ ;pset = "002"
+ ;pset2 = "006"
  ;pset = "006"
  ;pset2 = "005"
  pset = "SVD_001"
+ pset2 = "002"
 
  ; set model path
  path_model = "/glade/scratch/kdagon/archive/"
@@ -80,11 +83,11 @@ begin
  printVarSummary(v_model_amean)
 
  ; get hist files from model run2 (last 5 years)
- ;strs = (/path_model,"test_paramset_",pset2,"/lnd/hist/*{001[6-9],20-}*"/)
- ;str_c = str_concat(strs)
- ;fils = systemfunc("ls "+str_c)
- ;f = addfiles(fils,"r")
- ;v_model2 = f[:]->$var_model$
+ strs = (/path_model,"test_paramset_",pset2,"/lnd/hist/*{001[6-9],20-}*"/)
+ str_c = str_concat(strs)
+ fils = systemfunc("ls "+str_c)
+ f = addfiles(fils,"r")
+ v_model2 = f[:]->$var_model$
 
  ; compare obs / model
  diff = v_model_amean - v_obs_amean
@@ -101,9 +104,10 @@ begin
  ;plot = new(nyrs,graphic)
  plot = new(2,graphic)
 
- wks = gsn_open_wks("x11","test")
- ;wks = gsn_open_wks("pdf","model-minus-obs_4x5_2000-2004_amean_GPP")
+ ;wks = gsn_open_wks("x11","test")
+ ;wks = gsn_open_wks("pdf","model-minus-obs_4x5_2000-2004_amean_GPP_002")
  ;wks = gsn_open_wks("pdf","model-minus-obs_4x5_2000-2004_amean_GPP_006")
+ wks = gsn_open_wks("pdf","model-minus-obs_4x5_2000-2004_amean_GPP_SVD001")
 
  res = True
  res@gsnDraw = False
@@ -185,22 +189,24 @@ begin
  v_model_def_time = v_model_def_clim(:,{latp},{lonp}) 
  v_model_clim = clmMonTLL(v_model)
  v_model_time = v_model_clim(:,{latp},{lonp})
- ;v_model2_clim = clmMonTLL(v_model2)
- ;v_model2_time = v_model2_clim(:,{latp},{lonp})
+ v_model2_clim = clmMonTLL(v_model2)
+ v_model2_time = v_model2_clim(:,{latp},{lonp})
 
  dims = dimsizes(v_model_def_time)
- ;data = new((/4,dims(0)/),float)
- data = new((/3,dims(0)/),float)
+ data = new((/4,dims(0)/),float)
+ ;data = new((/3,dims(0)/),float)
  data(0,:) = v_obs_time
  data(1,:) = v_model_time
- ;data(2,:) = v_model2_time
- ;data(3,:) = v_model_def_time
- data(2,:) = v_model_def_time
+ data(2,:) = v_model2_time
+ data(3,:) = v_model_def_time
+ ;data(2,:) = v_model_def_time
 
- wks2 = gsn_open_wks("x11","test")
+ ;wks2 = gsn_open_wks("x11","test")
  ;wks2 = gsn_open_wks("pdf","model-compare-obs_seasonal-cycle_GPP_pt")
  ;wks2 = gsn_open_wks("pdf","model-compare-obs_seasonal-cycle_GPP_pt_006") 
  ;wks2 = gsn_open_wks("pdf","model-compare-obs_seasonal-cycle_GPP_pt_006_005")
+ ;wks2 = gsn_open_wks("pdf","model-compare-obs_seasonal-cycle_GPP_pt_002_006")
+ wks2 = gsn_open_wks("pdf","model-compare-obs_seasonal-cycle_GPP_pt_SVD001_002")
 
  plot2 = new(2, graphic)
 
@@ -208,8 +214,8 @@ begin
  res2@gsnDraw = False
  res2@gsnFrame = False
  
- res2@xyLineColors = (/"red","blue","black"/) ; obs, model test, model default
- ;res2@xyLineColors = (/"red","blue","green","black"/) ; obs, model test1, model test2, model default
+ ;res2@xyLineColors = (/"red","blue","black"/) ; obs, model test, model default
+ res2@xyLineColors = (/"red","blue","green","black"/) ; obs, model test1, model test2, model default
  ;res@xyDashPatterns     = (/0,0,1,0/)
  res2@xyMonoDashPattern = True
  res2@xyDashPattern = 0
@@ -229,7 +235,8 @@ begin
  res2@pmLegendHeightF        = 0.15                ; height of legend.
  res2@lgPerimOn              = False               ; turn off box around
  res2@lgLabelFontHeightF     = .02                 ; label font height
- res2@xyExplicitLegendLabels = (/"Obs","Model Preds","Model Default"/)         ; create explicit labels
+ ;res2@xyExplicitLegendLabels = (/"Obs","Model Preds","Model Default"/)         ; create explicit labels
+ res2@xyExplicitLegendLabels = (/"Obs","Model Preds GM","Model Preds SVD","Model Default"/)
 
  ;years = ispan(1,5,1)
  ;plot(2) = gsn_csm_xy(wks,years,data,res)
@@ -242,17 +249,17 @@ begin
  v_obs_time = v_obs_clim(:,{latp},{lonp})
  v_model_def_time = v_model_def_clim(:,{latp},{lonp})
  v_model_time = v_model_clim(:,{latp},{lonp})
- ;v_model2_time = v_model2_clim(:,{latp},{lonp})
+ v_model2_time = v_model2_clim(:,{latp},{lonp})
  data(0,:) = v_obs_time                                                                                                                        
  data(1,:) = v_model_time
- ;data(2,:) = v_model2_time
- ;data(3,:) = v_model_def_time
- data(2,:) = v_model_def_time
+ data(2,:) = v_model2_time
+ data(3,:) = v_model_def_time
+ ;data(2,:) = v_model_def_time
  res2@tiMainString = "Sahel"
  res2@tiYAxisString = ""
  ;res2@pmLegendDisplayMode    = "Never"
  ; legend fits better here
- res2@pmLegendDisplayMode    = "Always"
+ ;res2@pmLegendDisplayMode    = "Always"
  plot2(1) = gsn_csm_xy(wks2,months,data,res2)
 
  ; third region

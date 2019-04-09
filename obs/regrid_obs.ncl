@@ -11,16 +11,30 @@ begin
 ;---Read in obs netCDF file
   ;in = addfile("MR_GPP_0.9x1.25_2000_2004_amean.nc","r")
   ;in = addfile("MR_GPP_0.9x1.25_2000_2004.nc","r")
-  in = addfile("MR_LHF_0.9x1.25_2000_2004.nc","r")
+  ;in = addfile("MR_LHF_0.9x1.25_2000_2004.nc","r")
+  ;in = addfile("MR_GPP_0.5x0.5_2000_2004.nc","r")
+  in = addfile("MR_GPP0.9x1.25.nc","r")
 
 ;---Read in data
-  ;gpp = in->GPP
+  gpp = in->GPP
   ;printVarSummary(gpp)
-  lhf = in->LHF
-  lon = in->lon
-  lat = in->lat
-  area = in->area
-  datamask = in->datamask
+  ;lhf = in->LHF
+  ;lon = in->lon
+  lon = in->LON
+  ;lat = in->lat
+  lat = in->LAT
+  ;area = in->area
+  ;datamask = in->datamask
+
+;---Coordinate variables for gpp (original file only)
+  gpp!1 = "lat"
+  gpp!2 = "lon"
+  gpp&lat = lat
+  gpp&lon = lon
+
+;---Read in area from processing file
+  in_area = addfile("MR_GPP_0.9x1.25_ALLMONS_climo.nc","r")
+  area = in_area->area
 
 ;---Read in target resolution file
   in_res = addfile("../outputdata/outputdata_GPP_forSVD_100.nc","r")
@@ -36,43 +50,39 @@ begin
   ;newlat@units = "degrees_north"
   ;newlon@units = "degrees_east"
 
-  ;newgpp = linint2_Wrap(lon,lat,gpp,True,lon_res,lat_res,0)
-
-  ;newgpp!1   ="lat"
-  ;newgpp!2   = "lon"
-  ;newgpp&lat = lat_res
-  ;newgpp&lon = lon_res
-
+  newgpp = linint2_Wrap(lon,lat,gpp,True,lon_res,lat_res,0)
+  newgpp!1   ="lat"
+  newgpp!2   = "lon"
+  newgpp&lat = lat_res
+  newgpp&lon = lon_res
   ;printVarSummary(newgpp)
 
-  newlhf = linint2_Wrap(lon,lat,lhf,True,lon_res,lat_res,0)
-  newlhf!1 = "lat"
-  newlhf!2 = "lon"
-  newlhf&lat = lat_res
-  newlhf&lon = lon_res
-
-  printVarSummary(newlhf)
+  ;newlhf = linint2_Wrap(lon,lat,lhf,True,lon_res,lat_res,0)
+  ;newlhf!1 = "lat"
+  ;newlhf!2 = "lon"
+  ;newlhf&lat = lat_res
+  ;newlhf&lon = lon_res
+  ;printVarSummary(newlhf)
 
   newarea = linint2_Wrap(lon,lat,area,True,lon_res,lat_res,0)
   newarea!0   ="lat"
   newarea!1   = "lon"
   newarea&lat = lat_res
   newarea&lon = lon_res
-
-  printVarSummary(newarea)
+  ;printVarSummary(newarea)
  
   ; regridding the datamask creates values between 0 and 1
   ;newdatam = linint2_Wrap(lon,lat,datamask,True,lon_res,lat_res,0)
   ; instead, create datamask based on regridded obs data
-  ;newdatam = where(ismissing(newgpp(0,:,:)),0.,1.)
-  newdatam = where(ismissing(newlhf(0,:,:)),0.,1.)
-  printVarSummary(newdatam)
+  ; with the caveat that this is based on the first time record
+  newdatam = where(ismissing(newgpp(0,:,:)),0.,1.)
+  ;newdatam = where(ismissing(newlhf(0,:,:)),0.,1.)
+  ;printVarSummary(newdatam)
   newdatam!0 = "lat"
   newdatam!1 = "lon"
   newdatam&lat = lat_res
   newdatam&lon = lon_res
-
-  printVarSummary(newdatam)
+  ;printVarSummary(newdatam)
 
   ; this function doesn't like missing values
   ;newgpp2 = g2gsh(gpp,(/46,72/),0)
@@ -90,21 +100,23 @@ begin
   res@cnLineLabelsOn      = False              ; no line labels
 
   ; plot native resolution (first month)
-  ;plot = gsn_csm_contour_map(wks,gpp(0,:,:),res)
-  plot = gsn_csm_contour_map(wks,lhf(0,:,:),res)
+  plot = gsn_csm_contour_map(wks,gpp(0,:,:),res)
+  ;plot = gsn_csm_contour_map(wks,lhf(0,:,:),res)
 
   ; plot new resolution (first month)
-  ;plot = gsn_csm_contour_map(wks,newgpp(0,:,:),res)
+  plot = gsn_csm_contour_map(wks,newgpp(0,:,:),res)
   ;plot = gsn_csm_contour_map(wks,newgpp2(0,:,:),res)
-  plot = gsn_csm_contour_map(wks,newlhf(0,:,:),res)
+  ;plot = gsn_csm_contour_map(wks,newlhf(0,:,:),res)
 
   ; save out regridded output
   ;ncdf = addfile("MR_GPP_4x5_2000_2004_amean.nc","c")
   ;ncdf = addfile("MR_GPP_4x5_2000_2004.nc","c")
-  ncdf = addfile("MR_LHF_4x5_2000_2004.nc","c")
+  ;ncdf = addfile("MR_LHF_4x5_2000_2004.nc","c")
+  ;ncdf = addfile("MR_GPP_4x5_2000_2004_v2.nc","c")
+  ncdf = addfile("MR_GPP_4x5.nc","c")
 
-  ;ncdf->GPP = newgpp
-  ncdf->LHF = newlhf
+  ncdf->GPP = newgpp
+  ;ncdf->LHF = newlhf
   ncdf->area = newarea
   ncdf->datamask = newdatam
 end

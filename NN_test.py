@@ -31,7 +31,8 @@ inputdata = np.load(file="lhc_100.npy")
 
 # Read in output array
 #outputdata = np.loadtxt("outputdata/outputdata_GPP.csv")
-outputdata_all = np.load("outputdata/outputdata_GPP_SVD.npy")
+#outputdata_all = np.load("outputdata/outputdata_GPP_SVD.npy")
+outputdata = np.load("outputdata/outputdata_GPP_SVD_3modes.npy")
 
 # Specify mode (SVD only)
 #mode = 1
@@ -43,7 +44,7 @@ outputdata_all = np.load("outputdata/outputdata_GPP_SVD.npy")
 #plt.show()
 
 # Multi-dimension
-outputdata = outputdata_all[:,:3]
+#outputdata = outputdata_all[:,:3]
 nmodes = outputdata.shape[1]
 
 # Separate training/test/val data: 60/20/20 split
@@ -71,7 +72,7 @@ for i in range(1,maxnode+1):
         # Still not sure why this need to be specified for each loop
         # But otherwise, the answers change from running the script 
         # separately each time for a different node value
-        np.random.seed(7)
+        np.random.seed(9)
 
         # Create 2-layer simple model
         model = Sequential()

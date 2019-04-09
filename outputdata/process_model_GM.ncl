@@ -7,7 +7,7 @@ begin
 ; read in data
 ;************************************************
  ; set param set number
- pset = "006"
+ ;pset = "006"
 
  ; set model path
  path = "/glade/scratch/kdagon/archive/"
@@ -23,9 +23,10 @@ begin
  ;u = 10^6 / (86400 * 12) ; gC/m2/day to umolC/m2/s
 
  ; get hist files (last 5 years)
- strs = (/path,"test_paramset_",pset,"/lnd/hist/*{001[6-9],20-}*"/)
+ ;strs = (/path,"test_paramset_",pset,"/lnd/hist/*{001[6-9],20-}*"/)
  ;strs = (/path,"hydro_ensemble0/lnd/hist/*{001[6-9],20-}*"/)
  ;strs = (/path,"hydro_ensemble_rootprof_beta_min/lnd/hist/*{001[6-9],20-}*"/)
+ strs = (/path,"hydro_ensemble_LHC_default_params/lnd/hist/*{001[6-9],20-}*"/)
  str_c = str_concat(strs)
  print(str_c)
  fils = systemfunc("ls "+str_c)
@@ -40,6 +41,17 @@ begin
  lat = f_lat->lat
  rad = 4.0*atan(1.0)/180.0
  clat = cos(lat*rad)
+
+ ; get landfrac & area
+ landf = f_lat->landfrac
+ ;printVarSummary(landf)
+ area = f_lat->area
+
+ ; wgt variable
+ arwt = area
+ arwt = area * landf
+ arwt = arwt/max(arwt)
+ printVarSummary(arwt)
  
  ; global mean calculation
  ; unit conversion, copy metadata
@@ -47,8 +59,10 @@ begin
  ;copy_VarMeta(v,v_c)
  ; global mean, annual mean
  v_gm_am = dim_avg_n_Wrap(wgt_areaave_Wrap(v,clat,1,0),0)
- 
  print(v_gm_am)
+
+ v_gm_am_alt = dim_avg_n_Wrap(wgt_areaave2(v,arwt,0),0)
+ print(v_gm_am_alt)
 
  ; annual mean across years
  v_am = dim_avg_n_Wrap(v,0)
