@@ -55,8 +55,10 @@ begin
  ;pset2 = "006"
  ;pset = "006"
  ;pset2 = "005"
- pset = "SVD_001"
- pset2 = "002"
+ ;pset = "SVD_001"
+ ;pset2 = "002"
+ pset = "SVD_002"
+ pset2 = "SVD_001"
 
  ; set model path
  path_model = "/glade/scratch/kdagon/archive/"
@@ -104,10 +106,10 @@ begin
  ;plot = new(nyrs,graphic)
  plot = new(2,graphic)
 
- ;wks = gsn_open_wks("x11","test")
+ wks = gsn_open_wks("x11","test")
  ;wks = gsn_open_wks("pdf","model-minus-obs_4x5_2000-2004_amean_GPP_002")
  ;wks = gsn_open_wks("pdf","model-minus-obs_4x5_2000-2004_amean_GPP_006")
- wks = gsn_open_wks("pdf","model-minus-obs_4x5_2000-2004_amean_GPP_SVD001")
+ ;wks = gsn_open_wks("pdf","model-minus-obs_4x5_2000-2004_amean_GPP_SVD001")
 
  res = True
  res@gsnDraw = False
@@ -201,12 +203,12 @@ begin
  data(3,:) = v_model_def_time
  ;data(2,:) = v_model_def_time
 
- ;wks2 = gsn_open_wks("x11","test")
+ wks2 = gsn_open_wks("x11","test")
  ;wks2 = gsn_open_wks("pdf","model-compare-obs_seasonal-cycle_GPP_pt")
  ;wks2 = gsn_open_wks("pdf","model-compare-obs_seasonal-cycle_GPP_pt_006") 
  ;wks2 = gsn_open_wks("pdf","model-compare-obs_seasonal-cycle_GPP_pt_006_005")
  ;wks2 = gsn_open_wks("pdf","model-compare-obs_seasonal-cycle_GPP_pt_002_006")
- wks2 = gsn_open_wks("pdf","model-compare-obs_seasonal-cycle_GPP_pt_SVD001_002")
+ ;wks2 = gsn_open_wks("pdf","model-compare-obs_seasonal-cycle_GPP_pt_SVD001_002")
 
  plot2 = new(2, graphic)
 
@@ -236,7 +238,7 @@ begin
  res2@lgPerimOn              = False               ; turn off box around
  res2@lgLabelFontHeightF     = .02                 ; label font height
  ;res2@xyExplicitLegendLabels = (/"Obs","Model Preds","Model Default"/)         ; create explicit labels
- res2@xyExplicitLegendLabels = (/"Obs","Model Preds GM","Model Preds SVD","Model Default"/)
+ ;res2@xyExplicitLegendLabels = (/"Obs","Model Preds GM","Model Preds SVD","Model Default"/)
 
  ;years = ispan(1,5,1)
  ;plot(2) = gsn_csm_xy(wks,years,data,res)
