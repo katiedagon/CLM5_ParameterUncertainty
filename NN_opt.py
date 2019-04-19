@@ -14,7 +14,7 @@ import matplotlib.pyplot as plt
 import matplotlib.axes as ax
 
 # Fix random seed for reproducibility
-#np.random.seed(7)
+np.random.seed(7)
 
 # Read in input array
 inputdata = np.load(file="lhc_100.npy")
@@ -74,7 +74,7 @@ sd = np.load(file="obs/obs_GPP_SVD_3modes_allyrs_sd.npy")
 
 # Define likelihood function using emulator predictions
 def normerr(x):
-    print(x)
+    #print(x)
     #print(x.shape)
     xt = x.reshape(1,-1)
     #print(xt.shape)
@@ -91,9 +91,9 @@ def normerr(x):
 
 # Algorithms may be getting stuck on initial values (unclear why)
 # Try generating LHC initial values
-#from pyDOE import *
-#lhd = lhs(npar,samples=1) # default sampling criterion = random
-#x0 = lhd[0,:]
+from pyDOE import *
+lhd = lhs(npar,samples=1) # default sampling criterion = random
+x0 = lhd[0,:]
 
 ## Trying out different optimization algorithms ##
 
@@ -149,11 +149,25 @@ def normerr(x):
 #resb[1]
 
 # SHGO (global)
-from scipy.optimize import shgo
+#from scipy.optimize import shgo
+#bounds = [(0,1), (0,1), (0,1), (0,1), (0,1), (0,1)]
+#res = shgo(normerr, bounds, options={'disp':True})
+#print(res.x)
+#print(res.fun)
+
+# Dual Annealing (global)
+from scipy.optimize import dual_annealing
 bounds = [(0,1), (0,1), (0,1), (0,1), (0,1), (0,1)]
-res = shgo(normerr, bounds, options={'disp':True})
-print(res.x)
-print(res.fun)
+#res = dual_annealing(normerr, bounds=bounds, x0=x0)
+res = dual_annealing(normerr, bounds, maxiter=10000, x0=x0)
+print(res)
+
+# Nonlinear Least Squares
+#from scipy.optimize import least_squares
+#bounds = ([0,1])
+#res = least_squares(normerr, x0, bounds=bounds)
+#print(res)
+
 
 # Older code from manually calculating L
 #L = np.sum(((model_preds-obs)/sd)**2, axis=1)
