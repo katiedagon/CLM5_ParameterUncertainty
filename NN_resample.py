@@ -47,8 +47,8 @@ svd_var = [0.8341, 0.1349, 0.0119]
 metricsME = []
 metricsRsq = []
 metricswRsq = []
-# Resample 10 times
-for k in range(1,11):
+# Resample k times
+for k in range(1,101):
 
     # Separate training/test/val data: 60/20/20 split
     # Randomly using sklearn
@@ -59,10 +59,10 @@ for k in range(1,11):
     model = Sequential()
     # specify input_dim as number of parameters, not number of simulations
     # l2 norm regularizer
-    model.add(Dense(6, input_dim=inputdata.shape[1], activation='relu',
+    model.add(Dense(14, input_dim=inputdata.shape[1], activation='relu',
         kernel_regularizer=l2(.001)))
     # second layer with hyperbolic tangent activation
-    model.add(Dense(5, activation='tanh', kernel_regularizer=l2(.001)))
+    model.add(Dense(9, activation='tanh', kernel_regularizer=l2(.001)))
     # output layer with linear activation
     #model.add(Dense(1))
     model.add(Dense(nmodes))
@@ -72,7 +72,7 @@ for k in range(1,11):
         return K.mean((y_true-y_pred)**2)
 
     # Compile model
-    opt_dense = RMSprop(lr=0.001, rho=0.9, epsilon=None, decay=0.0)
+    opt_dense = RMSprop(lr=0.005, rho=0.9, epsilon=None, decay=0.0)
     #opt_dense = SGD(lr=0.001, momentum=0.99, decay=1e-4, nesterov=True)
     model.compile(opt_dense, "mse", metrics=[mean_sq_err])
     #model.summary()
@@ -136,10 +136,10 @@ for k in range(1,11):
                 model_preds[:,k])
         r_array.append(r_value**2)
 
-    print("Prediction Mean Error: %.2g" % model_me)
+    #print("Prediction Mean Error: %.2g" % model_me)
     #print("r-squared: %.2g" % r_value**2)
-    print("avg. r-squared: %.2g" % np.mean(r_array))
-    print("wgt avg. r-squared: %.2g" % np.average(r_array,weights=svd_var))
+    #print("avg. r-squared: %.2g" % np.mean(r_array))
+    #print("wgt avg. r-squared: %.2g" % np.average(r_array,weights=svd_var))
     metricsME.append(model_me)
     #metricsRsq.append(r_value**2) # single dim
     metricsRsq.append(np.mean(r_array)) # multi dim, average

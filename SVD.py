@@ -52,7 +52,7 @@ drm[drm==1.e+36] = 0
 # SVD command (no trunc option)
 U,s,Vh = np.linalg.svd(drm, full_matrices=False)
 #print(U.shape)
-print(U[:,0]) # first mode
+#print(U[:,0]) # first mode
 #plt.hist(U[:,0], bins=20)
 #plt.show()
 #print(s.shape)
@@ -136,7 +136,7 @@ drom[drom==-9999] = 0
 # Project obs into SVD space
 from numpy.linalg import pinv
 U_obs = np.dot(drom,pinv(np.dot(smat,Vh)))
-print(U_obs.shape)
+#print(U_obs.shape)
 #print(U_obs)
 
 # Print out U_obs for first mode
@@ -191,7 +191,10 @@ drdm = drd[:,mrd==1]
 #print(drdm.shape)
 drdm[drdm==1.e+36] = 0
 U_default = np.dot(drdm,pinv(np.dot(smat,Vh)))
-print(U_default[:,0])
+print(U_default[:,0:3])
+
+# Save out first n modes of U_default
+#np.save("outputdata/modeldefault_GPP_SVD_3modes", U_default[:,0:3])
 
 # Plot distribution with U_default
 plt.hist(U[:,0], bins=20)

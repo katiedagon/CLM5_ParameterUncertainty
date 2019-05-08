@@ -37,14 +37,14 @@ begin
  ; global mean calculation
  v_obs = f_obs->$var$
  ;print(v_obs&lon)
- printVarSummary(v_obs)
+ ;printVarSummary(v_obs)
  ; unit conversion, copy metadata
  v_obs_c = v_obs*u 
  copy_VarMeta(v_obs,v_obs_c)
- printVarSummary(v_obs_c)
+ ;printVarSummary(v_obs_c)
  ; month to annual
  v_obs_amean = month_to_annual(v_obs_c,1)
- printVarSummary(v_obs_amean)
+ ;printVarSummary(v_obs_amean)
  ; global mean, annual mean
  ;v_gm_am = dim_avg_n_Wrap(wgt_areaave_Wrap(v_obs_c,clat,1,0),0)
  ;print(v_gm_am)
@@ -57,8 +57,11 @@ begin
  ;pset2 = "005"
  ;pset = "SVD_001"
  ;pset2 = "002"
- pset = "SVD_002"
- pset2 = "SVD_001"
+ ;pset = "SVD_002"
+ ;pset2 = "SVD_001"
+
+ pset = "test_paramset_SVD_004"
+ pset2 = "test_paramset_SVD_005"
 
  ; set model path
  path_model = "/glade/scratch/kdagon/archive/"
@@ -74,7 +77,8 @@ begin
  ;u = 10^6 / (86400 * 12) ; gC/m2/day to umolC/m2/s
 
  ; get hist files (last 5 years)
- strs = (/path_model,"test_paramset_",pset,"/lnd/hist/*{001[6-9],20-}*"/)
+ ;strs = (/path_model,"test_paramset_",pset,"/lnd/hist/*{001[6-9],20-}*"/)
+ strs = (/path_model,pset,"/lnd/hist/*{001[6-9],20-}*"/) 
  str_c = str_concat(strs)
  ;print(str_c)
  fils = systemfunc("ls "+str_c)
@@ -82,14 +86,16 @@ begin
  v_model = f[:]->$var_model$
  ;print(v_model&lon)
  v_model_amean = month_to_annual(v_model,1)
- printVarSummary(v_model_amean)
+ ;printVarSummary(v_model_amean)
 
  ; get hist files from model run2 (last 5 years)
- strs = (/path_model,"test_paramset_",pset2,"/lnd/hist/*{001[6-9],20-}*"/)
+ ;strs = (/path_model,"test_paramset_",pset2,"/lnd/hist/*{001[6-9],20-}*"/)
+ strs = (/path_model,pset2,"/lnd/hist/*{001[6-9],20-}*"/) 
  str_c = str_concat(strs)
  fils = systemfunc("ls "+str_c)
  f = addfiles(fils,"r")
  v_model2 = f[:]->$var_model$
+ v_model2_amean = month_to_annual(v_model2,1)
 
  ; compare obs / model
  diff = v_model_amean - v_obs_amean
@@ -97,19 +103,30 @@ begin
  ; mean across 5 years
  diff_amean = dim_avg_n_Wrap(diff, 0) 
  ; perdiff
- v_obs_amean_mask = mask(v_obs_amean,v_obs_amean.eq.0,False)
+ ;v_obs_amean_mask = mask(v_obs_amean,v_obs_amean.eq.0,False)
+ v_obs_amean_mask = mask(v_obs_amean,v_obs_amean.lt.0.01,False)
  perdiff = 100*diff/v_obs_amean_mask
  copy_VarMeta(diff,perdiff)
  perdiff_amean = dim_avg_n_Wrap(perdiff,0)
+ ; model run2
+ diff2 = v_model2_amean - v_obs_amean
+ copy_VarMeta(v_model2_amean, diff2)
+ diff2_amean = dim_avg_n_Wrap(diff2,0)
+ perdiff2 = 100*diff2/v_obs_amean_mask
+ copy_VarMeta(diff2,perdiff2)
+ perdiff2_amean = dim_avg_n_Wrap(perdiff2,0)
 
  ; plot diff
  ;plot = new(nyrs,graphic)
  plot = new(2,graphic)
+ ;plot = new(3,graphic)
 
- wks = gsn_open_wks("x11","test")
+ ;wks = gsn_open_wks("x11","test")
  ;wks = gsn_open_wks("pdf","model-minus-obs_4x5_2000-2004_amean_GPP_002")
  ;wks = gsn_open_wks("pdf","model-minus-obs_4x5_2000-2004_amean_GPP_006")
  ;wks = gsn_open_wks("pdf","model-minus-obs_4x5_2000-2004_amean_GPP_SVD001")
+ ;wks = gsn_open_wks("pdf","model-minus-obs_4x5_2000-2004_amean_GPP_LHC84_SVD004")
+ wks = gsn_open_wks("pdf","model-minus-obs_4x5_2000-2004_amean_GPP_SVD005")
 
  res = True
  res@gsnDraw = False
@@ -123,16 +140,17 @@ begin
  res@lbBoxLinesOn = False ; no boxes
  res@gsnLeftString = var
  ;res@gsnRightString = diff@units
- res@gsnRightString = "~F33~m~F21~mol m~S~-2~N~s~S~-1"
+ ;res@gsnRightString = "~F33~m~F21~mol m~S~-2~N~s~S~-1"
+ res@gsnRightString = "%"
 
  ; set the contour bounds
  res@cnLevelSelectionMode = "ManualLevels"
- res@cnMinLevelValF  = -2
- res@cnMaxLevelValF  = 2
- res@cnLevelSpacingF = 0.2
- ;res@cnMinLevelValF  = -100
- ;res@cnMaxLevelValF  = 100
- ;res@cnLevelSpacingF = 5
+ ;res@cnMinLevelValF  = -2
+ ;res@cnMaxLevelValF  = 2
+ ;res@cnLevelSpacingF = 0.2
+ res@cnMinLevelValF  = -100
+ res@cnMaxLevelValF  = 100
+ res@cnLevelSpacingF = 10
 
  ; single plot
  ;plot = gsn_csm_contour_map(wks,diff_amean,res)
@@ -146,8 +164,10 @@ begin
  ; plot(i-1) = gsn_csm_contour_map(wks,diff(i-1,:,:),res)
  ;end do
 
- res@gsnCenterString = "Model with 'best' parameters - Observations"
- plot(0) = gsn_csm_contour_map(wks,diff_amean,res)
+ label_strs = str_concat((/pset, " relative to Observations"/))
+ res@gsnCenterString = label_strs
+ ;res@gsnCenterString = "Model with 'best' parameters - Observations"
+ ;plot(0) = gsn_csm_contour_map(wks,diff_amean,res)
 
  ;resP                     = True                ; modify the panel plot
  ;resP@gsnMaximize         = True
@@ -156,6 +176,11 @@ begin
  ;resP@lbBoxLinesOn = False ; no boxes
  ;gsn_panel(wks,plot,(/3,2/),resP) 
 
+ label_strs2 = str_concat((/pset2, " relative to Observations"/))
+ res@gsnCenterString = label_strs2
+ ;plot(1) = gsn_csm_contour_map(wks,diff2_amean,res)
+ plot(0) = gsn_csm_contour_map(wks,perdiff2_amean,res)
+
  ; compare obs / model default
  strs_def = (/path_model,"hydro_ensemble_LHC_default_params/lnd/hist/*{001[6-9],20-}*"/)
  str_c = str_concat(strs_def)
@@ -163,21 +188,26 @@ begin
  f = addfiles(fils,"r")
  v_model_default = f[:]->$var_model$
  v_model_def_amean = month_to_annual(v_model_default,1)
- printVarSummary(v_model_def_amean) 
+ ;printVarSummary(v_model_def_amean) 
 
  diff_def = v_model_def_amean - v_obs_amean
  copy_VarMeta(v_model_def_amean, diff_def)
  ; mean across 5 years
  diff_def_amean = dim_avg_n_Wrap(diff_def, 0)
+ perdiff_def = 100*diff_def/v_obs_amean_mask
+ copy_VarMeta(diff_def,perdiff_def)
+ perdiff_def_amean = dim_avg_n_Wrap(perdiff_def,0)
 
  res@gsnCenterString = "Model with default parameters - Observations"
- plot(1) = gsn_csm_contour_map(wks,diff_def_amean,res)
+ ;plot(2) = gsn_csm_contour_map(wks,diff_def_amean,res)
+ plot(1) = gsn_csm_contour_map(wks,perdiff_def_amean,res)
 
  resP                     = True                ; modify the panel plot
  resP@gsnMaximize         = True
  ;resP@gsnPanelMainString = "Model - Observations"
  resP@gsnPanelLabelBar    = True                ; add common colorbar
  resP@lbBoxLinesOn = False ; no boxes
+ ;gsn_panel(wks,plot,(/2,2/),resP)
  gsn_panel(wks,plot,(/1,2/),resP)
 
  ; compare regional seasonal cycles
@@ -209,6 +239,7 @@ begin
  ;wks2 = gsn_open_wks("pdf","model-compare-obs_seasonal-cycle_GPP_pt_006_005")
  ;wks2 = gsn_open_wks("pdf","model-compare-obs_seasonal-cycle_GPP_pt_002_006")
  ;wks2 = gsn_open_wks("pdf","model-compare-obs_seasonal-cycle_GPP_pt_SVD001_002")
+ ;wks2 = gsn_open_wks("pdf","model-compare-obs_seasonal-cycle_GPP_pt_LHC84_SVD004")
 
  plot2 = new(2, graphic)
 
@@ -229,7 +260,8 @@ begin
  res2@tiMainString = "Amazon" 
 
  ; legend settings
- res2@pmLegendDisplayMode    = "Never"            ; turn on legend
+ ;res2@pmLegendDisplayMode    = "Never"            ; turn on legend
+ res2@pmLegendDisplayMode    = "Always"
  res2@pmLegendSide           = "Top"               ; Change location of 
  res2@pmLegendParallelPosF   = 0.8                  ; move units right
  res2@pmLegendOrthogonalPosF = -0.8                ; move units down
@@ -239,6 +271,7 @@ begin
  res2@lgLabelFontHeightF     = .02                 ; label font height
  ;res2@xyExplicitLegendLabels = (/"Obs","Model Preds","Model Default"/)         ; create explicit labels
  ;res2@xyExplicitLegendLabels = (/"Obs","Model Preds GM","Model Preds SVD","Model Default"/)
+ res2@xyExplicitLegendLabels = (/"Obs",pset,pset2,"Model Default"/)
 
  ;years = ispan(1,5,1)
  ;plot(2) = gsn_csm_xy(wks,years,data,res)
@@ -259,8 +292,7 @@ begin
  ;data(2,:) = v_model_def_time
  res2@tiMainString = "Sahel"
  res2@tiYAxisString = ""
- ;res2@pmLegendDisplayMode    = "Never"
- ; legend fits better here
+ res2@pmLegendDisplayMode    = "Never"
  ;res2@pmLegendDisplayMode    = "Always"
  plot2(1) = gsn_csm_xy(wks2,months,data,res2)
 

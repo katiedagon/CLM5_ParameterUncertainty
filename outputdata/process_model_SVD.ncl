@@ -7,7 +7,8 @@ begin
 ; read in data
 ;************************************************
  ; set param set number
- pset = "001"
+ ;pset = "001"
+ pset = "005"
 
  ; set model path
  path = "/glade/scratch/kdagon/archive/"
@@ -60,26 +61,26 @@ begin
  ;printVarSummary(O)                                                                                                                         
 
  ; ensemble mean w/o test member
- ;O_em = dim_avg_n_Wrap(O,0)
+ O_em = dim_avg_n_Wrap(O,0)
  ;printVarSummary(O_em)
 
  ; test member is last ensemble member
- o_md_dims = dimsizes(O)
- O_mod = new((/o_md_dims(0)+1,o_md_dims(1),o_md_dims(2)/),"float")
- O_mod(:99,:,:) = O
- O_mod(100,:,:) = v_am_area
+ ;o_md_dims = dimsizes(O)
+ ;O_mod = new((/o_md_dims(0)+1,o_md_dims(1),o_md_dims(2)/),"float")
+ ;O_mod(:99,:,:) = O
+ ;O_mod(100,:,:) = v_am_area
  ;printVarSummary(O_mod)
 
  ; ensemble mean w/obs
- O_em_alt = dim_avg_n_Wrap(O_mod,0)
+ ;O_em_alt = dim_avg_n_Wrap(O_mod,0)
  ;printVarSummary(O_em_alt) 
 
  ; prepare input to SVD
  ; subtract "ensemble" mean from test member
  ; where ensemble mean is LHC ensemble mean
  v_anom = v_am_area ; metadata
- ;v_anom = v_am_area - O_em ; no test member
- v_anom = v_am_area - O_em_alt ; with test member
+ v_anom = v_am_area - O_em ; no test member
+ ;v_anom = v_am_area - O_em_alt ; with test member
 
  ; update units
  v_anom@units = "PgC/yr"
@@ -89,7 +90,7 @@ begin
  ; test plot
  ;wks = gsn_open_wks("x11","test")
  ;wks = gsn_open_wks("pdf", "test_paramset_001_GPP_forSVD_withtest")
- wks = gsn_open_wks("pdf", "CLM_default_GPP_forSVD_withdefault")
+ wks = gsn_open_wks("pdf", "CLM_default_GPP_forSVD_withoutdefault")
 
  res = True
  ;res@gsnDraw = False
@@ -104,7 +105,7 @@ begin
  res@gsnLeftString = var
  res@gsnRightString = v_anom@units
  ;res@tiMainString = "5-year annual mean test paramset 001, area-weighted, anomaly from LHC100 ensemble mean with test paramset 001"  
- res@tiMainString = "5-year annual mean default params, area-weighted, anomaly from LHC100 ensemble mean with default params"
+ res@tiMainString = "5-year annual mean default params, area-weighted, anomaly from LHC100 ensemble mean without default params"
  res@tiMainFontHeightF   = 0.012
 
  ; set the contour bounds (FPSN, 001)
@@ -117,8 +118,8 @@ begin
 
  ; write output file
  ;ncdf = addfile("test_paramset_001_GPP_forSVD.nc", "c")
- ncdf = addfile("CLM_default_GPP_forSVD.nc", "c")
- ncdf->GPP = v_anom 
- ncdf->datamask = datamask_obs
+ ;ncdf = addfile("CLM_default_GPP_forSVD.nc", "c")
+ ;ncdf->GPP = v_anom 
+ ;ncdf->datamask = datamask_obs
 
 end

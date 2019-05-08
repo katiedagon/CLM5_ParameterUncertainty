@@ -7,6 +7,11 @@
 # Number of nodes ranging from 1 to 10 in each layer
 # 8/15/18
 
+# Update to test higher learning rate
+# Number of nodes ranging from 5 to 15 in each layer (less than 5 nodes perform poorly)
+# Consider only relu in first layer (better performance than linear)
+# 5/7/19
+
 from keras.models import Sequential
 from keras.layers import Dense
 from keras.optimizers import SGD, Adam, RMSprop
@@ -56,15 +61,20 @@ y_test = outputdata[60:80]
 y_val = outputdata[80:]
 
 # Max # of nodes
-maxnode = 10
+#maxnode = 10
 #maxnode = 2
+maxnode = 15
+
+# Min # of nodes
+#minnode = 1
+minnode = 5
 
 # Loop over # of nodes
 metrics=[]
 # First layer
-for i in range(1,maxnode+1):
+for i in range(minnode,maxnode+1):
     # Second layer
-    for j in range(1,maxnode+1):
+    for j in range(minnode,maxnode+1):
 
         print(i,j)
 
@@ -79,7 +89,7 @@ for i in range(1,maxnode+1):
         # first hidden layer with variable # nodes and relu or linear activation
         # specify input_dim as number of parameters, not number of simulations
         # l2 norm regularizer
-        model.add(Dense(i, input_dim=inputdata.shape[1], activation='linear',
+        model.add(Dense(i, input_dim=inputdata.shape[1], activation='relu',
             kernel_regularizer=l2(.001)))
         # second layer with varible #  nodes and hyperbolic tangent activation
         model.add(Dense(j, activation='tanh', kernel_regularizer=l2(.001)))
@@ -93,7 +103,7 @@ for i in range(1,maxnode+1):
 
         # Compile model
         # using RMSprop optimizer
-        opt_dense = RMSprop(lr=0.001, rho=0.9, epsilon=None, decay=0.0)
+        opt_dense = RMSprop(lr=0.005, rho=0.9, epsilon=None, decay=0.0)
         #opt_dense = SGD(lr=0.001, momentum=0.99, decay=1e-4, nesterov=True)
         model.compile(opt_dense, "mse", metrics=[mean_sq_err])
         #model.summary()
