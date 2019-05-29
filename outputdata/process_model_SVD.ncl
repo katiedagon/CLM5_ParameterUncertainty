@@ -7,8 +7,7 @@ begin
 ; read in data
 ;************************************************
  ; set param set number
- ;pset = "001"
- pset = "005"
+ ;pset = "005"
 
  ; set model path
  path = "/glade/scratch/kdagon/archive/"
@@ -24,7 +23,8 @@ begin
 
  ; get hist files (last 5 years)
  ;strs = (/path,"test_paramset_SVD_",pset,"/lnd/hist/*{001[6-9],20-}*"/)
- strs = (/path,"hydro_ensemble_LHC_default_params/lnd/hist/*{001[6-9],20-}*"/)
+ ;strs = (/path,"hydro_ensemble_LHC_default_params/lnd/hist/*{001[6-9],20-}*"/)
+ strs = (/path,"hydro_ensemble_LHC_86/lnd/hist/*{001[6-9],20-}*"/)
  str_c = str_concat(strs)
  ;print(str_c)
  fils = systemfunc("ls "+str_c)
@@ -88,9 +88,9 @@ begin
  ;printVarSummary(v_anom)
 
  ; test plot
- ;wks = gsn_open_wks("x11","test")
+ wks = gsn_open_wks("x11","test")
  ;wks = gsn_open_wks("pdf", "test_paramset_001_GPP_forSVD_withtest")
- wks = gsn_open_wks("pdf", "CLM_default_GPP_forSVD_withoutdefault")
+ ;wks = gsn_open_wks("pdf", "CLM_default_GPP_forSVD_withoutdefault")
 
  res = True
  ;res@gsnDraw = False
@@ -104,8 +104,8 @@ begin
  res@lbBoxLinesOn = False ; no boxes
  res@gsnLeftString = var
  res@gsnRightString = v_anom@units
- ;res@tiMainString = "5-year annual mean test paramset 001, area-weighted, anomaly from LHC100 ensemble mean with test paramset 001"  
- res@tiMainString = "5-year annual mean default params, area-weighted, anomaly from LHC100 ensemble mean without default params"
+ res@tiMainString = "5-year annual mean test paramset, area-weighted, anomaly from LHC100 ensemble mean with test paramset"  
+ ;res@tiMainString = "5-year annual mean default params, area-weighted, anomaly from LHC100 ensemble mean without default params"
  res@tiMainFontHeightF   = 0.012
 
  ; set the contour bounds (FPSN, 001)
@@ -119,7 +119,8 @@ begin
  ; write output file
  ;ncdf = addfile("test_paramset_001_GPP_forSVD.nc", "c")
  ;ncdf = addfile("CLM_default_GPP_forSVD.nc", "c")
- ;ncdf->GPP = v_anom 
- ;ncdf->datamask = datamask_obs
+ ncdf = addfile("test_paramset_GPP_forSVD.nc", "c")
+ ncdf->GPP = v_anom 
+ ncdf->datamask = datamask_obs
 
 end

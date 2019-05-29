@@ -34,7 +34,8 @@ pwd
 #export EXPTNAME="test_paramset_SVD_001"
 #export EXPTNAME="test_paramset_SVD_002"
 #export EXPTNAME="test_paramset_SVD_004"
-export EXPTNAME="test_paramset_SVD_005"
+#export EXPTNAME="test_paramset_SVD_005"
+export EXPTNAME="test_paramset_SVD_006"
 echo $EXPTNAME
 
 # Remove existing output
@@ -94,7 +95,7 @@ uclm="paramfile='$pftfile'"
 echo  $uclm >> user_nl_clm
 
 # If not PFT-dependent, edit the namelist appropriately
-echo "fff=5" >> user_nl_clm
+echo "fff=0.02" >> user_nl_clm
 echo "dint=0.5" >> user_nl_clm
 echo "baseflow_scalar=0.0005" >> user_nl_clm
 

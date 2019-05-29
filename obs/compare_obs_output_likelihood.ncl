@@ -1,5 +1,5 @@
 ; ***********************************************
-; compare_obs_output.ncl
+; compare_obs_output_likelihood.ncl
 ; ***********************************************
 ;************************************************
 begin
@@ -16,50 +16,47 @@ begin
  nyrs = 5
 
  ; unit conversion (if needed)
- ;u = 365 * 10^-15 ; gC/m2/day to Pg/m2/year
- u = 10^6 / (86400 * 12) ; gC/m2/day to umolC/m2/s
+ u = 365 * 10^-15 ; gC/m2/day to Pg/m2/year
+ ;u = 10^6 / (86400 * 12) ; gC/m2/day to umolC/m2/s
 
  ; get obs file
- ;filename = "MR_GPP_0.9x1.25_ALLMONS_climo.nc"
- ;filename = "MR_GPP_0.9x1.25_2000_2004_amean.nc"
- ;filename = "MR_GPP_4x5_2000_2004_amean.nc"
  filename = "MR_GPP_4x5_2000_2004.nc"
  filepath = str_concat((/path,filename/))
  f_obs = addfile(filepath,"r")
 
- ; since gaus function does not generate the same lats as model grid
- ; use actual latitudes and cosine weighting for global mean
- ;rad = 4.0*atan(1.0)/180.0
- ;lat = f_obs->lat
- ;clat = cos(lat*rad)
- ;print(clat)
- 
- ; global mean calculation
+ ; get gridcell areas
+ grid_area = f_obs->area
+ grid_area_m = grid_area ; metadata
+ grid_area_m = grid_area*10^6 ; km^2 to m^2
+
+ ; get obs datamask
+ datamask_obs = f_obs->datamask
+
+ ; process obs
  v_obs = f_obs->$var$
- ;print(v_obs&lon)
- ;printVarSummary(v_obs)
  ; unit conversion, copy metadata
  v_obs_c = v_obs*u 
  copy_VarMeta(v_obs,v_obs_c)
- ;printVarSummary(v_obs_c)
  ; month to annual
  v_obs_amean = month_to_annual(v_obs_c,1)
- ;printVarSummary(v_obs_amean)
- ; global mean, annual mean
- ;v_gm_am = dim_avg_n_Wrap(wgt_areaave_Wrap(v_obs_c,clat,1,0),0)
- ;print(v_gm_am)
+
+ ; calculate sd of obs (all years)
+ filename_sd = "MR_GPP_4x5.nc"
+ filepath_sd = str_concat((/path,filename_sd/))
+ f_sd = addfile(filepath_sd,"r")
+
+ ; process sd
+ v_sd = f_sd->$var$
+ ; unit conversion, copy metadata
+ v_sd_c = v_sd*u
+ copy_VarMeta(v_sd,v_sd_c)
+ ; month to annual
+ v_sd_amean = month_to_annual(v_sd_c,1)
+ ; sd over years
+ v_sd_amean_std = dim_stddev_n_Wrap(v_sd_amean,0)
+ ;printVarSummary(v_sd_amean_std)
 
  ; get model output
- ; set param set number
- ;pset = "002"
- ;pset2 = "006"
- ;pset = "006"
- ;pset2 = "005"
- ;pset = "SVD_001"
- ;pset2 = "002"
- ;pset = "SVD_002"
- ;pset2 = "SVD_001"
-
  pset = "test_paramset_SVD_005"
  pset2 = "test_paramset_SVD_006"
 
@@ -73,60 +70,51 @@ begin
  nyrs = 5
 
  ; unit conversion (if needed)
- ;u = 365 * 10^-15 ; gC/m2/day to Pg/m2/year
- ;u = 10^6 / (86400 * 12) ; gC/m2/day to umolC/m2/s
+ u = (12 * (3600 * 24 * 365) / 1000000) * 10^-15 ; umolC/m2/s to Pg/m2/year
 
- ; get hist files (last 5 years)
- ;strs = (/path_model,"test_paramset_",pset,"/lnd/hist/*{001[6-9],20-}*"/)
+ ; get model hist files (last 5 years)
  strs = (/path_model,pset,"/lnd/hist/*{001[6-9],20-}*"/) 
  str_c = str_concat(strs)
- ;print(str_c)
  fils = systemfunc("ls "+str_c)
  f = addfiles(fils,"r")
  v_model = f[:]->$var_model$
- ;print(v_model&lon)
- v_model_amean = month_to_annual(v_model,1)
- ;printVarSummary(v_model_amean)
+ ; mask model output to match obs
+ v_model_m = mask(v_model,datamask_obs.eq.0,False)
+ copy_VarMeta(v_model,v_model_m)
+ v_model_c = v_model_m*u
+ copy_VarMeta(v_model,v_model_c)
+ v_model_amean = month_to_annual(v_model_c,1)
 
  ; get hist files from model run2 (last 5 years)
- ;strs = (/path_model,"test_paramset_",pset2,"/lnd/hist/*{001[6-9],20-}*"/)
  strs = (/path_model,pset2,"/lnd/hist/*{001[6-9],20-}*"/) 
  str_c = str_concat(strs)
  fils = systemfunc("ls "+str_c)
  f = addfiles(fils,"r")
  v_model2 = f[:]->$var_model$
- v_model2_amean = month_to_annual(v_model2,1)
+ v_model2_m = mask(v_model2,datamask_obs.eq.0,False)
+ copy_VarMeta(v_model2,v_model2_m)
+ v_model2_c = v_model2_m*u
+ copy_VarMeta(v_model2,v_model2_c)
+ v_model2_amean = month_to_annual(v_model2_c,1)
 
- ; compare obs / model
+ ; calculate likelihood (model 1)
  diff = v_model_amean - v_obs_amean
  copy_VarMeta(v_model_amean, diff)
  ; mean across 5 years
- diff_amean = dim_avg_n_Wrap(diff, 0) 
- ; perdiff
- ;v_obs_amean_mask = mask(v_obs_amean,v_obs_amean.eq.0,False)
- v_obs_amean_mask = mask(v_obs_amean,v_obs_amean.lt.0.01,False)
- perdiff = 100*diff/v_obs_amean_mask
- copy_VarMeta(diff,perdiff)
- perdiff_amean = dim_avg_n_Wrap(perdiff,0)
+ L1 = (dim_avg_n_Wrap(diff,0)/v_sd_amean_std) 
+ copy_VarMeta(v_sd_amean_std,L1)
  ; model run2
  diff2 = v_model2_amean - v_obs_amean
  copy_VarMeta(v_model2_amean, diff2)
- diff2_amean = dim_avg_n_Wrap(diff2,0)
- perdiff2 = 100*diff2/v_obs_amean_mask
- copy_VarMeta(diff2,perdiff2)
- perdiff2_amean = dim_avg_n_Wrap(perdiff2,0)
+ L2 = (dim_avg_n_Wrap(diff2,0)/v_sd_amean_std)
+ copy_VarMeta(v_sd_amean_std,L2)
 
  ; plot diff
- ;plot = new(nyrs,graphic)
  ;plot = new(2,graphic)
  plot = new(3,graphic)
 
  wks = gsn_open_wks("x11","test")
  ;wks = gsn_open_wks("pdf","model-minus-obs_4x5_2000-2004_amean_GPP_002")
- ;wks = gsn_open_wks("pdf","model-minus-obs_4x5_2000-2004_amean_GPP_006")
- ;wks = gsn_open_wks("pdf","model-minus-obs_4x5_2000-2004_amean_GPP_SVD001")
- ;wks = gsn_open_wks("pdf","model-minus-obs_4x5_2000-2004_amean_GPP_LHC84_SVD004")
- ;wks = gsn_open_wks("pdf","model-minus-obs_4x5_2000-2004_amean_GPP_SVD005")
 
  res = True
  res@gsnDraw = False
@@ -140,46 +128,27 @@ begin
  res@lbBoxLinesOn = False ; no boxes
  res@gsnLeftString = var
  ;res@gsnRightString = diff@units
- res@gsnRightString = "~F33~m~F21~mol m~S~-2~N~s~S~-1"
+ ;res@gsnRightString = "~F33~m~F21~mol m~S~-2~N~s~S~-1"
+ ;res@gsnRightString = "PgC m~S~-2~N~ yr~S~-1~N~"
  ;res@gsnRightString = "%"
+ res@gsnRightString = "Normalized Error"
 
  ; set the contour bounds
  res@cnLevelSelectionMode = "ManualLevels"
- res@cnMinLevelValF  = -2
- res@cnMaxLevelValF  = 2
- res@cnLevelSpacingF = 0.2
- ;res@cnMinLevelValF  = -100
- ;res@cnMaxLevelValF  = 100
- ;res@cnLevelSpacingF = 10
-
- ; single plot
- ;plot = gsn_csm_contour_map(wks,diff_amean,res)
- ;plot = gsn_csm_contour_map(wks,perdiff_amean,res)
-
- ; multiple plots
- ;do i=1,nyrs
- ; y=tostring(i)
- ; title_strs = str_concat((/"Year ",y/))
- ; res@gsnCenterString = title_strs
- ; plot(i-1) = gsn_csm_contour_map(wks,diff(i-1,:,:),res)
- ;end do
+ ;res@cnMinLevelValF  = -2
+ ;res@cnMaxLevelValF  = 2
+ ;res@cnLevelSpacingF = 0.2
+ res@cnMinLevelValF  = -100
+ res@cnMaxLevelValF  = 100
+ res@cnLevelSpacingF = 10
 
  label_strs = str_concat((/pset, " relative to Observations"/))
  res@gsnCenterString = label_strs
- ;res@gsnCenterString = "Model with 'best' parameters - Observations"
- plot(0) = gsn_csm_contour_map(wks,diff_amean,res)
-
- ;resP                     = True                ; modify the panel plot
- ;resP@gsnMaximize         = True
- ;resP@gsnPanelMainString = "Model - Observations"
- ;resP@gsnPanelLabelBar    = True                ; add common colorbar
- ;resP@lbBoxLinesOn = False ; no boxes
- ;gsn_panel(wks,plot,(/3,2/),resP) 
+ plot(0) = gsn_csm_contour_map(wks,L1,res)
 
  label_strs2 = str_concat((/pset2, " relative to Observations"/))
  res@gsnCenterString = label_strs2
- plot(1) = gsn_csm_contour_map(wks,diff2_amean,res)
- ;plot(0) = gsn_csm_contour_map(wks,perdiff2_amean,res)
+ plot(1) = gsn_csm_contour_map(wks,L2,res)
 
  ; compare obs / model default
  strs_def = (/path_model,"hydro_ensemble_LHC_default_params/lnd/hist/*{001[6-9],20-}*"/)
@@ -187,20 +156,18 @@ begin
  fils = systemfunc("ls "+str_c)
  f = addfiles(fils,"r")
  v_model_default = f[:]->$var_model$
- v_model_def_amean = month_to_annual(v_model_default,1)
- ;printVarSummary(v_model_def_amean) 
-
+ v_model_default_m = mask(v_model_default,datamask_obs.eq.0,False)
+ copy_VarMeta(v_model_default,v_model_default_m)
+ v_model_default_c = v_model_default_m*u
+ copy_VarMeta(v_model_default,v_model_default_c)
+ v_model_def_amean = month_to_annual(v_model_default_c,1)
  diff_def = v_model_def_amean - v_obs_amean
  copy_VarMeta(v_model_def_amean, diff_def)
- ; mean across 5 years
- diff_def_amean = dim_avg_n_Wrap(diff_def, 0)
- perdiff_def = 100*diff_def/v_obs_amean_mask
- copy_VarMeta(diff_def,perdiff_def)
- perdiff_def_amean = dim_avg_n_Wrap(perdiff_def,0)
+ Ld = (dim_avg_n_Wrap(diff_def,0)/v_sd_amean_std)
+ copy_VarMeta(v_sd_amean_std,Ld)
 
- res@gsnCenterString = "Model with default parameters - Observations"
- plot(2) = gsn_csm_contour_map(wks,diff_def_amean,res)
- ;plot(1) = gsn_csm_contour_map(wks,perdiff_def_amean,res)
+ res@gsnCenterString = "Model with default parameters relative to Observations"
+ plot(2) = gsn_csm_contour_map(wks,Ld,res)
 
  resP                     = True                ; modify the panel plot
  resP@gsnMaximize         = True
@@ -217,11 +184,11 @@ begin
 
  v_obs_clim = clmMonTLL(v_obs_c)
  v_obs_time = v_obs_clim(:,{latp},{lonp})
- v_model_def_clim = clmMonTLL(v_model_default)
+ v_model_def_clim = clmMonTLL(v_model_default_c)
  v_model_def_time = v_model_def_clim(:,{latp},{lonp}) 
- v_model_clim = clmMonTLL(v_model)
+ v_model_clim = clmMonTLL(v_model_c)
  v_model_time = v_model_clim(:,{latp},{lonp})
- v_model2_clim = clmMonTLL(v_model2)
+ v_model2_clim = clmMonTLL(v_model2_c)
  v_model2_time = v_model2_clim(:,{latp},{lonp})
 
  dims = dimsizes(v_model_def_time)
@@ -235,11 +202,6 @@ begin
 
  wks2 = gsn_open_wks("x11","test")
  ;wks2 = gsn_open_wks("pdf","model-compare-obs_seasonal-cycle_GPP_pt")
- ;wks2 = gsn_open_wks("pdf","model-compare-obs_seasonal-cycle_GPP_pt_006") 
- ;wks2 = gsn_open_wks("pdf","model-compare-obs_seasonal-cycle_GPP_pt_006_005")
- ;wks2 = gsn_open_wks("pdf","model-compare-obs_seasonal-cycle_GPP_pt_002_006")
- ;wks2 = gsn_open_wks("pdf","model-compare-obs_seasonal-cycle_GPP_pt_SVD001_002")
- ;wks2 = gsn_open_wks("pdf","model-compare-obs_seasonal-cycle_GPP_pt_LHC84_SVD004")
 
  plot2 = new(2, graphic)
 
@@ -255,7 +217,8 @@ begin
  res2@xyMonoLineThickness = True
  res2@xyLineThicknessF = 3.0
 
- res2@tiYAxisString = "GPP (~F33~m~F21~mol m~S~-2~N~s~S~-1~N~)"
+ ;res2@tiYAxisString = "GPP (~F33~m~F21~mol m~S~-2~N~s~S~-1~N~)"
+ res2@tiYAxisString = "GPP (PgC m~S~-2~N~ yr~S~-1~N~)"
  res2@tiXAxisString = "Months"
  res2@tiMainString = "Amazon" 
 
@@ -270,7 +233,6 @@ begin
  res2@lgPerimOn              = False               ; turn off box around
  res2@lgLabelFontHeightF     = .02                 ; label font height
  ;res2@xyExplicitLegendLabels = (/"Obs","Model Preds","Model Default"/)         ; create explicit labels
- ;res2@xyExplicitLegendLabels = (/"Obs","Model Preds GM","Model Preds SVD","Model Default"/)
  res2@xyExplicitLegendLabels = (/"Obs",pset,pset2,"Model Default"/)
 
  ;years = ispan(1,5,1)
