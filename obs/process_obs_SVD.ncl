@@ -18,8 +18,9 @@ begin
 
  ; unit conversion (if needed)
  ;u = 365 * 10^-15 ; gC/m2/day to Pg/m2/year
- u = 1
+ ;u = 1
  ;u = 86400 * 365 * 10^-12 ; kgC/m2/s to Pg/m2/year
+ u = 1/(10^12) ; W to TW
 
  ; get obs file
  ;filename = "MR_GPP_4x5_2000_2004.nc"
@@ -46,6 +47,8 @@ begin
  ;printVarSummary(v_obs_c)
  ; 5-year annual mean
  ;v_obs_am = dim_avg_n_Wrap(v_obs_c,0) 
+ ; test without area weighting
+ ;v_obs_am_area = v_obs_am
  ; month to annual (to preserve all years)
  v_obs_am = month_to_annual(v_obs_c,1)
  ;printVarSummary(v_obs_am)
@@ -70,6 +73,9 @@ begin
  ; ensemble mean w/o obs
  O_em = dim_avg_n_Wrap(O,0)
  ;printVarSummary(O_em)
+ ; unit conversion (temp)
+ ;O_em_c = O_em*u
+ ;copy_VarMeta(O_em,O_em_c)
 
  ; obs is last ensemble member
  ;o_md_dims = dimsizes(O)
@@ -98,7 +104,8 @@ begin
 
  ; update units
  ;v_obs_anom@units = "PgC/yr"
- v_obs_anom@units = "W"
+ ;v_obs_anom@units = "W"
+ v_obs_anom@units = "TW"
  ;printVarSummary(v_obs_anom)
  
  ; test plot

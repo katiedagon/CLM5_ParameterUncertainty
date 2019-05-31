@@ -10,9 +10,11 @@ from numpy.linalg import pinv
 
 # Read netcdf file (pre-processed in NCL)
 #f=nc.netcdf_file("obs/obs_GPP_4x5_anom_forSVD.nc",'r',mmap=False)
-f=nc.netcdf_file("obs/obs_GPP_4x5_anom_forSVD_allyrs.nc",'r',mmap=False)
+#f=nc.netcdf_file("obs/obs_GPP_4x5_anom_forSVD_allyrs.nc",'r',mmap=False)
+f=nc.netcdf_file("obs/obs_LHF_4x5_anom_forSVD_allyrs.nc",'r',mmap=False)
 # Read variable data
-X=f.variables['GPP']
+#X=f.variables['GPP']
+X=f.variables['LHF']
 mask=f.variables['datamask']
 
 # Convert to numpy array
@@ -55,8 +57,10 @@ drm[drm==-9999] = 0
 #plt.show()
 
 # Calculate model SVD
-fm = nc.netcdf_file("outputdata/outputdata_GPP_forSVD_100.nc",'r',mmap=False)
-Xm = fm.variables['GPP']
+#fm = nc.netcdf_file("outputdata/outputdata_GPP_forSVD_100.nc",'r',mmap=False)
+fm = nc.netcdf_file("outputdata/outputdata_LHF_forSVD_100.nc",'r',mmap=False)
+#Xm = fm.variables['GPP']
+Xm = fm.variables['LHF']
 maskm = fm.variables['datamask']
 dm = Xm[:]
 mm = maskm[:]
@@ -87,3 +91,4 @@ print(U_obs_sd[0:3])
 
 # Save out first 3 modes from SVD
 #np.save("obs/obs_GPP_SVD_3modes_allyrs_sd", U_obs_sd[0:3])
+np.save("obs/obs_LHF_SVD_3modes_allyrs_sd", U_obs_sd[0:3])

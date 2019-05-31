@@ -30,7 +30,8 @@ inputdata = np.load(file="lhc_100.npy")
 # Read in output array
 #outputdata = np.loadtxt("outputdata/outputdata_GPP.csv")
 #outputdata_all = np.load("outputdata/outputdata_GPP_SVD.npy")
-outputdata = np.load("outputdata/outputdata_GPP_SVD_3modes.npy")
+#outputdata = np.load("outputdata/outputdata_GPP_SVD_3modes.npy")
+outputdata = np.load("outputdata/outputdata_LHF_SVD_3modes.npy")
 
 # Specify mode (SVD only)
 #mode = 3
@@ -41,8 +42,8 @@ outputdata = np.load("outputdata/outputdata_GPP_SVD_3modes.npy")
 nmodes = outputdata.shape[1]
 
 # Percent of variance (for weighted avg R^2)
-#svd_var = [0.771, 0.1914, 0.0128]
-svd_var = [0.8341, 0.1349, 0.0119]
+#svd_var = [0.8341, 0.1349, 0.0119] # GPP
+svd_var = [0.7701996, 0.12915632, 0.05642754] #LHF
 
 metricsME = []
 metricsRsq = []
@@ -62,7 +63,7 @@ for k in range(1,101):
     model.add(Dense(14, input_dim=inputdata.shape[1], activation='relu',
         kernel_regularizer=l2(.001)))
     # second layer with hyperbolic tangent activation
-    model.add(Dense(9, activation='tanh', kernel_regularizer=l2(.001)))
+    model.add(Dense(14, activation='tanh', kernel_regularizer=l2(.001)))
     # output layer with linear activation
     #model.add(Dense(1))
     model.add(Dense(nmodes))

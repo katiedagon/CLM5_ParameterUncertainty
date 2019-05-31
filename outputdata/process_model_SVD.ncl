@@ -13,18 +13,20 @@ begin
  path = "/glade/scratch/kdagon/archive/"
 
  ; set variable(s) of interest
- var = "FPSN"
+ ;var = "FPSN"
+ var = "EFLX_LH_TOT"
 
  ; set years
  nyrs = 5
 
  ; unit conversion (if needed)
- u = (12 * (3600 * 24 * 365) / 1000000) * 10^-15 ; umol /m2 /s to Pg/m2/year
+ ;u = (12 * (3600 * 24 * 365) / 1000000) * 10^-15 ; umol /m2 /s to Pg/m2/year
+ u = 1/(10^12) ; W to TW
 
  ; get hist files (last 5 years)
  ;strs = (/path,"test_paramset_SVD_",pset,"/lnd/hist/*{001[6-9],20-}*"/)
- ;strs = (/path,"hydro_ensemble_LHC_default_params/lnd/hist/*{001[6-9],20-}*"/)
- strs = (/path,"hydro_ensemble_LHC_86/lnd/hist/*{001[6-9],20-}*"/)
+ strs = (/path,"hydro_ensemble_LHC_default_params/lnd/hist/*{001[6-9],20-}*"/)
+ ;strs = (/path,"hydro_ensemble_LHC_86/lnd/hist/*{001[6-9],20-}*"/)
  str_c = str_concat(strs)
  ;print(str_c)
  fils = systemfunc("ls "+str_c)
@@ -37,8 +39,8 @@ begin
  grid_area_m = grid_area*10^6 ; km^2 to m^2
 
  ; get obs datamask
- f_obs = addfile("../obs/MR_GPP_4x5_2000_2004.nc","r")
- ;f_obs = addfile("../obs/MR_LHF_4x5_2000_2004.nc","r")
+ ;f_obs = addfile("../obs/MR_GPP_4x5_2000_2004.nc","r")
+ f_obs = addfile("../obs/MR_LHF_4x5_2000_2004.nc","r")
  datamask_obs = f_obs->datamask
 
  ; mask model output to match obs
@@ -55,8 +57,8 @@ begin
  ;printVarSummary(v_am_area)
 
  ; read LHC ensemble for anomaly calculation
- f_model = addfile("../outputdata/outputdata_GPP_forSVD_100.nc","r")
- ;f_model = addfile("../outputdata/outputdata_LHF_forSVD_100.nc","r")
+ ;f_model = addfile("../outputdata/outputdata_GPP_forSVD_100.nc","r")
+ f_model = addfile("../outputdata/outputdata_LHF_forSVD_100.nc","r")
  O = f_model->O
  ;printVarSummary(O)                                                                                                                         
 
@@ -83,8 +85,9 @@ begin
  ;v_anom = v_am_area - O_em_alt ; with test member
 
  ; update units
- v_anom@units = "PgC/yr"
+ ;v_anom@units = "PgC/yr"
  ;v_anom@units = "W"
+ v_anom@units = "TW"
  ;printVarSummary(v_anom)
 
  ; test plot
@@ -104,8 +107,8 @@ begin
  res@lbBoxLinesOn = False ; no boxes
  res@gsnLeftString = var
  res@gsnRightString = v_anom@units
- res@tiMainString = "5-year annual mean test paramset, area-weighted, anomaly from LHC100 ensemble mean with test paramset"  
- ;res@tiMainString = "5-year annual mean default params, area-weighted, anomaly from LHC100 ensemble mean without default params"
+ ;res@tiMainString = "5-year annual mean test paramset, area-weighted, anomaly from LHC100 ensemble mean with test paramset"  
+ res@tiMainString = "5-year annual mean default params, area-weighted, anomaly from LHC100 ensemble mean without default params"
  res@tiMainFontHeightF   = 0.012
 
  ; set the contour bounds (FPSN, 001)
@@ -117,10 +120,11 @@ begin
  plot = gsn_csm_contour_map(wks,v_anom,res) 
 
  ; write output file
- ;ncdf = addfile("test_paramset_001_GPP_forSVD.nc", "c")
  ;ncdf = addfile("CLM_default_GPP_forSVD.nc", "c")
- ncdf = addfile("test_paramset_GPP_forSVD.nc", "c")
- ncdf->GPP = v_anom 
+ ;ncdf = addfile("test_paramset_GPP_forSVD.nc", "c")
+ ncdf = addfile("CLM_default_LHF_forSVD.nc", "c")
+ ;ncdf->GPP = v_anom 
+ ncdf->LHF = v_anom
  ncdf->datamask = datamask_obs
 
 end

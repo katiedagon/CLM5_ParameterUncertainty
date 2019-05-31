@@ -1,8 +1,8 @@
-bash_test
+archive/
 figures/
 parameter_files/
 obs/figures/
 outputdata/figures
-.ipynb_checkpoints
+pymc3/
 obs/MR_*
 *.h5

@@ -1,6 +1,6 @@
-# CLM5 Biogeophysical Parameter Sensitivity and Optimization Project
+# CLM5 Biogeophysical Parameter Uncertainty Project
 
-This repository provides code to run a CLM5 ensemble to investigate parameter sensitivity and optimization using neural networks.
+This repository provides code to run a CLM5 perturbed parameter ensemble to investigate parameter uncertainty using neural networks.
 
 # Requirements
 
@@ -9,10 +9,6 @@ Create a clone of the [NCAR package library](https://www2.cisl.ucar.edu/resource
 Install [pyDOE package](https://pythonhosted.org/pyDOE/randomized.html#latin-hypercube) in order to use lhs function for Latin Hypercube sampling.
 
 Install [tensorflow](https://www.tensorflow.org/) and [keras](https://keras.io/) packages for machine learning (neural networks).
-
-(Optional) Install [eofs](https://ajdawson.github.io/eofs/index.html) for SVD analysis.
-
-(Optional) Install [PyMC3](https://docs.pymc.io/) or [emcee](http://dfm.io/emcee/current/) for MCMC analysis.
 
 ```bash
 # Create clone
@@ -56,21 +52,18 @@ There is also a script for testing a single parameter set in CLM5: run_paramset_
 
 * outputdata/process_outputdata.ncl and associated scripts process CLM output for training the neural network
 * obs/process_obs.ncl and associated scripts process the observational data  
-* SVD.py and associated scripts perform a singular value decomposition on observations and model output   
-* compare_obs_GM.py compares observational data with distributions of global mean model output
+* SVD.py and SVD_obs.py perform a singular value decomposition on observations and model output   
 
 # Machine Learning Files
 
-* NN_create.py: Create and test out simple neural networks in Python with Keras.
-* NN_develop.py: Further refine and train neural networks using parameter values and CLM model output.
 * NN_multi-dim.py: Test out multidimensional output.
 * NN_test.py: Test out different NN configurations (# of layers, # of nodes).
 * NN_resample.py: Use resampling of the training data to better refine candidate NN models.
 * NN_finalize.py: Finalize best NN model (single and multidimensional versions).
+* NN_opt.py: Optimize the emulator predictions.
 
 # Supplemental Files
 
 * LHC_invert.py inverts the existing parameter array (parameters.npy) back to the original LHC random sampling and writes out these values (lhc.npy)
-* pft_var.ncl provides an NCL script for generating PFT-dependent parameter files
-* clm5_params.c171117.nc is the current CLM5 default parameter file for reference
 * simple_model.py tests simpler models between LHC values and CLM output (e.g., correlation coefficients, scatterplots, multi-linear regression)
+* time_test.py calculates compute time for emulation

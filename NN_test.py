@@ -37,7 +37,8 @@ inputdata = np.load(file="lhc_100.npy")
 # Read in output array
 #outputdata = np.loadtxt("outputdata/outputdata_GPP.csv")
 #outputdata_all = np.load("outputdata/outputdata_GPP_SVD.npy")
-outputdata = np.load("outputdata/outputdata_GPP_SVD_3modes.npy")
+#outputdata = np.load("outputdata/outputdata_GPP_SVD_3modes.npy")
+outputdata = np.load("outputdata/outputdata_LHF_SVD_3modes.npy")
 
 # Specify mode (SVD only)
 #mode = 1
@@ -155,6 +156,6 @@ metricsFormat = [["%.2g" % m for m in msub] for msub in metrics]
 #print(metricsFormat)
 
 # Write out metric data to csv
-with open('output.csv', 'w', newline='') as csvfile:
+with open('NN_test.csv', 'w', newline='') as csvfile:
     writer = csv.writer(csvfile)
     writer.writerows(metricsFormat)
