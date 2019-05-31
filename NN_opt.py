@@ -14,7 +14,7 @@ import matplotlib.pyplot as plt
 import matplotlib.axes as ax
 
 # Fix random seed for reproducibility
-np.random.seed(9)
+#np.random.seed(9)
 
 # Read in input array
 inputdata = np.load(file="lhc_100.npy")
@@ -27,7 +27,8 @@ npar = len(in_vars)
 # First 3 modes account for over 98% of variance
 # Calculated in SVD.py
 # After processing in outputdata/process_outputdata_SVD.ncl
-outputdata = np.load(file="outputdata/outputdata_GPP_SVD_3modes.npy")
+#outputdata = np.load(file="outputdata/outputdata_GPP_SVD_3modes.npy")
+outputdata = np.load(file="outputdata/outputdata_LHF_SVD_3modes.npy")
 nmodes = outputdata.shape[1]
 
 # Read in emulator predictions
@@ -54,8 +55,10 @@ def mean_sq_err(y_true,y_pred):
 
 # Load previously trained model
 from keras.models import load_model
-model = load_model('NN_finalize_multi-dim.h5', custom_objects={'mean_sq_err':
-    mean_sq_err})
+#model = load_model('NN_GPP_finalize_multi-dim.h5', custom_objects={'mean_sq_err':
+#    mean_sq_err})
+model = load_model('NN_LHF_finalize_multi-dim.h5',
+    custom_objects={'mean_sq_err': mean_sq_err})
 
 # test predictive capability
 #test = np.ones((1,npar))*0.5
@@ -68,7 +71,8 @@ model = load_model('NN_finalize_multi-dim.h5', custom_objects={'mean_sq_err':
 # Read in observational targets
 # Calculated in SVD.py
 # After processing in obs/process_obs_SVD.ncl
-obs = np.load(file="obs/obs_GPP_SVD_3modes.npy")
+#obs = np.load(file="obs/obs_GPP_SVD_3modes.npy")
+obs = np.load(file="obs/obs_LHF_SVD_3modes.npy")
 #print(obs)
 
 # Read in calculated variance
@@ -76,7 +80,8 @@ obs = np.load(file="obs/obs_GPP_SVD_3modes.npy")
 # 27 years, for the first 3 modes
 # Calculated in SVD_obs.py
 # After processing in obs/process_obs_SVD.ncl
-sd = np.load(file="obs/obs_GPP_SVD_3modes_allyrs_sd.npy")
+#sd = np.load(file="obs/obs_GPP_SVD_3modes_allyrs_sd.npy")
+sd = np.load(file="obs/obs_LHF_SVD_3modes_allyrs_sd.npy")
 
 # Define likelihood function using emulator predictions
 def normerr(x):
@@ -110,9 +115,9 @@ def normerr(x):
 
 # Algorithms may be getting stuck on initial values (unclear why)
 # Try generating LHC initial values
-from pyDOE import *
-lhd = lhs(npar,samples=1) # default sampling criterion = random
-x0 = lhd[0,:]
+#from pyDOE import *
+#lhd = lhs(npar,samples=1) # default sampling criterion = random
+#x0 = lhd[0,:]
 #print(x0)
 #print(normerr(x0))
 
@@ -163,22 +168,28 @@ x0 = lhd[0,:]
 #print(res.nfev)
 #print(res.success)
 #print(res.message)
+#opt_preds = model.predict(res.x.reshape(1,-1))
+#print(opt_preds)
 
 # Brute Force (global)
 #from scipy import optimize
 #rranges = (slice(0, 1, 0.25), slice(0, 1, 0.25), slice(0, 1, 0.25), slice(0, 1,
 #    0.25), slice(0, 1, 0.25), slice(0, 1, 0.25))
-#resb = optimize.brute(normerr, bounds, Ns=2, full_output=True, finish=optimize.fmin, disp=True)
+#rranges = ((0,1), (0,1), (0,1), (0,1), (0,1), (0,1))
+#lb = np.zeros(npar, dtype=float)
+#ub = np.ones(npar, dtype=float)
+#rranges = zip(lb, ub)
+#resb = optimize.brute(normerr, rranges, Ns=2, full_output=True, finish=optimize.fmin, disp=True)
 #resb = optimize.brute(normerr, rranges, full_output=True, finish=optimize.fmin, disp=True)
-#resb[0]
-#resb[1]
+#print(resb[0])
+#print(resb[1])
 
 # SHGO (global)
 from scipy.optimize import shgo
 bounds = [(0,1), (0,1), (0,1), (0,1), (0,1), (0,1)]
 res = shgo(normerr, bounds, options={'disp':True})
 #res = shgo(normerr, bounds, options={'disp':True}, sampling_method='sobol')
-#print(res)
+print(res)
 #print(res.x)
 #print(res.fun)
 opt_preds = model.predict(res.x.reshape(1,-1))
@@ -192,7 +203,8 @@ print(opt_preds)
 #res = dual_annealing(normerr, bounds, maxiter=10000, x0=x0)
 #print(res)
 #print(normerr(res.x))
-#print(model.predict(res.x.reshape(1,-1)))
+#opt_preds = model.predict(res.x.reshape(1,-1))
+#print(opt_preds)
 
 # Nonlinear Least Squares
 #from scipy.optimize import least_squares
@@ -225,7 +237,6 @@ Lmin = np.argmin(L)
 #print(Lmin)
 #print(L[Lmin])
 #print(model_preds[Lmin,:])
-
 # Print best match (LHC scaling values)
 #print(inputdata[Lmin,:])
 
@@ -240,7 +251,8 @@ fig=plt.figure()
 ax=plt.subplot(111)
 ax.hist(outputdata[:,0], label='CLM PPE')
 ax.hist(model_preds[:,0], label='NN Preds')
-plt.xlabel('EOF1 GPP')
+#plt.xlabel('EOF1 GPP')
+plt.xlabel('EOF1 LHF')
 plt.ylabel('Counts')
 # this number is taken from SVD on hydro_ensemble_LHC_86
 # which is the paramset from the original LHC that produces the min L
@@ -256,13 +268,13 @@ ax.axvline(x=opt_preds[:,0], color='green', linestyle='dashed', linewidth=2,
         label='Optimized NN Preds')
 # and model run with optimized params
 # this number is taken from SVD on test_paramset_SVD_006
-ax.axvline(x=0.4248498, color='blue', linestyle='dashed', linewidth=2,
-        label='CLM with optimized params')
+#ax.axvline(x=0.4248498, color='blue', linestyle='dashed', linewidth=2,
+#        label='CLM with optimized params')
 box = ax.get_position()
 ax.set_position([box.x0, box.y0, box.width * 0.6, box.height])
 ax.legend(loc='center left', bbox_to_anchor=(1, 0.5))
 #plt.savefig("dist_outputdata_NNv005_GPP_SVD_md_mode1.pdf")
-plt.savefig("dist_outputdata_NNv006_GPP_SVD_md_mode1.pdf")
+#plt.savefig("dist_outputdata_NNv006_GPP_SVD_md_mode1.pdf")
 plt.show()
 
 # Mode 2
@@ -270,18 +282,19 @@ fig=plt.figure()
 ax=plt.subplot(111)
 ax.hist(outputdata[:,1], label='CLM PPE')
 ax.hist(model_preds[:,1], label='NN Preds')
-plt.xlabel('EOF2 GPP')
+#plt.xlabel('EOF2 GPP')
+plt.xlabel('EOF2 LHF')
 plt.ylabel('Counts')
 ax.axvline(x=obs[:,1], color='red', linestyle='dashed', linewidth=2,
         label='obs')
 ax.axvline(x=opt_preds[:,1], color='green', linestyle='dashed', linewidth=2,
                 label='Optimized NN Preds')
-ax.axvline(x=-0.5293461, color='blue', linestyle='dashed', linewidth=2,
-                label='CLM with optimized params')
+#ax.axvline(x=-0.5293461, color='blue', linestyle='dashed', linewidth=2,
+#                label='CLM with optimized params')
 box = ax.get_position()
 ax.set_position([box.x0, box.y0, box.width * 0.6, box.height])
 ax.legend(loc='center left', bbox_to_anchor=(1, 0.5))
-plt.savefig("dist_outputdata_NNv006_GPP_SVD_md_mode2.pdf")
+#plt.savefig("dist_outputdata_NNv006_GPP_SVD_md_mode2.pdf")
 plt.show()
 
 # Mode 3
@@ -289,18 +302,19 @@ fig=plt.figure()
 ax=plt.subplot(111)
 ax.hist(outputdata[:,2], label='CLM PPE')
 ax.hist(model_preds[:,2], label='NN Preds')
-plt.xlabel('EOF3 GPP')
+#plt.xlabel('EOF3 GPP')
+plt.xlabel('EOF3 LHF')
 plt.ylabel('Counts')
 ax.axvline(x=obs[:,2], color='red', linestyle='dashed', linewidth=2,
                 label='obs')
 ax.axvline(x=opt_preds[:,2], color='green', linestyle='dashed', linewidth=2,
                         label='Optimized NN Preds')
-ax.axvline(x=-0.49806377, color='blue', linestyle='dashed', linewidth=2,
-                        label='CLM with optimized params')
+#ax.axvline(x=-0.49806377, color='blue', linestyle='dashed', linewidth=2,
+#                        label='CLM with optimized params')
 box = ax.get_position()
 ax.set_position([box.x0, box.y0, box.width * 0.6, box.height])
 ax.legend(loc='center left', bbox_to_anchor=(1, 0.5))
-plt.savefig("dist_outputdata_NNv006_GPP_SVD_md_mode3.pdf")
+#plt.savefig("dist_outputdata_NNv006_GPP_SVD_md_mode3.pdf")
 plt.show()
 
 # Define likelihood function using actual CLM output

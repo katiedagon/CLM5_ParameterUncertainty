@@ -162,23 +162,25 @@ U_obs = np.dot(drom,pinv(np.dot(smat,Vh)))
 #plt.show()
 
 # Project test paramset into SVD space
-#ft = nc.netcdf_file("outputdata/test_paramset_GPP_forSVD.nc",'r',mmap=False)
 #ft = nc.netcdf_file("outputdata/test_paramset_SVD_006_GPP_forSVD.nc",'r',mmap=False)
+ft = nc.netcdf_file("outputdata/test_paramset_LHF_forSVD.nc",'r',mmap=False)
 #Xt = ft.variables['GPP']
-#maskt = ft.variables['datamask']
-#dt = Xt[:]
-#mt = maskt[:]
-#drt = np.reshape(dt,(nenso,nlato*nlono))
-#mrt = np.reshape(mt,nlato*nlono)
-#drtm = drt[:,mrt==1]
+Xt = ft.variables['LHF']
+maskt = ft.variables['datamask']
+dt = Xt[:]
+mt = maskt[:]
+drt = np.reshape(dt,(nenso,nlato*nlono))
+mrt = np.reshape(mt,nlato*nlono)
+drtm = drt[:,mrt==1]
 #print(drtm.shape)
-#drtm[drtm==1.e+36] = 0
-#U_test = np.dot(drtm,pinv(np.dot(smat,Vh)))
-#print(U_test[:,0:3])
+drtm[drtm==1.e+36] = 0
+U_test = np.dot(drtm,pinv(np.dot(smat,Vh)))
+print(U_test[:,0:3])
 # Calculate likelihood based on these results
 #sd = np.load(file="obs/obs_GPP_SVD_3modes_allyrs_sd.npy")
-#L = np.sum(((U_test[:,0:3]-U_obs[:,0:3])/sd)**2, axis=1)
-#print(L)
+sd = np.load(file="obs/obs_LHF_SVD_3modes_allyrs_sd.npy")
+L = np.sum(((U_test[:,0:3]-U_obs[:,0:3])/sd)**2, axis=1)
+print(L)
 
 # Plot distribution with U_obs and U_test
 #plt.hist(U[:,0], bins=20)
@@ -214,10 +216,10 @@ plt.hist(U[:,0], bins=20)
 plt.xlabel('Mode 1 of LHF SVD (U-vector)')
 plt.ylabel('Counts')
 plt.axvline(x=U_obs[:,0], color='r', linestyle='dashed', linewidth=2)
-#plt.axvline(x=U_test[:,0], color='b', linestyle='dashed', linewidth=2)
+plt.axvline(x=U_test[:,0], color='b', linestyle='dashed', linewidth=2)
 plt.axvline(x=U_default[:,0], color='k', linestyle='dashed', linewidth=2)
 #plt.savefig("dist_outputdata_GPP_SVD_mode1_withobs_anddefault.pdf")
-plt.savefig("dist_outputdata_LHF_SVD_mode1_withobs_anddefault.pdf") 
+#plt.savefig("dist_outputdata_LHF_SVD_mode1_withobs_anddefault.pdf") 
 plt.show()
 
 # Second mode
@@ -226,10 +228,10 @@ plt.hist(U[:,1], bins=20)
 plt.xlabel('Mode 2 of LHF SVD (U-vector)')
 plt.ylabel('Counts')
 plt.axvline(x=U_obs[:,1], color='r', linestyle='dashed', linewidth=2)
-#plt.axvline(x=U_test[:,1], color='b', linestyle='dashed', linewidth=2)
+plt.axvline(x=U_test[:,1], color='b', linestyle='dashed', linewidth=2)
 plt.axvline(x=U_default[:,1], color='k', linestyle='dashed', linewidth=2)
 #plt.savefig("dist_outputdata_GPP_SVD_mode2_withobs_anddefault.pdf")
-plt.savefig("dist_outputdata_LHF_SVD_mode2_withobs_anddefault.pdf")  
+#plt.savefig("dist_outputdata_LHF_SVD_mode2_withobs_anddefault.pdf")  
 plt.show()
 
 # Third mode
@@ -238,8 +240,8 @@ plt.hist(U[:,2], bins=20)
 plt.xlabel('Mode 3 of LHF SVD (U-vector)')
 plt.ylabel('Counts')
 plt.axvline(x=U_obs[:,2], color='r', linestyle='dashed', linewidth=2)
-#plt.axvline(x=U_test[:,2], color='b', linestyle='dashed', linewidth=2)
+plt.axvline(x=U_test[:,2], color='b', linestyle='dashed', linewidth=2)
 plt.axvline(x=U_default[:,2], color='k', linestyle='dashed', linewidth=2)    
 #plt.savefig("dist_outputdata_GPP_SVD_mode3_withobs_anddefault.pdf")
-plt.savefig("dist_outputdata_LHF_SVD_mode3_withobs_anddefault.pdf")  
+#plt.savefig("dist_outputdata_LHF_SVD_mode3_withobs_anddefault.pdf")  
 plt.show()
