@@ -10,6 +10,7 @@ import matplotlib.pyplot as plt
 # Read netcdf file (pre-processed in NCL)
 #f = nc.netcdf_file("outputdata/outputdata_GPP_forSVD_100.nc",'r',mmap=False)
 f = nc.netcdf_file("outputdata/outputdata_LHF_forSVD_100.nc",'r',mmap=False)
+#f = nc.netcdf_file("outputdata/outputdata_GPP_forSVD_100_v2.nc",'r',mmap=False)
 
 # Read variable data
 #X = f.variables['GPP']
@@ -68,13 +69,13 @@ prop_var = s**2/np.sum(s**2)
 # Singular values are in s
 
 # Sanity check - reconstruction
-#print(np.allclose(drm, np.dot(U*s, Vh)))
+print(np.allclose(drm, np.dot(U*s, Vh)))
 smat = np.diag(s)
-#print(np.allclose(drm, np.dot(U, np.dot(smat, Vh)))
+print(np.allclose(drm, np.dot(U, np.dot(smat, Vh))))
 
 # need to increase tolerance for LHF (doesn't close otherwise)
-print(np.allclose(drm, np.dot(U*s, Vh), atol=1e-07))
-print(np.allclose(drm, np.dot(U, np.dot(smat, Vh)), atol=1e-06))
+#print(np.allclose(drm, np.dot(U*s, Vh), atol=1e-07))
+#print(np.allclose(drm, np.dot(U, np.dot(smat, Vh)), atol=1e-06))
 #print(drm[:,0]-np.dot(U*s, Vh)[:,0])
 
 # Plot first mode of model U-vector (distribution)
@@ -91,6 +92,7 @@ print(np.allclose(drm, np.dot(U, np.dot(smat, Vh)), atol=1e-06))
 # Full SVD
 #np.save("outputdata/outputdata_GPP_SVD_3modes", U[:,0:3])
 #np.save("outputdata/outputdata_LHF_SVD_3modes", U[:,0:3])
+#np.save("outputdata/outputdata_GPP_SVD_3modes_v2", U[:,0:3])
 
 # Compare with Observations
 
@@ -163,7 +165,10 @@ U_obs = np.dot(drom,pinv(np.dot(smat,Vh)))
 
 # Project test paramset into SVD space
 #ft = nc.netcdf_file("outputdata/test_paramset_SVD_006_GPP_forSVD.nc",'r',mmap=False)
-ft = nc.netcdf_file("outputdata/test_paramset_LHF_forSVD.nc",'r',mmap=False)
+ft = nc.netcdf_file("outputdata/test_paramset_SVD_006_LHF_forSVD.nc",'r',mmap=False)
+#ft = nc.netcdf_file("outputdata/test_paramset_LHF_SVD_001_forSVD.nc",'r',mmap=False)
+#ft = nc.netcdf_file("outputdata/test_paramset_LHF_forSVD.nc",'r',mmap=False)
+#ft = nc.netcdf_file("outputdata/test_paramset_GPP_forSVD.nc",'r',mmap=False)
 #Xt = ft.variables['GPP']
 Xt = ft.variables['LHF']
 maskt = ft.variables['datamask']
@@ -180,6 +185,9 @@ print(U_test[:,0:3])
 #sd = np.load(file="obs/obs_GPP_SVD_3modes_allyrs_sd.npy")
 sd = np.load(file="obs/obs_LHF_SVD_3modes_allyrs_sd.npy")
 L = np.sum(((U_test[:,0:3]-U_obs[:,0:3])/sd)**2, axis=1)
+# weighted L (LHF)
+#B = 1.3
+#L = B*np.sum(((U_test[:,0:3]-U_obs[:,0:3])/sd)**2, axis=1)
 print(L)
 
 # Plot distribution with U_obs and U_test

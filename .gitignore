@@ -2,8 +2,10 @@ archive/
 figures/
 parameter_files/
 obs/figures/
-outputdata/figures
+outputdata/figures/
 pymc3/
 obs/MR_*
 *.h5
 .ipynb_checkpoints/
+outputdata/test_*
+

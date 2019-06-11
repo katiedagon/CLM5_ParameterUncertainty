@@ -23,7 +23,7 @@ def read_params(param_file=None):
         param_file = os.path.dirname(os.path.abspath(__file__))
         param_file = os.path.join(param_file, "parameters.npy")
 
-    data = numpy.load(file=param_file)
+    data = numpy.load(file=param_file, allow_pickle=True)
     return data
 
 def generate_params_pft(case_number=None,inputfile=None):

@@ -15,17 +15,17 @@ begin
  path = "/glade/scratch/kdagon/archive/"
 
  ; set variable(s) of interest
- ;var = "FPSN"
+ var = "FPSN"
  ;var = "TSA"
  ;var = "QFLX_EVAP_TOT"
- var = "EFLX_LH_TOT" 
+ ;var = "EFLX_LH_TOT" 
 
  ; unit conversion (if needed)
- ;u = (12 * (3600 * 24 * 365) / 1000000) * 10^-15 ; umol /m2 /s to Pg/m2/year
+ u = (12 * (3600 * 24 * 365) / 1000000) * 10^-15 ; umol /m2 /s to Pg/m2/year
  ;u = (3600 * 24 * 365) / 1000 ; mm/s to m/year
  ;u = 0.001 ; mm/s to m/s
  ;u = 1
- u = 1/(10^12) ; W to TW
+ ;u = 1/(10^12) ; W to TW
 
  ; get sample file for metadata
  f_md = addfile("/glade/scratch/kdagon/archive/hydro_ensemble_LHC_1/lnd/hist/hydro_ensemble_LHC_1.clm2.h0.0016-01.nc","r")
@@ -38,8 +38,8 @@ begin
  grid_area_m = grid_area*10^6 ; km^2 to m^2
 
  ; get obs datamask
- ;f_obs = addfile("../obs/MR_GPP_4x5_2000_2004.nc","r")
- f_obs = addfile("../obs/MR_LHF_4x5_2000_2004.nc","r")
+ f_obs = addfile("../obs/MR_GPP_4x5_2000_2004.nc","r")
+ ;f_obs = addfile("../obs/MR_LHF_4x5_2000_2004.nc","r")
  ;f_obs = addfile("../obs/MR_GPP_4x5_2000_2004_v2.nc","r")
  datamask_obs = f_obs->datamask
 
@@ -54,7 +54,8 @@ begin
  do i=1,niter
   y=tostring(i)
   print(y)
-  strs = (/path,"hydro_ensemble_LHC_",y,"/lnd/hist/*{001[6-9],20-}*"/)
+  ;strs = (/path,"hydro_ensemble_LHC_",y,"/lnd/hist/*{001[6-9],20-}*"/)
+  strs = (/path,"hydro_ensemble_LHC_v2_",y,"/lnd/hist/*{001[6-9],20-}*"/) 
   str_c = str_concat(strs)
   fils = systemfunc("ls "+str_c)
   f = addfiles(fils,"r")
@@ -84,10 +85,10 @@ begin
  do i=1,niter
   X(i-1,:,:) = O(i-1,:,:)-O_em
  end do
- ;X@units = "PgC/yr"
+ X@units = "PgC/yr"
  ;X@units = "m^3/s" 
  ;X@units = "W"
- X@units = "TW"
+ ;X@units = "TW"
  ;printVarSummary(X)
  
  ; test plots
@@ -162,13 +163,13 @@ begin
  ; writing as nc (preferred)
  ;ncdf = addfile("outputdata_GPP_forSVD_100.nc", "c")
  ;ncdf = addfile("outputdata_LHF_forSVD_100.nc", "c")
- ;ncdf = addfile("outputdata_GPP_forSVD_100_v2.nc", "c")
+ ncdf = addfile("outputdata_GPP_forSVD_100_v2.nc", "c")
  
  ; define time as an unlimited dimension (optional?)
  ;filedimdef(ncdf,"time",-1,True) 
  ncdf->datamask = datamask_obs
  ncdf->O = O ; masked, unit converted, annual mean, area wgt
- ;ncdf->GPP = X ; anomalies from annual mean (input to SVD)
- ncdf->LHF = X
+ ncdf->GPP = X ; anomalies from annual mean (input to SVD)
+ ;ncdf->LHF = X
 
 end

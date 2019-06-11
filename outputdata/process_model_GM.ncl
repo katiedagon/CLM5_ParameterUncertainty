@@ -26,7 +26,8 @@ begin
  ;strs = (/path,"test_paramset_",pset,"/lnd/hist/*{001[6-9],20-}*"/)
  ;strs = (/path,"hydro_ensemble0/lnd/hist/*{001[6-9],20-}*"/)
  ;strs = (/path,"hydro_ensemble_rootprof_beta_min/lnd/hist/*{001[6-9],20-}*"/)
- strs = (/path,"hydro_ensemble_LHC_default_params/lnd/hist/*{001[6-9],20-}*"/)
+ ;strs = (/path,"hydro_ensemble_LHC_default_params/lnd/hist/*{001[6-9],20-}*"/)
+ strs = (/path,"hydro_ensemble_LHC_v2_1/lnd/hist/*{001[6-9],20-}*"/)
  str_c = str_concat(strs)
  print(str_c)
  fils = systemfunc("ls "+str_c)
@@ -64,10 +65,15 @@ begin
  v_gm_am_alt = dim_avg_n_Wrap(wgt_areaave2(v,arwt,0),0)
  print(v_gm_am_alt)
 
+ arwt2 = area
+ arwt2 = area/max(area)
+ v_gm_am_alt2 = dim_avg_n_Wrap(wgt_areaave2(v,arwt2,0),0)
+ print(v_gm_am_alt2)
+
  ; annual mean across years
  v_am = dim_avg_n_Wrap(v,0)
 
- wks = gsn_open_wks("x11","test")
+ ;wks = gsn_open_wks("x11","test")
 
  res = True
  ;res@gsnDraw = False

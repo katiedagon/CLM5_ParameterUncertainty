@@ -36,7 +36,8 @@ pwd
 #export EXPTNAME="test_paramset_SVD_004"
 #export EXPTNAME="test_paramset_SVD_005"
 #export EXPTNAME="test_paramset_SVD_006"
-export EXPTNAME="test_paramset_LHF_SVD_001"
+#export EXPTNAME="test_paramset_LHF_SVD_001"
+export EXPTNAME="test_paramset_GPP_LHF_SVD_001"
 echo $EXPTNAME
 
 # Remove existing output
@@ -46,12 +47,13 @@ rm -rf /glade/scratch/$USER/archive/$EXPTNAME
 # Remove existing working directories
 rm -rf $EXPTNAME
 
-../create_newcase --run-unsupported --compset I2000Clm50Sp --res f45_f45 --case $EXPTNAME --project P08010000
+#../create_newcase --run-unsupported --compset I2000Clm50Sp --res f45_f45 --case $EXPTNAME --project P08010000
+../create_newcase --run-unsupported --compset I2000Clm50Sp --res f45_f45 --case $EXPTNAME --project P54048000
 
 cd $EXPTNAME
 
 ./xmlchange JOB_QUEUE=regular
-./xmlchange JOB_WALLCLOCK_TIME=4:00:00
+./xmlchange JOB_WALLCLOCK_TIME=3:00:00
 
 ./xmlchange NTASKS_CPL=-4
 ./xmlchange NTASKS_OCN=-4
