@@ -89,8 +89,8 @@ sd_LHF = np.load(file="obs/obs_LHF_SVD_3modes_allyrs_sd.npy", allow_pickle=True)
 #B = 5220728/4714979.5 #Lmin_GPP / Lmin_LHF (CLM PPE)
 #B = 6071773/3619373 #Lmin_GPP / Lmin_LHF (SHGO opt)
 #B = 5220728/3619373 #Lmin_GPP / Lmin_LHF (min across all evals)
-#B = 1.3
-B = 1
+B = 1.3
+#B = 1
 
 # Define likelihood function using emulator predictions
 def normerr(x):
@@ -308,8 +308,8 @@ ax.axvline(x=opt_preds_LHF[:,0], color='green', linestyle='dashed', linewidth=2,
 # this number is taken from SVD on test_paramset_GPP_LHF_SVD_001
 #ax.axvline(x=0.41596237, color='blue', linestyle='dashed', linewidth=2,
 #        label='CLM with optimized params')
-#ax.axvline(x=-0.27669725, color='blue', linestyle='dashed', linewidth=2,
-#        label='CLM with optimized params')
+ax.axvline(x=-0.27669725, color='blue', linestyle='dashed', linewidth=2,
+        label='CLM with optimized params')
 box = ax.get_position()
 ax.set_position([box.x0, box.y0, box.width * 0.6, box.height])
 ax.legend(loc='center left', bbox_to_anchor=(1, 0.5))
@@ -318,6 +318,7 @@ ax.legend(loc='center left', bbox_to_anchor=(1, 0.5))
 #plt.savefig("dist_outputdata_NNv001_LHF_SVD_md_mode1.pdf")
 #plt.savefig("dist_outputdata_NNv002_LHF_SVD_md_mode1.pdf")
 #plt.savefig("dist_outputdata_NNv001_GPP_LHF_SVD_md_mode1.pdf")
+plt.savefig("dist_outputdata_NNv001_GPP_LHFplot_SVD_md_mode1.pdf")
 plt.show()
 
 # Mode 2
@@ -346,8 +347,8 @@ ax.axvline(x=opt_preds_LHF[:,1], color='green', linestyle='dashed', linewidth=2,
 #        label='CLM with optimized params V1')
 #ax.axvline(x=-0.4265692, color='blue', linestyle='dashed', linewidth=2,
 #        label='CLM with optimized params')
-#ax.axvline(x=-0.08327985, color='blue', linestyle='dashed', linewidth=2,                                                                         
-#        label='CLM with optimized params')
+ax.axvline(x=-0.08327985, color='blue', linestyle='dashed', linewidth=2,                                                                         
+        label='CLM with optimized params')
 box = ax.get_position()
 ax.set_position([box.x0, box.y0, box.width * 0.6, box.height])
 ax.legend(loc='center left', bbox_to_anchor=(1, 0.5))
@@ -355,6 +356,7 @@ ax.legend(loc='center left', bbox_to_anchor=(1, 0.5))
 #plt.savefig("dist_outputdata_NNv001_LHF_SVD_md_mode2.pdf")
 #plt.savefig("dist_outputdata_NNv002_LHF_SVD_md_mode2.pdf")  
 #plt.savefig("dist_outputdata_NNv001_GPP_LHF_SVD_md_mode2.pdf") 
+plt.savefig("dist_outputdata_NNv001_GPP_LHFplot_SVD_md_mode2.pdf")
 plt.show()
 
 # Mode 3
@@ -383,8 +385,8 @@ ax.axvline(x=opt_preds_LHF[:,2], color='green', linestyle='dashed', linewidth=2,
 #        label='CLM with optimized params V1') 
 #ax.axvline(x=-0.32231316, color='blue', linestyle='dashed', linewidth=2,
 #        label='CLM with optimized params')
-#ax.axvline(x=0.37923342, color='blue', linestyle='dashed', linewidth=2,                                                                        
-#        label='CLM with optimized params')
+ax.axvline(x=0.37923342, color='blue', linestyle='dashed', linewidth=2,                                                                        
+        label='CLM with optimized params')
 box = ax.get_position()
 ax.set_position([box.x0, box.y0, box.width * 0.6, box.height])
 ax.legend(loc='center left', bbox_to_anchor=(1, 0.5))
@@ -392,6 +394,7 @@ ax.legend(loc='center left', bbox_to_anchor=(1, 0.5))
 #plt.savefig("dist_outputdata_NNv001_LHF_SVD_md_mode3.pdf")
 #plt.savefig("dist_outputdata_NNv002_LHF_SVD_md_mode3.pdf")    
 #plt.savefig("dist_outputdata_NNv001_GPP_LHF_SVD_md_mode3.pdf")
+plt.savefig("dist_outputdata_NNv001_GPP_LHFplot_SVD_md_mode3.pdf")
 plt.show()
 
 # Define likelihood function using actual CLM output
