@@ -89,8 +89,9 @@ sd_LHF = np.load(file="obs/obs_LHF_SVD_3modes_allyrs_sd.npy", allow_pickle=True)
 #B = 5220728/4714979.5 #Lmin_GPP / Lmin_LHF (CLM PPE)
 #B = 6071773/3619373 #Lmin_GPP / Lmin_LHF (SHGO opt)
 #B = 5220728/3619373 #Lmin_GPP / Lmin_LHF (min across all evals)
-B = 1.3
-#B = 1
+#B = 1.3
+#B = 1 # equivalent to no weighting
+B = 0 # equivalent to no LHF term
 
 # Define likelihood function using emulator predictions
 def normerr(x):
@@ -318,7 +319,7 @@ ax.legend(loc='center left', bbox_to_anchor=(1, 0.5))
 #plt.savefig("dist_outputdata_NNv001_LHF_SVD_md_mode1.pdf")
 #plt.savefig("dist_outputdata_NNv002_LHF_SVD_md_mode1.pdf")
 #plt.savefig("dist_outputdata_NNv001_GPP_LHF_SVD_md_mode1.pdf")
-plt.savefig("dist_outputdata_NNv001_GPP_LHFplot_SVD_md_mode1.pdf")
+#plt.savefig("dist_outputdata_NNv001_GPP_LHFplot_SVD_md_mode1.pdf")
 plt.show()
 
 # Mode 2
@@ -356,7 +357,7 @@ ax.legend(loc='center left', bbox_to_anchor=(1, 0.5))
 #plt.savefig("dist_outputdata_NNv001_LHF_SVD_md_mode2.pdf")
 #plt.savefig("dist_outputdata_NNv002_LHF_SVD_md_mode2.pdf")  
 #plt.savefig("dist_outputdata_NNv001_GPP_LHF_SVD_md_mode2.pdf") 
-plt.savefig("dist_outputdata_NNv001_GPP_LHFplot_SVD_md_mode2.pdf")
+#plt.savefig("dist_outputdata_NNv001_GPP_LHFplot_SVD_md_mode2.pdf")
 plt.show()
 
 # Mode 3
@@ -394,7 +395,7 @@ ax.legend(loc='center left', bbox_to_anchor=(1, 0.5))
 #plt.savefig("dist_outputdata_NNv001_LHF_SVD_md_mode3.pdf")
 #plt.savefig("dist_outputdata_NNv002_LHF_SVD_md_mode3.pdf")    
 #plt.savefig("dist_outputdata_NNv001_GPP_LHF_SVD_md_mode3.pdf")
-plt.savefig("dist_outputdata_NNv001_GPP_LHFplot_SVD_md_mode3.pdf")
+#plt.savefig("dist_outputdata_NNv001_GPP_LHFplot_SVD_md_mode3.pdf")
 plt.show()
 
 # Define likelihood function using actual CLM output
