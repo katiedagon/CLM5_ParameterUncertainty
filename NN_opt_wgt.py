@@ -90,7 +90,7 @@ plt.legend()
 plt.xlabel("Optimization Weighting Factor")
 plt.ylabel("Lmin")
 #plt.savefig("choice_of_wgt_B_Lmin.pdf")
-plt.savefig("choice_of_wgt_B_Lmin_LHF_wgt.pdf")
+#plt.savefig("choice_of_wgt_B_Lmin_LHF_wgt.pdf")
 plt.show()
 
 # Find intersection

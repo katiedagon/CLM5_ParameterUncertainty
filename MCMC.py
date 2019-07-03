@@ -5,7 +5,6 @@
 import emcee
 import numpy as np
 import matplotlib.pyplot as plt
-#from tqdm import tqdm
 
 # Load previously trained NN models
 import keras.backend as K
@@ -29,6 +28,7 @@ sd_LHF = np.load(file="obs/obs_LHF_SVD_3modes_allyrs_sd.npy", allow_pickle=True)
 
 # Define normalized error function
 # Weighting factor previously determined by midpoint of regimes
+# see NN_opt_wgt.py
 B = 1.49
 def normerr(x):
     xt = x.reshape(1,-1)
@@ -56,15 +56,19 @@ def lnprob(x):
 nwalkers = 200
 ndim = npar
 
-# Set up sampler
-sampler = emcee.EnsembleSampler(nwalkers, ndim, lnprob)
-
-# Initialize walkers
+# Initialize walkers (random initial states)
 p0 = [np.random.rand(ndim) for i in range(nwalkers)]
 
+# Multiprocessing
+#from multiprocessing import Pool
+#pool = Pool(processes=10)
+
+# Set up sampler
+sampler = emcee.EnsembleSampler(nwalkers, ndim, lnprob)
+#sampler = emcee.EnsembleSampler(nwalkers, ndim, lnprob, pool=pool)
 # Run sampler for set number of epochs
 # should really think about ~10^6 epochs (batch job?)
-epochs = 1000
+epochs = 10**4
 #pos, prob, state = sampler.run_mcmc(p0, epochs)
 sampler.run_mcmc(p0, epochs, progress=True)
 
@@ -81,26 +85,28 @@ for i in range(ndim):
     ax.plot(samples_all[:, :, i], "k", alpha=0.3)
     ax.set_xlim(0, len(samples_all))
     ax.set_ylabel(labels[i])
-    ax.yaxis.set_label_coords(-0.1, 0.5)
+    #ax.yaxis.set_label_coords(-0.1, 0.5)
 
 axes[-1].set_xlabel("step number");
-#plt.savefig("MCMC_sampler_chain_1000epochs.pdf")
+#plt.savefig("MCMC_sampler_chain_1e3epochs.pdf")
+plt.savefig("MCMC_sampler_chain_1e4epochs.pdf")
 plt.show()
 
 # Look at the log probs
 probs_all = sampler.get_log_prob()
-print(probs_all.shape)
-print(np.min(probs_all))
-print(np.max(probs_all))
+#print(probs_all.shape)
+#print(np.min(probs_all))
+#print(np.max(probs_all))
 probs_all_scaled = probs_all*(10**(-7))
-print(np.min(probs_all_scaled))
-print(np.max(probs_all_scaled))
+#print(np.min(probs_all_scaled))
+#print(np.max(probs_all_scaled))
 err_all = np.exp(-probs_all_scaled)
 plt.plot(err_all, "k", alpha=0.3)
 plt.xlabel("step number")
 #plt.ylabel("log prob")
 plt.ylabel("scaled error")
-plt.savefig("MCMC_scaled_error_1000epochs.pdf")
+#plt.savefig("MCMC_scaled_error_1e3epochs.pdf")
+plt.savefig("MCMC_scaled_error_1e4epochs.pdf")
 plt.show()
 
 # Integrated autocorrelation time
@@ -116,7 +122,8 @@ print(flat_samples.shape)
 # Corner plot
 import corner
 fig = corner.corner(flat_samples, labels=in_vars)
-#plt.savefig("MCMC_corner_1000epochs.pdf")
+#plt.savefig("MCMC_corner_1e3epochs.pdf")
+plt.savefig("MCMC_corner_1e4epochs.pdf")
 plt.show()
 
 
