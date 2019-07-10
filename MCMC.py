@@ -68,13 +68,22 @@ sampler = emcee.EnsembleSampler(nwalkers, ndim, lnprob)
 #sampler = emcee.EnsembleSampler(nwalkers, ndim, lnprob, pool=pool)
 # Run sampler for set number of epochs
 # should really think about ~10^6 epochs (batch job?)
-epochs = 10**4
+epochs = 10**3
 #pos, prob, state = sampler.run_mcmc(p0, epochs)
 sampler.run_mcmc(p0, epochs, progress=True)
 
 # Print mean acceptance fraction
+acc = sampler.acceptance_fraction
+#print(acc)
 print("Mean acceptance fraction: {0:.3f}"
         .format(np.mean(sampler.acceptance_fraction)))
+
+# Integrated autocorrelation time
+tau = sampler.get_autocorr_time(tol=0)
+#print(tau.shape)
+#print(tau)
+print("Mean autocorrelation time: {0:6.3f}"
+        .format(np.mean(tau)))
 
 # Look at the sampler chain
 fig, axes = plt.subplots(ndim, figsize=(10, 7), sharex=True)
@@ -89,8 +98,90 @@ for i in range(ndim):
 
 axes[-1].set_xlabel("step number");
 #plt.savefig("MCMC_sampler_chain_1e3epochs.pdf")
-plt.savefig("MCMC_sampler_chain_1e4epochs.pdf")
+#plt.savefig("MCMC_sampler_chain_1e4epochs.pdf")
+#plt.savefig("MCMC_sampler_chain_2e4epochs.pdf")
 plt.show()
+
+# Marginalized density
+fig, axes = plt.subplots(ndim, figsize=(10, 7), sharex=True)
+for i in range(ndim):
+    ax = axes[i]
+    chain = samples_all[:, :, i].T
+    ax.hist(chain.flatten(), 100)
+    ax.set_yticks([])
+    ax.set_ylabel(labels[i])
+
+axes[-1].set_xlabel("parameter value")
+plt.show()
+
+
+# Explore autocorrelation estimators for different chain lengths
+
+# first define some functions
+def next_pow_two(n):
+    i = 1
+    while i < n:
+        i = i << 1
+    return i
+
+def autocorr_func_1d(x, norm=True):
+    x = np.atleast_1d(x)
+    if len(x.shape) != 1:
+        raise ValueError("invalid dimensions for 1D autocorrelation function")
+    n = next_pow_two(len(x))
+    # Compute the FFT and then (from that) the auto-correlation function
+    f = np.fft.fft(x - np.mean(x), n=2*n)
+    acf = np.fft.ifft(f * np.conjugate(f))[:len(x)].real
+    acf /= 4*n
+    # Optionally normalize
+    if norm:
+        acf /= acf[0]
+    return acf
+
+# automated windowing following Sokal (1989)
+def auto_window(taus, c):
+    m = np.arange(len(taus)) < c * taus
+    if np.any(m):
+        return np.argmin(m)
+    return len(taus) - 1
+
+# Goodman & Weare (2010)
+def autocorr_gw2010(y, c=5.0):
+    f = autocorr_func_1d(np.mean(y, axis=0))
+    taus = 2.0*np.cumsum(f)-1.0
+    window = auto_window(taus, c)
+    return taus[window]
+
+def autocorr_new(y, c=5.0):
+    f = np.zeros(y.shape[1])
+    for yy in y:
+        f += autocorr_func_1d(yy)
+    f /= len(y)
+    taus = 2.0*np.cumsum(f)-1.0
+    window = auto_window(taus, c)
+    return taus[window]
+
+# start with first dimension only
+chain = samples_all[:,:,0].T
+N = np.exp(np.linspace(np.log(100), np.log(chain.shape[1]), 10)).astype(int)
+gw2010 = np.empty(len(N))
+new = np.empty(len(N))
+for i, n in enumerate(N):
+    gw2010[i] = autocorr_gw2010(chain[:, :n])
+    new[i] = autocorr_new(chain[:, :n])
+
+# need to run for a longer chain to get a meaningful figure
+plt.loglog(N, gw2010, "o-", label="G&W 2010")
+plt.loglog(N, new, "o-", label="new")
+ylim = plt.gca().get_ylim()
+plt.plot(N, N / 50.0, "--k", label=r"$\tau = N/50$")
+plt.ylim(ylim)
+plt.xlabel("number of samples, $N$")
+plt.ylabel(r"$\tau$ estimates")
+plt.legend(fontsize=14)
+#plt.savefig("MCMC_autocorr_1e4epochs.pdf")
+plt.show()
+
 
 # Look at the log probs
 probs_all = sampler.get_log_prob()
@@ -106,24 +197,23 @@ plt.xlabel("step number")
 #plt.ylabel("log prob")
 plt.ylabel("scaled error")
 #plt.savefig("MCMC_scaled_error_1e3epochs.pdf")
-plt.savefig("MCMC_scaled_error_1e4epochs.pdf")
+#plt.savefig("MCMC_scaled_error_1e4epochs.pdf")
+#plt.savefig("MCMC_scaled_error_2e4epochs.pdf")
 plt.show()
-
-# Integrated autocorrelation time
-#tau = sampler.get_autocorr_time()
-#print(tau)
 
 # Discard the initial N steps
 #samples = sampler.chain[:, 500:, :].reshape((-1, ndim))
-#flat_samples = sampler.get_chain(discard=100, thin=15, flat=True)
-flat_samples = sampler.get_chain(discard=100, flat=True)
+flat_samples = sampler.get_chain(discard=100, thin=15, flat=True)
+#flat_samples = sampler.get_chain(discard=100, flat=True)
 print(flat_samples.shape)
 
 # Corner plot
 import corner
 fig = corner.corner(flat_samples, labels=in_vars)
 #plt.savefig("MCMC_corner_1e3epochs.pdf")
-plt.savefig("MCMC_corner_1e4epochs.pdf")
+#plt.savefig("MCMC_corner_1e4epochs.pdf")
+#plt.savefig("MCMC_corner_2e4epochs.pdf")
+#plt.savefig("MCMC_corner_2e4epochs_thin15.pdf")
 plt.show()
 
 
