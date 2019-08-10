@@ -1,0 +1,208 @@
+#!/bin/bash
+
+# Clone latest development branch from CTSM repository
+#git clone --origin escomp https://github.com/ESCOMP/ctsm.git ctsm_ParamEns
+#cd ctsm_ParamEns
+#git checkout -b ctsm_ParamEns master
+#./manage_externals/checkout_externals
+
+export USER="kdagon"
+
+export CODENAME="ctsm_ParamEns"
+export NAME="future_climate_LHC"
+
+# Set number of sample cases
+niter=100
+#niter=1
+echo "number of samples = "$niter
+
+# Run LHC_write to generate parameter value array
+# only needs to be run once for the ensemble
+# needs to be run before LHC_read_nl.py
+# command line arg provides number of samples/simulations
+# Source python env only for python command, then exit
+# otherwise it messes up the case configuration in some unknown way
+# causing qsub submit errors
+#source /glade/work/$USER/ncar_pylib_clone/bin/activate
+#pylib # alias doesn't work in bash script
+#source /glade/work/kdagon/ncar_pylib_clone_20190118/bin/activate
+#python LHC_write.py $niter
+# leave python env
+#deactivate
+
+cd /glade/work/$USER/$CODENAME
+pwd
+
+cd cime/scripts
+pwd
+
+## Create experiment directory: uncomment this first time only
+#mkdir $NAME
+##
+
+cd $NAME
+pwd
+
+## Base build: uncomment this first time only
+# leave python env for base build
+#deactivate
+#rm -rf codebase_$NAME
+#rm -rf /glade/scratch/$USER/codebase_$NAME
+#../create_newcase --run-unsupported --compset I2000Clm50Sp  --res f45_f45 --case codebase_$NAME --project P08010000
+
+#cd codebase_$NAME 
+#pwd
+#./case.setup
+#qcmd -- ./case.build
+
+#cd ..
+# back to python
+#source /glade/work/$USER/ncar_pylib_clone/bin/activate
+##
+
+## Control run: uncomment this for a simulation with default values
+# also serves as an equilibrium test
+#export EXPTNAME=${NAME}_0
+
+#remove existing output
+#rm -rf /glade/scratch/$USER/$EXPTNAME
+#rm -rf /glade/scratch/$USER/archive/$EXPTNAME
+
+#remove existing working directories                                                                                                                  
+#rm -rf $EXPTNAME
+
+#../create_newcase --run-unsupported --compset I2000Clm50Sp --res f45_f45 --case $EXPTNAME --project P08010000
+
+#cd $EXPTNAME
+
+#./xmlchange JOB_QUEUE=regular
+#./xmlchange JOB_WALLCLOCK_TIME=4:00:00 
+
+#./xmlchange NTASKS_CPL=-4                                                                                                                   
+#./xmlchange NTASKS_OCN=-4
+#./xmlchange NTASKS_WAV=-4
+#./xmlchange NTASKS_GLC=-4
+#./xmlchange NTASKS_ICE=-4
+#./xmlchange NTASKS_ROF=-4
+#./xmlchange NTASKS_LND=-4
+
+#./xmlchange CONTINUE_RUN=FALSE
+#./xmlchange RESUBMIT=0
+#./xmlchange STOP_N=15
+#./xmlchange STOP_OPTION=nyears
+
+#./xmlchange BUILD_COMPLETE="TRUE"
+#./xmlchange EXEROOT="/glade/scratch/$USER/codebase_$NAME/bld"
+
+#./xmlchange DATM_CLMNCEP_YR_START=2000
+#./xmlchange DATM_CLMNCEP_YR_END=2004
+
+# modify wallclock, project, queue as necessary
+# to change mail options; this works with Cheyenne only:
+#./xmlchange --file env_batch.xml --subgroup case.run --id BATCH_COMMAND_FLAGS --val '-m abe -l walltime=6:00:00 -A P08010000 -q regular'
+
+# case.setup (creates user_nl_* files)
+#./case.setup
+
+# submit case
+#./case.submit
+##
+
+# Create array of parameter names
+# [In the future, could try and read these in from a text file]
+# [or specify as python args; these names are also specified in LHC_write.py]
+#declare -a param=("medlynslope" "dleaf" "kmax" "fff" "dint" "baseflow_scalar")
+# count number of params
+#np=${#param[@]}
+
+i=1
+while [ $i -le $niter ]
+do
+
+echo "Starting case "$i" of "$niter
+
+export EXPTNAME=${NAME}_$i
+echo $EXPTNAME
+
+# Remove existing output
+rm -rf /glade/scratch/$USER/$EXPTNAME
+rm -rf /glade/scratch/$USER/archive/$EXPTNAME
+
+# Remove existing working directories
+rm -rf $EXPTNAME
+
+# Project TSS Account
+#../create_newcase --run-unsupported --compset I2000Clm50Sp --res f45_f45 --case $EXPTNAME --project P08010000
+# Project ASP Account
+../create_newcase --run-unsupported --compset I2000Clm50Sp --res f45_f45 --case $EXPTNAME --project P54048000
+
+cd $EXPTNAME
+
+./xmlchange JOB_QUEUE=regular
+./xmlchange JOB_WALLCLOCK_TIME=3:00:00
+
+./xmlchange NTASKS_CPL=-4
+./xmlchange NTASKS_OCN=-4
+./xmlchange NTASKS_WAV=-4
+./xmlchange NTASKS_GLC=-4
+./xmlchange NTASKS_ICE=-4
+./xmlchange NTASKS_ROF=-4
+./xmlchange NTASKS_LND=-4
+
+./xmlchange CONTINUE_RUN=FALSE
+./xmlchange RESUBMIT=0
+./xmlchange STOP_N=20
+./xmlchange STOP_OPTION=nyears
+
+./xmlchange BUILD_COMPLETE="TRUE"
+./xmlchange EXEROOT="/glade/scratch/$USER/codebase_hydro_ensemble_LHC/bld"
+
+./xmlchange DATM_CLMNCEP_YR_START=2000
+./xmlchange DATM_CLMNCEP_YR_END=2004
+
+# DATM streams-specific settings
+./xmlchange DIN_LOC_ROOT_CLMFORC="/glade/scratch/kdagon/future_climate_streams"
+
+# Modify wallclock, project, queue as necessary
+# To change mail options; this works with Cheyenne only:
+#./xmlchange --file env_batch.xml --subgroup case.run --id BATCH_COMMAND_FLAGS --val '-m abe -l walltime=4:00:00 -A P08010000 -q regular'
+
+# Setup case (creates user_nl_* files)
+./case.setup
+
+# Generate param files for PFT-dependent params
+# Set params file
+# Assumes this folder has already been created?
+pftfile="/glade/u/home/$USER/pft_files/$NAME/${EXPTNAME}.nc"
+# Remove existing file, if applicable
+rm -f $pftfile
+# Copy default 
+cp /glade/p/cesmdata/cseg/inputdata/lnd/clm2/paramdata/clm5_params.c171117.nc $pftfile
+
+# Make changes to netcdf file through python script
+#source /glade/work/$USER/ncar_pylib_clone/bin/activate
+#pylib
+source /glade/work/kdagon/ncar_pylib_clone_20190627/bin/activate
+python /glade/u/home/$USER/CLM5hydro_LHC/LHC_read_pft.py $(( i - 1 )) $pftfile
+deactivate
+
+# Set params file in namelist
+uclm="paramfile='$pftfile'"               
+echo  $uclm >> user_nl_clm
+
+# If not PFT-dependent, edit the namelist appropriately
+# Call LHC_read_nl.py to write out nl parameter values
+# For each case (i), write out all nl params at once
+#source /glade/work/$USER/ncar_pylib_clone/bin/activate
+#pylib
+source /glade/work/kdagon/ncar_pylib_clone_20190627/bin/activate
+python /glade/u/home/$USER/CLM5hydro_LHC/LHC_read_nl.py $(( i - 1 )) >> user_nl_clm
+deactivate
+
+./case.submit
+
+cd ../
+
+(( i++ ))
+
+done

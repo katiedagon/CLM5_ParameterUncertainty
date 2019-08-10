@@ -91,7 +91,8 @@ sd_LHF = np.load(file="obs/obs_LHF_SVD_3modes_allyrs_sd.npy", allow_pickle=True)
 #B = 5220728/3619373 #Lmin_GPP / Lmin_LHF (min across all evals)
 #B = 1.3
 #B = 1 # equivalent to no weighting
-B = 0 # equivalent to no LHF term
+#B = 0 # equivalent to no LHF term
+B = 1.49
 
 # Define likelihood function using emulator predictions
 def normerr(x):
@@ -104,7 +105,9 @@ def normerr(x):
     #print(model_preds)
     #L = np.sum(((model_preds-obs)/sd)**2, axis=1)
     #L = np.sum(((model_preds_GPP-obs_GPP)/sd_GPP)**2, axis=1) + np.sum(((model_preds_LHF-obs_LHF)/sd_LHF)**2, axis=1)
-    L = np.sum(((model_preds_GPP-obs_GPP)/sd_GPP)**2, axis=1) + B*np.sum(((model_preds_LHF-obs_LHF)/sd_LHF)**2, axis=1)
+    #L = np.sum(((model_preds_GPP-obs_GPP)/sd_GPP)**2, axis=1) + B*np.sum(((model_preds_LHF-obs_LHF)/sd_LHF)**2, axis=1)
+    L = np.sum((model_preds_GPP-obs_GPP)**2, axis=1) +\
+        np.sum((model_preds_LHF-obs_LHF)**2, axis=1) 
     #print(L)
     return L
 

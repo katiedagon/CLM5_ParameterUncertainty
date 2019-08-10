@@ -1,0 +1,10 @@
+#!/bin/bash
+
+FILES=/glade/scratch/kdagon/future_climate_streams/atm_forcing.datm7.GSWP3.0.5d.v1.c170516/TPHWL/*
+
+for f in $FILES
+do
+  echo "Processing $f file..."
+  ncap2 -s "TBOT=TBOT+2" --ovr $f $f
+done
+

@@ -54,7 +54,8 @@ begin
 
  do i=1,niter
   y=tostring(i)
-  strs = (/path,"hydro_ensemble_LHC_",y,"/lnd/hist/*{001[6-9],20-}*"/)
+  ;strs = (/path,"hydro_ensemble_LHC_",y,"/lnd/hist/*{001[6-9],20-}*"/)
+  strs = (/path,"future_climate_LHC_",y,"/lnd/hist/*{001[6-9],20-}*"/)
   str_c = str_concat(strs)
   fils = systemfunc("ls "+str_c)
   f = addfiles(fils,"r")
