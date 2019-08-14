@@ -73,7 +73,7 @@ opt_dense = RMSprop(lr=0.005, rho=0.9, epsilon=None, decay=0.0)
 #        amsgrad=False)
 #opt_dense = SGD(lr=0.005, momentum=0.0, decay=0.0, nesterov=False)
 model.compile(opt_dense, "mse", metrics=[mean_sq_err])
-#model.summary()
+model.summary()
 
 # Separate training/test/val data: 60/20/20 split
 x_train = inputdata[0:60]
@@ -114,7 +114,7 @@ plt.xlabel('Epoch')
 plt.title('Neural Network Training History')
 #plt.savefig("train_history_GPP-SVD.pdf")
 #plt.savefig("train_history_GPP_ET_SVD-mode1.pdf")
-plt.savefig("train_history_GPP_SVD_md.pdf")
+#plt.savefig("train_history_GPP_SVD_md.pdf")
 plt.show()
 
 # Save out model
@@ -161,7 +161,7 @@ plt.xlim(np.amin([y_val[:,0],model_preds[:,0]])-0.1,np.amax([y_val[:,0],model_pr
 plt.ylim(np.amin([y_val[:,0],model_preds[:,0]])-0.1,np.amax([y_val[:,0],model_preds[:,0]])+0.1)
 #plt.savefig("validation_scatter_GPP-SVD-mode1.pdf")
 #plt.savefig("validation_scatter_GPP_ET_SVD-mode1GPP.pdf")
-plt.savefig("validation_scatter_training_GPP_SVD_md_mode1.pdf")
+#plt.savefig("validation_scatter_training_GPP_SVD_md_mode1.pdf")
 plt.show()
 # mode 2
 plt.scatter(y_val[:,1], model_preds[:,1], label='validation')
@@ -175,7 +175,7 @@ plt.xlim(np.amin([y_val[:,1],model_preds[:,1]])-0.1,np.amax([y_val[:,1],model_pr
 plt.ylim(np.amin([y_val[:,1],model_preds[:,1]])-0.1,np.amax([y_val[:,1],model_preds[:,1]])+0.1)
 #plt.savefig("validation_scatter_GPP-SVD-mode2.pdf")
 #plt.savefig("validation_scatter_GPP_ET_SVD-mode1ET.pdf")
-plt.savefig("validation_scatter_training_GPP_SVD_md_mode2.pdf")
+#plt.savefig("validation_scatter_training_GPP_SVD_md_mode2.pdf")
 plt.show()
 # mode 3
 plt.scatter(y_val[:,2], model_preds[:,2], label='validation')
@@ -188,7 +188,7 @@ plt.title('EOF3 GPP')
 plt.xlim(np.amin([y_val[:,2],model_preds[:,2]])-0.1,np.amax([y_val[:,2],model_preds[:,2]])+0.1)
 plt.ylim(np.amin([y_val[:,2],model_preds[:,2]])-0.1,np.amax([y_val[:,2],model_preds[:,2]])+0.1)
 #plt.savefig("validation_scatter_GPP-SVD-mode3.pdf")
-plt.savefig("validation_scatter_training_GPP_SVD_md_mode3.pdf")
+#plt.savefig("validation_scatter_training_GPP_SVD_md_mode3.pdf")
 plt.show()
 
 # linear regression of actual vs predicted

@@ -38,7 +38,16 @@ inputdata = np.load(file="lhc_100.npy")
 #outputdata = np.loadtxt("outputdata/outputdata_GPP.csv")
 #outputdata_all = np.load("outputdata/outputdata_GPP_SVD.npy")
 #outputdata = np.load("outputdata/outputdata_GPP_SVD_3modes.npy")
-outputdata = np.load("outputdata/outputdata_LHF_SVD_3modes.npy")
+#outputdata = np.load("outputdata/outputdata_LHF_SVD_3modes.npy")
+#outputdata = np.load("outputdata/outputdata_GPP_SVD_3modes_fc.npy")
+outputdata = np.load("outputdata/outputdata_GPP_SVD_3modes_diff.npy")
+
+# Training to predict DELTA GPP,LHF
+#out1 = np.load("outputdata/outputdata_GPP_SVD_3modes.npy")
+#out1 = np.load("outputdata/outputdata_LHF_SVD_3modes.npy")
+#out2 = np.load("outputdata/outputdata_GPP_SVD_3modes_fc.npy")
+#out2 = np.load("outputdata/outputdata_LHF_SVD_3modes_fc.npy")
+#outputdata = out2-out1 # future - present
 
 # Specify mode (SVD only)
 #mode = 1

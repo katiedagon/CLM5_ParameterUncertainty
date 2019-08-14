@@ -40,7 +40,6 @@ begin
  ; get obs datamask
  f_obs = addfile("../obs/MR_GPP_4x5_2000_2004.nc","r")
  ;f_obs = addfile("../obs/MR_LHF_4x5_2000_2004.nc","r")
- ;f_obs = addfile("../obs/MR_GPP_4x5_2000_2004_v2.nc","r")
  datamask_obs = f_obs->datamask
 
  ; set up storage matrix
@@ -54,12 +53,21 @@ begin
  do i=1,niter
   y=tostring(i)
   print(y)
-  ;strs = (/path,"hydro_ensemble_LHC_",y,"/lnd/hist/*{001[6-9],20-}*"/)
-  strs = (/path,"hydro_ensemble_LHC_v2_",y,"/lnd/hist/*{001[6-9],20-}*"/) 
+  strs = (/path,"hydro_ensemble_LHC_",y,"/lnd/hist/*{001[6-9],20-}*"/)
+  ;strs = (/path,"hydro_ensemble_LHC_v2_",y,"/lnd/hist/*{001[6-9],20-}*"/) 
+  ;strs = (/path,"future_climate_LHC_",y,"/lnd/hist/*{001[6-9],20-}*"/) 
   str_c = str_concat(strs)
   fils = systemfunc("ls "+str_c)
   f = addfiles(fils,"r")
-  o = f[:]->$var$
+  v1 = f[:]->$var$
+  ; second ensemble for difference
+  strs = (/path,"future_climate_LHC_",y,"/lnd/hist/*{001[6-9],20-}*"/)
+  str_c = str_concat(strs)
+  fils = systemfunc("ls "+str_c)
+  f = addfiles(fils,"r")
+  v2 = f[:]->$var$
+  o = v2 - v1 ; future - present
+  copy_VarMeta(v1,o)
   ; mask model output to match obs
   o_m = mask(o,datamask_obs.eq.0,False)
   copy_VarMeta(o,o_m)
@@ -163,8 +171,12 @@ begin
  ; writing as nc (preferred)
  ;ncdf = addfile("outputdata_GPP_forSVD_100.nc", "c")
  ;ncdf = addfile("outputdata_LHF_forSVD_100.nc", "c")
- ncdf = addfile("outputdata_GPP_forSVD_100_v2.nc", "c")
- 
+ ;ncdf = addfile("outputdata_GPP_forSVD_100_v2.nc", "c")
+ ;ncdf = addfile("outputdata_LHF_forSVD_100_v2.nc", "c")
+ ;ncdf = addfile("outputdata_GPP_forSVD_100_fc.nc", "c")
+ ;ncdf = addfile("outputdata_LHF_forSVD_100_fc.nc", "c") 
+ ncdf = addfile("outputdata_GPP_forSVD_100_diff.nc", "c")
+
  ; define time as an unlimited dimension (optional?)
  ;filedimdef(ncdf,"time",-1,True) 
  ncdf->datamask = datamask_obs
