@@ -57,9 +57,9 @@ def mean_sq_err(y_true,y_pred):
 
 # Load previously trained model
 from keras.models import load_model
-model_GPP = load_model('NN_GPP_finalize_multi-dim.h5', custom_objects={'mean_sq_err':
-    mean_sq_err})
-model_LHF = load_model('NN_LHF_finalize_multi-dim.h5',
+model_GPP = load_model('emulators/NN_GPP_finalize_multi-dim.h5', 
+    custom_objects={'mean_sq_err' :mean_sq_err})
+model_LHF = load_model('emulators/NN_LHF_finalize_multi-dim.h5',
     custom_objects={'mean_sq_err': mean_sq_err})
 
 # test predictive capability
@@ -105,9 +105,9 @@ def normerr(x):
     #print(model_preds)
     #L = np.sum(((model_preds-obs)/sd)**2, axis=1)
     #L = np.sum(((model_preds_GPP-obs_GPP)/sd_GPP)**2, axis=1) + np.sum(((model_preds_LHF-obs_LHF)/sd_LHF)**2, axis=1)
-    #L = np.sum(((model_preds_GPP-obs_GPP)/sd_GPP)**2, axis=1) + B*np.sum(((model_preds_LHF-obs_LHF)/sd_LHF)**2, axis=1)
-    L = np.sum((model_preds_GPP-obs_GPP)**2, axis=1) +\
-        np.sum((model_preds_LHF-obs_LHF)**2, axis=1) 
+    L = np.sum(((model_preds_GPP-obs_GPP)/sd_GPP)**2, axis=1) + B*np.sum(((model_preds_LHF-obs_LHF)/sd_LHF)**2, axis=1)
+    #L = np.sum((model_preds_GPP-obs_GPP)**2, axis=1) +\
+    #    np.sum((model_preds_LHF-obs_LHF)**2, axis=1) 
     #print(L)
     return L
 
@@ -117,6 +117,10 @@ def normerr(x):
 #xtest = np.array([1,1,0,1,0,0])
 #print(normerr(xtest))
 #print(model.predict(xtest.reshape(1,-1)))
+
+# Testing out MCMC results
+MCMC_result = np.array([0.5, 1, 0, 1, 1, 0])
+print(normerr(MCMC_result))
 
 # Define initial condition parameter values (LHC scalings)
 # Start in the middle of the uncertainty range (arbitrary)
@@ -312,8 +316,8 @@ ax.axvline(x=opt_preds_LHF[:,0], color='green', linestyle='dashed', linewidth=2,
 # this number is taken from SVD on test_paramset_GPP_LHF_SVD_001
 #ax.axvline(x=0.41596237, color='blue', linestyle='dashed', linewidth=2,
 #        label='CLM with optimized params')
-ax.axvline(x=-0.27669725, color='blue', linestyle='dashed', linewidth=2,
-        label='CLM with optimized params')
+#ax.axvline(x=-0.27669725, color='blue', linestyle='dashed', linewidth=2,
+#        label='CLM with optimized params')
 box = ax.get_position()
 ax.set_position([box.x0, box.y0, box.width * 0.6, box.height])
 ax.legend(loc='center left', bbox_to_anchor=(1, 0.5))
@@ -351,8 +355,8 @@ ax.axvline(x=opt_preds_LHF[:,1], color='green', linestyle='dashed', linewidth=2,
 #        label='CLM with optimized params V1')
 #ax.axvline(x=-0.4265692, color='blue', linestyle='dashed', linewidth=2,
 #        label='CLM with optimized params')
-ax.axvline(x=-0.08327985, color='blue', linestyle='dashed', linewidth=2,                                                                         
-        label='CLM with optimized params')
+#ax.axvline(x=-0.08327985, color='blue', linestyle='dashed', linewidth=2,                                                                         
+#        label='CLM with optimized params')
 box = ax.get_position()
 ax.set_position([box.x0, box.y0, box.width * 0.6, box.height])
 ax.legend(loc='center left', bbox_to_anchor=(1, 0.5))
@@ -389,8 +393,8 @@ ax.axvline(x=opt_preds_LHF[:,2], color='green', linestyle='dashed', linewidth=2,
 #        label='CLM with optimized params V1') 
 #ax.axvline(x=-0.32231316, color='blue', linestyle='dashed', linewidth=2,
 #        label='CLM with optimized params')
-ax.axvline(x=0.37923342, color='blue', linestyle='dashed', linewidth=2,                                                                        
-        label='CLM with optimized params')
+#ax.axvline(x=0.37923342, color='blue', linestyle='dashed', linewidth=2,                                                                        
+#        label='CLM with optimized params')
 box = ax.get_position()
 ax.set_position([box.x0, box.y0, box.width * 0.6, box.height])
 ax.legend(loc='center left', bbox_to_anchor=(1, 0.5))
@@ -419,7 +423,7 @@ L_alt = np.sum(((outputdata_GPP-obs_GPP)/sd_GPP)**2, axis=1) + B*np.sum(((output
 Lmin_alt = np.argmin(L_alt)
 print(Lmin_alt)
 print(L_alt[Lmin_alt])
-#print(inputdata[Lmin_alt,:])
+print(inputdata[Lmin_alt,:])
 #print(outputdata_LHF[Lmin_alt,:])
 #print(parameters[Lmin_alt,:])
 #print(np.min(L_alt))

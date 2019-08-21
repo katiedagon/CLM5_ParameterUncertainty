@@ -29,9 +29,9 @@ import keras.backend as K
 def mean_sq_err(y_true,y_pred):
     return K.mean((y_true-y_pred)**2)
 from keras.models import load_model
-model_GPP = load_model('NN_GPP_finalize_multi-dim.h5', custom_objects={'mean_sq_err':
+model_GPP = load_model('emulators/NN_GPP_finalize_multi-dim.h5', custom_objects={'mean_sq_err':
     mean_sq_err})
-model_LHF = load_model('NN_LHF_finalize_multi-dim.h5',
+model_LHF = load_model('emulators/NN_LHF_finalize_multi-dim.h5',
     custom_objects={'mean_sq_err': mean_sq_err})
 
 # Read in observational targets
@@ -49,7 +49,8 @@ sd_GPP = np.load(file="obs/obs_GPP_SVD_3modes_allyrs_sd.npy", allow_pickle=True)
 sd_LHF = np.load(file="obs/obs_LHF_SVD_3modes_allyrs_sd.npy", allow_pickle=True)
 
 # Set weighting factor sampling range for likelihood function
-Brange = np.arange(0,3.01,0.01)
+#Brange = np.arange(0,3.01,0.01)
+Brange = np.arange(1,3.01,0.01)
 
 # Define likelihood function using emulator predictions
 def normerr(x):
@@ -86,23 +87,36 @@ plt.plot(Brange, Lmin_GPP, label="Lmin_GPP")
 #plt.plot(Brange, Lmin_LHF, label="Lmin_LHF")
 plt.plot(Brange, Lmin_LHF_wgt, label="Lmin_LHF_wgt")
 #plt.plot(Brange, Lmin, label="Lmin_total")
+plt.axvline(x=1.3, color='k', linestyle='dashed', linewidth=2)
+plt.axvline(x=1.68, color='k', linestyle='dashed', linewidth=2)
 plt.legend()
-plt.xlabel("Optimization Weighting Factor")
+plt.xlabel("Optimization LHF Weighting Factor")
 plt.ylabel("Lmin")
 #plt.savefig("choice_of_wgt_B_Lmin.pdf")
 #plt.savefig("choice_of_wgt_B_Lmin_LHF_wgt.pdf")
 plt.show()
 
 # Find intersection
-#Lmin_inter = np.min(abs(Lmin_GPP-Lmin_LHF))
+Lmin_inter = abs(Lmin_GPP-Lmin_LHF_wgt)
+print(np.min(Lmin_inter))
+print(Brange[np.argmin(Lmin_inter)])
 #print(Lmin_inter)
-#Brange_min = Brange[np.argmin(abs(Lmin_GPP-Lmin_LHF))]
+#Brange_min = Brange[np.argmin(abs(Lmin_GPP-Lmin_LHF_wgt))]
 #print(Brange_min)
 
+# Find average
+Lmin_avg = (Lmin_GPP+Lmin_LHF_wgt)/2
+print(np.min(Lmin_avg)) # minimum of average Lmin
+print(Brange[np.argmin(Lmin_avg)]) # corresponding B value
+
 # Plot sum/avg
-#plt.plot(Brange, Lmin_GPP+Lmin_LHF, label="unweighted")
-#plt.plot(Brange, Lmin_GPP+Lmin_LHF_wgt, label="weighted")
-#plt.plot(Brange, (Lmin_GPP+Lmin_LHF)/2)
-#plt.legend()
-#plt.show()
+plt.plot(Brange, Lmin, label="total")
+#plt.plot(Brange, Lmin_GPP+Lmin_LHF, label="unweighted sum")
+#plt.plot(Brange, Lmin_GPP+Lmin_LHF_wgt, label="weighted sum")
+#plt.plot(Brange, (Lmin_GPP+Lmin_LHF)/2, label="avg unwgt")
+plt.plot(Brange, (Lmin_GPP+Lmin_LHF_wgt)/2, label="avg wgt")
+plt.axvline(x=1.3, color='k', linestyle='dashed', linewidth=2)
+plt.axvline(x=1.68, color='k', linestyle='dashed', linewidth=2)
+plt.legend()
+plt.show()
 

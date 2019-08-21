@@ -40,7 +40,8 @@ inputdata = np.load(file="lhc_100.npy")
 #outputdata = np.load("outputdata/outputdata_GPP_SVD_3modes.npy")
 #outputdata = np.load("outputdata/outputdata_LHF_SVD_3modes.npy")
 #outputdata = np.load("outputdata/outputdata_GPP_SVD_3modes_fc.npy")
-outputdata = np.load("outputdata/outputdata_GPP_SVD_3modes_diff.npy")
+#outputdata = np.load("outputdata/outputdata_GPP_SVD_3modes_diff.npy")
+outputdata = np.load("outputdata/outputdata_LHF_SVD_3modes_diff.npy")
 
 # Training to predict DELTA GPP,LHF
 #out1 = np.load("outputdata/outputdata_GPP_SVD_3modes.npy")

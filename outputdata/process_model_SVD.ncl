@@ -7,7 +7,7 @@ begin
 ; read in data
 ;************************************************
  ; set param set number
- pset = "006"
+ pset = "001"
 
  ; set model path
  path = "/glade/scratch/kdagon/archive/"
@@ -24,12 +24,12 @@ begin
  u = 1/(10^12) ; W to TW
 
  ; get hist files (last 5 years)
- strs = (/path,"test_paramset_SVD_",pset,"/lnd/hist/*{001[6-9],20-}*"/)
+ ;strs = (/path,"test_paramset_SVD_",pset,"/lnd/hist/*{001[6-9],20-}*"/)
  ;strs = (/path,"hydro_ensemble_LHC_default_params/lnd/hist/*{001[6-9],20-}*"/)
  ;strs = (/path,"hydro_ensemble_LHC_86/lnd/hist/*{001[6-9],20-}*"/)
  ;strs = (/path,"hydro_ensemble_LHC_81/lnd/hist/*{001[6-9],20-}*"/)
  ;strs = (/path,"test_paramset_LHF_SVD_",pset,"/lnd/hist/*{001[6-9],20-}*"/)
- ;strs = (/path,"test_paramset_GPP_LHF_SVD_",pset,"/lnd/hist/*{001[6-9],20-}*"/)
+ strs = (/path,"test_paramset_GPP_LHF_SVD_",pset,"/lnd/hist/*{001[6-9],20-}*"/)
  str_c = str_concat(strs)
  ;print(str_c)
  fils = systemfunc("ls "+str_c)
@@ -89,7 +89,6 @@ begin
 
  ; update units
  ;v_anom@units = "PgC/yr"
- ;v_anom@units = "W"
  v_anom@units = "TW"
  ;printVarSummary(v_anom)
 
@@ -110,7 +109,7 @@ begin
  res@lbBoxLinesOn = False ; no boxes
  res@gsnLeftString = var
  res@gsnRightString = v_anom@units
- res@tiMainString = "5-year annual mean test paramset, area-weighted, anomaly from LHC100 ensemble mean with test paramset"  
+ res@tiMainString = "5-year annual mean test paramset, area-weighted, anomaly from LHC100 ensemble mean without test paramset"  
  ;res@tiMainString = "5-year annual mean default params, area-weighted, anomaly from LHC100 ensemble mean without default params"
  res@tiMainFontHeightF   = 0.012
 
@@ -126,9 +125,9 @@ begin
  ;ncdf = addfile("CLM_default_GPP_forSVD.nc", "c")
  ;ncdf = addfile("test_paramset_GPP_forSVD.nc", "c")
  ;ncdf = addfile("CLM_default_LHF_forSVD.nc", "c")
- ;ncdf = addfile("test_paramset_LHF_forSVD.nc", "c")
+ ncdf = addfile("test_paramset_LHF_forSVD.nc", "c")
  ;ncdf = addfile("test_paramset_LHF_SVD_001_forSVD.nc", "c")
- ncdf = addfile("test_paramset_SVD_006_LHF_forSVD.nc", "c")
+ ;ncdf = addfile("test_paramset_SVD_006_LHF_forSVD.nc", "c")
  ;ncdf->GPP = v_anom 
  ncdf->LHF = v_anom
  ncdf->datamask = datamask_obs

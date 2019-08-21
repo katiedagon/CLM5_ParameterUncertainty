@@ -1,5 +1,6 @@
 # MCMC for optimizing the 2-layer multiple output Neural Network
-# 7/2/19
+# Try to get parallel processing to speed up compute time
+# 8/21/19
 
 # Import some modules
 import emcee
@@ -7,14 +8,14 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 # Load previously trained NN models
-import keras.backend as K
-def mean_sq_err(y_true,y_pred):
-    return K.mean((y_true-y_pred)**2)
-from keras.models import load_model
-model_GPP = load_model('emulators/NN_GPP_finalize_multi-dim.h5',
-    custom_objects={'mean_sq_err': mean_sq_err})
-model_LHF = load_model('emulators/NN_LHF_finalize_multi-dim.h5',
-    custom_objects={'mean_sq_err': mean_sq_err})
+#import keras.backend as K
+#def mean_sq_err(y_true,y_pred):
+#    return K.mean((y_true-y_pred)**2)
+#from keras.models import load_model
+#model_GPP = load_model('emulators/NN_GPP_finalize_multi-dim.h5',
+#    custom_objects={'mean_sq_err': mean_sq_err})
+#model_LHF = load_model('emulators/NN_LHF_finalize_multi-dim.h5',
+#    custom_objects={'mean_sq_err': mean_sq_err})
 
 # List input variables
 in_vars = ['medlynslope','dleaf','kmax','fff','dint','baseflow_scalar']
@@ -28,19 +29,22 @@ sd_LHF = np.load(file="obs/obs_LHF_SVD_3modes_allyrs_sd.npy", allow_pickle=True)
 
 # Define normalized error function
 # Weighting factor previously determined by midpoint of regimes
-# see NN_opt_wgt.py
 B = 1.49
 #B = 1
 def normerr(x):
+    import keras.backend as K
+    def mean_sq_err(y_true,y_pred):
+        return K.mean((y_true-y_pred)**2)
+    from keras.models import load_model
+    model_GPP = load_model('emulators/NN_GPP_finalize_multi-dim.h5',
+            custom_objects={'mean_sq_err': mean_sq_err})
+    model_LHF = load_model('emulators/NN_LHF_finalize_multi-dim.h5',
+            custom_objects={'mean_sq_err': mean_sq_err})
     xt = x.reshape(1,-1)
     model_preds_GPP = model_GPP.predict(xt)
     model_preds_LHF = model_LHF.predict(xt)
-    # v2 log-likelihood (with negative sign)
     L = -(np.sum(((model_preds_GPP-obs_GPP)/sd_GPP)**2, axis=1) +\
         B*np.sum(((model_preds_LHF-obs_LHF)/sd_LHF)**2, axis=1))
-    # v3 log-likelihood (without sd or B)
-    #L = -(np.sum((model_preds_GPP-obs_GPP)**2, axis=1) +\
-    #    np.sum((model_preds_LHF-obs_LHF)**2, axis=1)) 
     return L
 
 # Define the prior
@@ -57,6 +61,15 @@ def lnprob(x):
         return -np.inf
     return lp + normerr(x)
 
+# Trying to figure out Pool issues
+#import pickle
+#print("Imported pickle")
+#test1 = pickle.dumps(lnprior)
+#test2 = pickle.dumps(normerr)
+#test3 = pickle.dumps(lnprob)
+#print(test1,test2,test3)
+#print("Dumped pickle")
+
 # Set number of walkers, number of dims (= number of params)
 nwalkers = 200
 ndim = npar
@@ -64,13 +77,32 @@ ndim = npar
 # Initialize walkers (random initial states)
 p0 = [np.random.rand(ndim) for i in range(nwalkers)]
 
+# Multiprocessing
+#from multiprocessing import set_start_method
+#set_start_method('spawn', force=True)
+from multiprocessing import Pool
+#pool = Pool()
+#pool = Pool(processes=10)
+#print("Starting pool")
+#from multiprocessing import get_context 
+#with get_context("forkserver").Pool() as pool:
+with Pool(processes=2) as pool:
+#sampler = emcee.EnsembleSampler(nwalkers, ndim, lnprob)
+#    print("Define sampler")
+    sampler = emcee.EnsembleSampler(nwalkers, ndim, lnprob, pool=pool) 
+    epochs = 10
+#    print("Start sampler")
+    sampler.run_mcmc(p0, epochs, progress=True)
+#    print("Finish sampler")
+#    #pool.close()
+
 # Set up sampler
-sampler = emcee.EnsembleSampler(nwalkers, ndim, lnprob)
+#sampler = emcee.EnsembleSampler(nwalkers, ndim, lnprob, pool=pool)
 # Run sampler for set number of epochs
 # should really think about ~10^6 epochs (batch job?)
-epochs = 1*10**6
+#epochs = 1*10**3
 #pos, prob, state = sampler.run_mcmc(p0, epochs)
-sampler.run_mcmc(p0, epochs, progress=True)
+#sampler.run_mcmc(p0, epochs, progress=True)
 
 # Print mean acceptance fraction
 acc = sampler.acceptance_fraction
@@ -105,7 +137,6 @@ axes[-1].set_xlabel("step number");
 #plt.savefig("MCMC_sampler_chain_1e5epochs_v2.pdf")
 #plt.savefig("MCMC_sampler_chain_1e4epochs_v2.pdf")
 #plt.savefig("MCMC_sampler_chain_2e5epochs_v2.pdf")
-plt.savefig("MCMC_sampler_chain_1e6epochs_v2.pdf")
 plt.show()
 
 # Marginalized density
@@ -122,7 +153,6 @@ axes[-1].set_xlabel("parameter value")
 #plt.savefig("MCMC_param_dists_2e5epochs_v2.pdf")
 #plt.savefig("MCMC_param_dists_1e5epochs_v2.pdf")
 #plt.savefig("MCMC_param_dists_1e4epochs_v2.pdf")
-plt.savefig("MCMC_param_dists_1e6epochs_v2.pdf")
 plt.show()
 
 
@@ -211,7 +241,6 @@ plt.legend(fontsize=14)
 #plt.savefig("MCMC_autocorr_5e4epochs_v2.pdf")
 #plt.savefig("MCMC_autocorr_1e5epochs_v2.pdf")
 #plt.savefig("MCMC_autocorr_2e5epochs_v2.pdf")
-plt.savefig("MCMC_autocorr_1e6epochs_v2.pdf")
 plt.show()
 
 
@@ -243,13 +272,12 @@ plt.ylabel("log prob")
 #plt.savefig("MCMC_prob_5e4epochs_v2.pdf")
 #plt.savefig("MCMC_logprob_1e4epochs_v2.pdf")
 #plt.savefig("MCMC_logprob_2e5epochs_v2.pdf")
-plt.savefig("MCMC_logprob_1e6epochs_v2.pdf")
 plt.show()
 
 # Discard the initial N steps
 #samples = sampler.chain[:, 500:, :].reshape((-1, ndim))
 #flat_samples = sampler.get_chain(discard=100, thin=15, flat=True)
-flat_samples = sampler.get_chain(discard=10000, flat=True)
+flat_samples = sampler.get_chain(discard=100, flat=True)
 #print(flat_samples.shape)
 
 # Corner plot
@@ -264,12 +292,8 @@ fig = corner.corner(flat_samples, labels=in_vars)
 #plt.savefig("MCMC_corner_1e5epochs_v2.pdf")
 #plt.savefig("MCMC_corner_1e4epochs_v2.pdf")
 #plt.savefig("MCMC_corner_2e5epochs_v2.pdf")
-plt.savefig("MCMC_corner_1e6epochs_v2.pdf")
 plt.show()
 
 # Get last sample
 #last_sample = sampler.get_last_sample()
 #print(last_sample)
-last_sample = sampler.chain[:,epochs-1,:]
-# Save last sample
-np.save("MCMC_lastsample_1e6epochs_v2", last_sample)

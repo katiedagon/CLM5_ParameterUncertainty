@@ -31,7 +31,9 @@ inputdata = np.load(file="lhc_100.npy")
 #outputdata = np.loadtxt("outputdata/outputdata_GPP.csv")
 #outputdata_all = np.load("outputdata/outputdata_GPP_SVD.npy")
 #outputdata = np.load("outputdata/outputdata_GPP_SVD_3modes.npy")
-outputdata = np.load("outputdata/outputdata_LHF_SVD_3modes.npy")
+#outputdata = np.load("outputdata/outputdata_LHF_SVD_3modes.npy")
+#outputdata = np.load("outputdata/outputdata_GPP_SVD_3modes_diff.npy")
+outputdata = np.load("outputdata/outputdata_LHF_SVD_3modes_diff.npy")
 
 # Specify mode (SVD only)
 #mode = 3
@@ -43,13 +45,16 @@ nmodes = outputdata.shape[1]
 
 # Percent of variance (for weighted avg R^2)
 #svd_var = [0.8341, 0.1349, 0.0119] # GPP
-svd_var = [0.7701996, 0.12915632, 0.05642754] #LHF
+#svd_var = [0.7701996, 0.12915632, 0.05642754] #LHF
+#svd_var = [0.43263328, 0.19826488, 0.13297316] # GPP Diff
+svd_var = [0.49752492, 0.14868388, 0.11127292] #LHF Diff
 
 metricsME = []
 metricsRsq = []
 metricswRsq = []
 # Resample k times
 for k in range(1,101):
+    print(k)
 
     # Separate training/test/val data: 60/20/20 split
     # Randomly using sklearn
@@ -60,10 +65,10 @@ for k in range(1,101):
     model = Sequential()
     # specify input_dim as number of parameters, not number of simulations
     # l2 norm regularizer
-    model.add(Dense(14, input_dim=inputdata.shape[1], activation='relu',
+    model.add(Dense(15, input_dim=inputdata.shape[1], activation='relu',
         kernel_regularizer=l2(.001)))
     # second layer with hyperbolic tangent activation
-    model.add(Dense(14, activation='tanh', kernel_regularizer=l2(.001)))
+    model.add(Dense(12, activation='tanh', kernel_regularizer=l2(.001)))
     # output layer with linear activation
     #model.add(Dense(1))
     model.add(Dense(nmodes))

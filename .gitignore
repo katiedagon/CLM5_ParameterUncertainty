@@ -1,11 +1,10 @@
 archive/
+emulators/
 figures/
 parameter_files/
 obs/figures/
 outputdata/figures/
-pymc3/
-obs/MR_*
-*.h5
+obs/MR_*.nc
 .ipynb_checkpoints/
 outputdata/test_*
 

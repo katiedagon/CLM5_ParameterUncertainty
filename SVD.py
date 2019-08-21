@@ -9,16 +9,17 @@ import matplotlib.pyplot as plt
 
 # Read netcdf file (pre-processed in NCL)
 #f = nc.netcdf_file("outputdata/outputdata_GPP_forSVD_100.nc",'r',mmap=False)
-#f = nc.netcdf_file("outputdata/outputdata_LHF_forSVD_100.nc",'r',mmap=False)
+f = nc.netcdf_file("outputdata/outputdata_LHF_forSVD_100.nc",'r',mmap=False)
 #f = nc.netcdf_file("outputdata/outputdata_GPP_forSVD_100_v2.nc",'r',mmap=False)
 #f = nc.netcdf_file("outputdata/outputdata_LHF_forSVD_100_v2.nc",'r',mmap=False)
 #f = nc.netcdf_file("outputdata/outputdata_GPP_forSVD_100_fc.nc",'r',mmap=False)
 #f = nc.netcdf_file("outputdata/outputdata_LHF_forSVD_100_fc.nc",'r',mmap=False)
-f = nc.netcdf_file("outputdata/outputdata_GPP_forSVD_100_diff.nc",'r',mmap=False)
+#f = nc.netcdf_file("outputdata/outputdata_GPP_forSVD_100_diff.nc",'r',mmap=False)
+#f = nc.netcdf_file("outputdata/outputdata_LHF_forSVD_100_diff.nc",'r',mmap=False)
 
 # Read variable data
-X = f.variables['GPP']
-#X = f.variables['LHF']
+#X = f.variables['GPP']
+X = f.variables['LHF']
 mask = f.variables['datamask']
 
 # Convert to numpy array
@@ -80,7 +81,7 @@ smat = np.diag(s)
 # need to increase tolerance for LHF (doesn't close otherwise)
 print(np.allclose(drm, np.dot(U*s, Vh), atol=1e-07))
 print(np.allclose(drm, np.dot(U, np.dot(smat, Vh)), atol=1e-06))
-print(drm[:,0]-np.dot(U*s, Vh)[:,0])
+#print(drm[:,0]-np.dot(U*s, Vh)[:,0])
 
 # Plot first mode of model U-vector (distribution)
 #plt.hist(U[:,0], bins=20)
@@ -100,18 +101,19 @@ print(drm[:,0]-np.dot(U*s, Vh)[:,0])
 #np.save("outputdata/outputdata_LHF_SVD_3modes_v2", U[:,0:3])
 #np.save("outputdata/outputdata_GPP_SVD_3modes_fc", U[:,0:3])
 #np.save("outputdata/outputdata_LHF_SVD_3modes_fc", U[:,0:3])
-np.save("outputdata/outputdata_GPP_SVD_3modes_diff", U[:,0:3])
+#np.save("outputdata/outputdata_GPP_SVD_3modes_diff", U[:,0:3])
+#np.save("outputdata/outputdata_LHF_SVD_3modes_diff", U[:,0:3])
 
 # Compare with Observations
 
 # Read netcdf file (pre-processed in NCL)
 # anomalies from ensemble mean where ensemble does not include obs (n=100)
-fo = nc.netcdf_file("obs/obs_GPP_4x5_anom_forSVD.nc",'r',mmap=False)
-#fo = nc.netcdf_file("obs/obs_LHF_4x5_anom_forSVD.nc",'r',mmap=False)
+#fo = nc.netcdf_file("obs/obs_GPP_4x5_anom_forSVD.nc",'r',mmap=False)
+fo = nc.netcdf_file("obs/obs_LHF_4x5_anom_forSVD.nc",'r',mmap=False)
 
 # Read variable data
-Xo = fo.variables['GPP']
-#Xo = fo.variables['LHF']
+#Xo = fo.variables['GPP']
+Xo = fo.variables['LHF']
 masko = fo.variables['datamask']
 
 # Convert to numpy array
@@ -175,28 +177,29 @@ U_obs = np.dot(drom,pinv(np.dot(smat,Vh)))
 #ft = nc.netcdf_file("outputdata/test_paramset_SVD_006_GPP_forSVD.nc",'r',mmap=False)
 #ft = nc.netcdf_file("outputdata/test_paramset_SVD_006_LHF_forSVD.nc",'r',mmap=False)
 #ft = nc.netcdf_file("outputdata/test_paramset_LHF_SVD_001_forSVD.nc",'r',mmap=False)
-#ft = nc.netcdf_file("outputdata/test_paramset_LHF_forSVD.nc",'r',mmap=False)
 #ft = nc.netcdf_file("outputdata/test_paramset_GPP_forSVD.nc",'r',mmap=False)
+ft = nc.netcdf_file("outputdata/test_paramset_LHF_forSVD.nc",'r',mmap=False)
 #Xt = ft.variables['GPP']
-#Xt = ft.variables['LHF']
-#maskt = ft.variables['datamask']
-#dt = Xt[:]
-#mt = maskt[:]
-#drt = np.reshape(dt,(nenso,nlato*nlono))
-#mrt = np.reshape(mt,nlato*nlono)
-#drtm = drt[:,mrt==1]
+Xt = ft.variables['LHF']
+maskt = ft.variables['datamask']
+dt = Xt[:]
+mt = maskt[:]
+drt = np.reshape(dt,(nenso,nlato*nlono))
+mrt = np.reshape(mt,nlato*nlono)
+drtm = drt[:,mrt==1]
 #print(drtm.shape)
-#drtm[drtm==1.e+36] = 0
-#U_test = np.dot(drtm,pinv(np.dot(smat,Vh)))
+drtm[drtm==1.e+36] = 0
+U_test = np.dot(drtm,pinv(np.dot(smat,Vh)))
 #print(U_test[:,0:3])
 # Calculate likelihood based on these results
 #sd = np.load(file="obs/obs_GPP_SVD_3modes_allyrs_sd.npy")
-#sd = np.load(file="obs/obs_LHF_SVD_3modes_allyrs_sd.npy")
+sd = np.load(file="obs/obs_LHF_SVD_3modes_allyrs_sd.npy")
 #L = np.sum(((U_test[:,0:3]-U_obs[:,0:3])/sd)**2, axis=1)
 # weighted L (LHF)
 #B = 1.3
-#L = B*np.sum(((U_test[:,0:3]-U_obs[:,0:3])/sd)**2, axis=1)
-#print(L)
+B = 1.49
+L = B*np.sum(((U_test[:,0:3]-U_obs[:,0:3])/sd)**2, axis=1)
+print(L)
 
 # Plot distribution with U_obs and U_test
 #plt.hist(U[:,0], bins=20)
@@ -207,10 +210,10 @@ U_obs = np.dot(drom,pinv(np.dot(smat,Vh)))
 #plt.show()
 
 # Project model with default params into SVD space
-fd= nc.netcdf_file("outputdata/CLM_default_GPP_forSVD.nc",'r',mmap=False)
-#fd= nc.netcdf_file("outputdata/CLM_default_LHF_forSVD.nc",'r',mmap=False)
-Xd = fd.variables['GPP']
-#Xd = fd.variables['LHF']
+#fd= nc.netcdf_file("outputdata/CLM_default_GPP_forSVD.nc",'r',mmap=False)
+fd= nc.netcdf_file("outputdata/CLM_default_LHF_forSVD.nc",'r',mmap=False)
+#Xd = fd.variables['GPP']
+Xd = fd.variables['LHF']
 maskd = fd.variables['datamask']
 dd = Xd[:]
 md = maskd[:]
@@ -232,7 +235,7 @@ plt.hist(U[:,0], bins=20)
 plt.xlabel('Mode 1 of LHF SVD (U-vector)')
 plt.ylabel('Counts')
 plt.axvline(x=U_obs[:,0], color='r', linestyle='dashed', linewidth=2)
-#plt.axvline(x=U_test[:,0], color='b', linestyle='dashed', linewidth=2)
+plt.axvline(x=U_test[:,0], color='b', linestyle='dashed', linewidth=2)
 plt.axvline(x=U_default[:,0], color='k', linestyle='dashed', linewidth=2)
 #plt.savefig("dist_outputdata_GPP_SVD_mode1_withobs_anddefault.pdf")
 #plt.savefig("dist_outputdata_LHF_SVD_mode1_withobs_anddefault.pdf") 
@@ -244,7 +247,7 @@ plt.hist(U[:,1], bins=20)
 plt.xlabel('Mode 2 of LHF SVD (U-vector)')
 plt.ylabel('Counts')
 plt.axvline(x=U_obs[:,1], color='r', linestyle='dashed', linewidth=2)
-#plt.axvline(x=U_test[:,1], color='b', linestyle='dashed', linewidth=2)
+plt.axvline(x=U_test[:,1], color='b', linestyle='dashed', linewidth=2)
 plt.axvline(x=U_default[:,1], color='k', linestyle='dashed', linewidth=2)
 #plt.savefig("dist_outputdata_GPP_SVD_mode2_withobs_anddefault.pdf")
 #plt.savefig("dist_outputdata_LHF_SVD_mode2_withobs_anddefault.pdf")  
@@ -256,7 +259,7 @@ plt.hist(U[:,2], bins=20)
 plt.xlabel('Mode 3 of LHF SVD (U-vector)')
 plt.ylabel('Counts')
 plt.axvline(x=U_obs[:,2], color='r', linestyle='dashed', linewidth=2)
-#plt.axvline(x=U_test[:,2], color='b', linestyle='dashed', linewidth=2)
+plt.axvline(x=U_test[:,2], color='b', linestyle='dashed', linewidth=2)
 plt.axvline(x=U_default[:,2], color='k', linestyle='dashed', linewidth=2)    
 #plt.savefig("dist_outputdata_GPP_SVD_mode3_withobs_anddefault.pdf")
 #plt.savefig("dist_outputdata_LHF_SVD_mode3_withobs_anddefault.pdf")  
