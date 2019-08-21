@@ -17,7 +17,7 @@ ncar_pylib -c 20190627 /glade/work/kdagon/ncar_pylib_clone_20190627
 cd /glade/work/kdagon/ncar_pylib_clone_20190627
 # Source the virtual environment
 source /bin/activate
-# Install packages with specified install dir
+# Install packages with pip
 pip install pyDOE
 pip install tensorflow
 pip install keras
@@ -49,31 +49,31 @@ This also calls 3 python scripts to set parameter values:
 * Put them in the namelist in the proper format
 * Do this for each ensemble simulation
 
-There is a version specific for running an idealized future climate ensemble (`ensemble_script_clm5_warming`), where the surface temperature is perturbed by 2K everywhere (see also `perturb_TBOT` for how the forcing data is modified).
+There is a version specific for running an idealized future climate ensemble (`ensemble_script_clm5_warming`), where the surface temperature is increased by 2K everywhere (see also `perturb_TBOT` for how the forcing data is modified).
 
 There is also a script for testing a single parameter set in CLM5: `run_paramset_clm5`. This does not rely on the above python scripts and parameter values are set manually in this script and by providing a modified params file.
 
 ## Data Processing Files
 
-* outputdata/process_outputdata.ncl and associated scripts process CLM output for training the neural network
-* obs/process_obs.ncl and associated scripts process the observational data  
-* SVD.py and SVD_obs.py perform a singular value decomposition on model output and observations  
+* `outputdata/process_outputdata.ncl` and associated scripts process CLM output for training the neural network
+* `obs/process_obs.ncl` and associated scripts process the observational data  
+* `SVD.py` and `SVD_obs.py` perform a singular value decomposition on model output and observations  
 
 ## Machine Learning Files
 
-* NN_multi-dim.py: Test out multidimensional output.
-* NN_test.py: Test out different NN configurations (# of layers, # of nodes).
-* NN_resample.py: Use resampling of the training data to better refine candidate NN models.
-* NN_finalize.py: Finalize best NN model (single and multidimensional versions).
-* NN_interp.py: Interpret the NN results.
+* `NN_multi-dim.py`: Test out multidimensional output for the neural network.
+* `NN_test.py`: Test out different NN configurations (# of layers, # of nodes).
+* `NN_resample.py`: Use resampling of the training data to better refine candidate NN models.
+* `NN_finalize.py`: Finalize best NN model (single and multidimensional versions).
+* `NN_interp.py`: Interpret the NN results.
 
 ## Optimization Files
 
-* NN_opt.py: Optimize the emulator predictions.
-* MCMC.py: Generate parameter posterior distributions using MCMC (serial and parallel versions).
+* `NN_opt.py`: Optimize the emulator predictions.
+* `MCMC.py`: Generate parameter posterior distributions using MCMC (serial and parallel versions).
 
 ## Supplemental Files
 
-* LHC_invert.py inverts the existing parameter array (parameters.npy) back to the original LHC random sampling and writes out these values (lhc.npy)
-* simple_model.py tests simpler models between LHC values and CLM output (e.g., correlation coefficients, scatterplots, multi-linear regression)
-* time_test.py calculates compute time for emulation
+* `LHC_invert.py` inverts the existing parameter array (parameters.npy) back to the original LHC random sampling and writes out these values (lhc.npy)
+* `simple_model.py` tests simpler models between LHC values and CLM output (e.g., correlation coefficients, scatterplots, multi-linear regression)
+* `time_test.py` calculates compute time for emulation

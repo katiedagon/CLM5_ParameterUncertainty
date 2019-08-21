@@ -4,7 +4,7 @@ figures/
 parameter_files/
 obs/figures/
 outputdata/figures/
-obs/MR_*.nc
 .ipynb_checkpoints/
-outputdata/test_*
-
+outputdata/*.nc
+outputdata/*.csv
+obs/*.nc
