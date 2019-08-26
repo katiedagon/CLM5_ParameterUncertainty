@@ -4,6 +4,9 @@
 # Import some modules
 import emcee
 import numpy as np
+# work-around for x11 issues
+#import matplotlib as mpl
+#mpl.use('Agg')
 import matplotlib.pyplot as plt
 
 # Load previously trained NN models
@@ -68,7 +71,7 @@ p0 = [np.random.rand(ndim) for i in range(nwalkers)]
 sampler = emcee.EnsembleSampler(nwalkers, ndim, lnprob)
 # Run sampler for set number of epochs
 # should really think about ~10^6 epochs (batch job?)
-epochs = 1*10**6
+epochs = 1*10**5
 #pos, prob, state = sampler.run_mcmc(p0, epochs)
 sampler.run_mcmc(p0, epochs, progress=True)
 
@@ -102,11 +105,12 @@ axes[-1].set_xlabel("step number");
 #plt.savefig("MCMC_sampler_chain_2e4epochs.pdf")
 #plt.savefig("MCMC_sampler_chain_2e4epochs_v2.pdf")
 #plt.savefig("MCMC_sampler_chain_5e4epochs_v2.pdf")
-#plt.savefig("MCMC_sampler_chain_1e5epochs_v2.pdf")
+plt.savefig("MCMC_sampler_chain_1e5epochs_v2.pdf")
 #plt.savefig("MCMC_sampler_chain_1e4epochs_v2.pdf")
 #plt.savefig("MCMC_sampler_chain_2e5epochs_v2.pdf")
-plt.savefig("MCMC_sampler_chain_1e6epochs_v2.pdf")
-plt.show()
+#plt.savefig("MCMC_sampler_chain_1e6epochs_v2.pdf")
+#plt.show()
+plt.close()
 
 # Marginalized density
 fig, axes = plt.subplots(ndim, figsize=(10, 7), sharex=True)
@@ -120,11 +124,11 @@ for i in range(ndim):
 
 axes[-1].set_xlabel("parameter value")
 #plt.savefig("MCMC_param_dists_2e5epochs_v2.pdf")
-#plt.savefig("MCMC_param_dists_1e5epochs_v2.pdf")
+plt.savefig("MCMC_param_dists_1e5epochs_v2.pdf")
 #plt.savefig("MCMC_param_dists_1e4epochs_v2.pdf")
-plt.savefig("MCMC_param_dists_1e6epochs_v2.pdf")
-plt.show()
-
+#plt.savefig("MCMC_param_dists_1e6epochs_v2.pdf")
+#plt.show()
+plt.close()
 
 # Explore autocorrelation estimators for different chain lengths
 
@@ -209,11 +213,11 @@ plt.legend(fontsize=14)
 #plt.savefig("MCMC_autocorr_2e4epochs.pdf")
 #plt.savefig("MCMC_autocorr_2e4epochs_v2.pdf")
 #plt.savefig("MCMC_autocorr_5e4epochs_v2.pdf")
-#plt.savefig("MCMC_autocorr_1e5epochs_v2.pdf")
+plt.savefig("MCMC_autocorr_1e5epochs_v2.pdf")
 #plt.savefig("MCMC_autocorr_2e5epochs_v2.pdf")
-plt.savefig("MCMC_autocorr_1e6epochs_v2.pdf")
-plt.show()
-
+#plt.savefig("MCMC_autocorr_1e6epochs_v2.pdf")
+#plt.show()
+plt.close()
 
 # Look at the log probs
 probs_all = sampler.get_log_prob()
@@ -242,9 +246,11 @@ plt.ylabel("log prob")
 #plt.savefig("MCMC_scaled_error_1e5epochs_v2.pdf")
 #plt.savefig("MCMC_prob_5e4epochs_v2.pdf")
 #plt.savefig("MCMC_logprob_1e4epochs_v2.pdf")
+plt.savefig("MCMC_logprob_1e5epochs_v2.pdf")
 #plt.savefig("MCMC_logprob_2e5epochs_v2.pdf")
-plt.savefig("MCMC_logprob_1e6epochs_v2.pdf")
-plt.show()
+#plt.savefig("MCMC_logprob_1e6epochs_v2.pdf")
+#plt.show()
+plt.close()
 
 # Discard the initial N steps
 #samples = sampler.chain[:, 500:, :].reshape((-1, ndim))
@@ -261,15 +267,16 @@ fig = corner.corner(flat_samples, labels=in_vars)
 #plt.savefig("MCMC_corner_2e4epochs_thin15.pdf")
 #plt.savefig("MCMC_corner_2e4epochs_v2.pdf")
 #plt.savefig("MCMC_corner_5e4epochs_v2.pdf")
-#plt.savefig("MCMC_corner_1e5epochs_v2.pdf")
+plt.savefig("MCMC_corner_1e5epochs_v2.pdf")
 #plt.savefig("MCMC_corner_1e4epochs_v2.pdf")
 #plt.savefig("MCMC_corner_2e5epochs_v2.pdf")
-plt.savefig("MCMC_corner_1e6epochs_v2.pdf")
-plt.show()
+#plt.savefig("MCMC_corner_1e6epochs_v2.pdf")
+#plt.show()
+plt.close()
 
 # Get last sample
 #last_sample = sampler.get_last_sample()
 #print(last_sample)
 last_sample = sampler.chain[:,epochs-1,:]
 # Save last sample
-np.save("MCMC_lastsample_1e6epochs_v2", last_sample)
+np.save("MCMC_lastsample_1e5epochs_v2", last_sample)

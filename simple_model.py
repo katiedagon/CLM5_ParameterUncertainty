@@ -8,6 +8,8 @@ from scipy import stats
 from sklearn import linear_model
 
 import numpy as np
+#import matplotlib as mpl
+#mpl.use('Agg')
 import matplotlib.pyplot as plt
 
 # Read in input array
@@ -47,12 +49,16 @@ regr.fit(inputdata, outputdata)
 print('Coefficients: \n', regr.coef_)
 
 pred = regr.predict(inputdata)
+print(pred.shape)
 
-plt.scatter(inputdata, outputdata,  color='black')
-plt.plot(inputdata, preds, color='blue', linewidth=3)
+print(inputdata.shape, outputdata.shape)
+plt.scatter(inputdata[:,0], outputdata,  color='black')
+plt.plot(inputdata, pred, color='blue', linewidth=3)
 
 #plt.xticks(())
 #plt.yticks(())
 
-plt.show()
+plt.savefig('test.pdf')
+plt.close()
+#plt.show()
 
