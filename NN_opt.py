@@ -103,11 +103,15 @@ def normerr(x):
     model_preds_GPP = model_GPP.predict(xt)
     model_preds_LHF = model_LHF.predict(xt)
     #print(model_preds)
+    # Single objective
     #L = np.sum(((model_preds-obs)/sd)**2, axis=1)
+    # Unweighted multiple objectives
     #L = np.sum(((model_preds_GPP-obs_GPP)/sd_GPP)**2, axis=1) + np.sum(((model_preds_LHF-obs_LHF)/sd_LHF)**2, axis=1)
+    # Weighted multiple objectives
     L = np.sum(((model_preds_GPP-obs_GPP)/sd_GPP)**2, axis=1) + B*np.sum(((model_preds_LHF-obs_LHF)/sd_LHF)**2, axis=1)
-    #L = np.sum((model_preds_GPP-obs_GPP)**2, axis=1) +\
-    #    np.sum((model_preds_LHF-obs_LHF)**2, axis=1) 
+    # RMSE
+    L = np.sqrt(np.sum(((model_preds_GPP-obs_GPP)/sd_GPP)**2, axis=1) +\
+            B*np.sum(((model_preds_LHF-obs_LHF)/sd_LHF)**2, axis=1)) 
     #print(L)
     return L
 
@@ -119,8 +123,8 @@ def normerr(x):
 #print(model.predict(xtest.reshape(1,-1)))
 
 # Testing out MCMC results
-MCMC_result = np.array([0.5, 1, 0, 1, 1, 0])
-print(normerr(MCMC_result))
+#MCMC_result = np.array([0.5, 1, 0, 1, 1, 0])
+#print(normerr(MCMC_result))
 
 # Define initial condition parameter values (LHC scalings)
 # Start in the middle of the uncertainty range (arbitrary)
@@ -258,7 +262,9 @@ model_preds_LHF = model_LHF.predict(inputdata)
 #L = np.sum(((model_preds-obs)/sd)**2, axis=1)
 #L = np.sqrt((1/3)*(np.sum(((model_preds-obs)/sd)**2, axis=1)))
 #L = np.sum(((model_preds_GPP-obs_GPP)/sd_GPP)**2, axis=1) + np.sum(((model_preds_LHF-obs_LHF)/sd_LHF)**2, axis=1)
-L = np.sum(((model_preds_GPP-obs_GPP)/sd_GPP)**2, axis=1) + B*np.sum(((model_preds_LHF-obs_LHF)/sd_LHF)**2, axis=1)
+#L = np.sum(((model_preds_GPP-obs_GPP)/sd_GPP)**2, axis=1) + B*np.sum(((model_preds_LHF-obs_LHF)/sd_LHF)**2, axis=1)
+L = np.sqrt(np.sum(((model_preds_GPP-obs_GPP)/sd_GPP)**2, axis=1) +\
+        B*np.sum(((model_preds_LHF-obs_LHF)/sd_LHF)**2, axis=1))
 #print(L.shape)
 #plt.plot(L)
 #plt.show()
@@ -281,12 +287,12 @@ print(L[Lmin])
 # Mode 1
 fig=plt.figure()
 ax=plt.subplot(111)
-#ax.hist(outputdata_GPP[:,0], label='CLM PPE')
-#ax.hist(model_preds_GPP[:,0], label='NN Preds')
-#plt.xlabel('EOF1 GPP')
-ax.hist(outputdata_LHF[:,0], label='CLM PPE')
-ax.hist(model_preds_LHF[:,0], label='NN Preds')
-plt.xlabel('EOF1 LHF')
+ax.hist(outputdata_GPP[:,0], label='CLM PPE')
+ax.hist(model_preds_GPP[:,0], label='NN Preds')
+plt.xlabel('EOF1 GPP')
+#ax.hist(outputdata_LHF[:,0], label='CLM PPE')
+#ax.hist(model_preds_LHF[:,0], label='NN Preds')
+#plt.xlabel('EOF1 LHF')
 plt.ylabel('Counts')
 # this number is taken from SVD on hydro_ensemble_LHC_86
 # which is the paramset from the original LHC that produces the min L
@@ -296,14 +302,14 @@ plt.ylabel('Counts')
 #ax.axvline(x=model_preds[Lmin,0], color='#ff7f0e', linestyle='dashed',
 #                linewidth=2, label='NN Preds with min normerr')
 # also show obs target
-#ax.axvline(x=obs_GPP[:,0], color='red', linestyle='dashed', linewidth=2,
-#        label='obs')
-ax.axvline(x=obs_LHF[:,0], color='red', linestyle='dashed', linewidth=2, label='obs')
+ax.axvline(x=obs_GPP[:,0], color='red', linestyle='dashed', linewidth=2,
+        label='obs')
+#ax.axvline(x=obs_LHF[:,0], color='red', linestyle='dashed', linewidth=2, label='obs')
 # and optimization result
-#ax.axvline(x=opt_preds_GPP[:,0], color='green', linestyle='dashed', linewidth=2,
-#        label='Optimized NN Preds')
-ax.axvline(x=opt_preds_LHF[:,0], color='green', linestyle='dashed', linewidth=2,
+ax.axvline(x=opt_preds_GPP[:,0], color='green', linestyle='dashed', linewidth=2,
         label='Optimized NN Preds')
+#ax.axvline(x=opt_preds_LHF[:,0], color='green', linestyle='dashed', linewidth=2,
+#        label='Optimized NN Preds')
 # and model run with optimized params
 # this number is taken from SVD on test_paramset_SVD_006
 #ax.axvline(x=0.4248498, color='blue', linestyle='dashed', linewidth=2,
@@ -326,27 +332,28 @@ ax.legend(loc='center left', bbox_to_anchor=(1, 0.5))
 #plt.savefig("dist_outputdata_NNv001_LHF_SVD_md_mode1.pdf")
 #plt.savefig("dist_outputdata_NNv002_LHF_SVD_md_mode1.pdf")
 #plt.savefig("dist_outputdata_NNv001_GPP_LHF_SVD_md_mode1.pdf")
+#plt.savefig("dist_outputdata_NNv001_GPP_SVD_md_mode1.pdf")
 #plt.savefig("dist_outputdata_NNv001_GPP_LHFplot_SVD_md_mode1.pdf")
 plt.show()
 
 # Mode 2
 fig=plt.figure()
 ax=plt.subplot(111)
-#ax.hist(outputdata_GPP[:,1], label='CLM PPE')
-#ax.hist(model_preds_GPP[:,1], label='NN Preds')
-#plt.xlabel('EOF2 GPP')
-ax.hist(outputdata_LHF[:,1], label='CLM PPE')
-ax.hist(model_preds_LHF[:,1], label='NN Preds')
-plt.xlabel('EOF2 LHF')
+ax.hist(outputdata_GPP[:,1], label='CLM PPE')
+ax.hist(model_preds_GPP[:,1], label='NN Preds')
+plt.xlabel('EOF2 GPP')
+#ax.hist(outputdata_LHF[:,1], label='CLM PPE')
+#ax.hist(model_preds_LHF[:,1], label='NN Preds')
+#plt.xlabel('EOF2 LHF')
 plt.ylabel('Counts')
-#ax.axvline(x=obs_GPP[:,1], color='red', linestyle='dashed', linewidth=2,
-#        label='obs')
-ax.axvline(x=obs_LHF[:,1], color='red', linestyle='dashed', linewidth=2,
+ax.axvline(x=obs_GPP[:,1], color='red', linestyle='dashed', linewidth=2,
         label='obs')
-#ax.axvline(x=opt_preds_GPP[:,1], color='green', linestyle='dashed',
-#        linewidth=2, label='Optimized NN Preds')
-ax.axvline(x=opt_preds_LHF[:,1], color='green', linestyle='dashed', linewidth=2,
-        label='Optimized NN Preds')
+#ax.axvline(x=obs_LHF[:,1], color='red', linestyle='dashed', linewidth=2,
+#        label='obs')
+ax.axvline(x=opt_preds_GPP[:,1], color='green', linestyle='dashed',
+        linewidth=2, label='Optimized NN Preds')
+#ax.axvline(x=opt_preds_LHF[:,1], color='green', linestyle='dashed', linewidth=2,
+#        label='Optimized NN Preds')
 #ax.axvline(x=-0.5293461, color='blue', linestyle='dashed', linewidth=2,
 #        label='CLM with optimized params')
 #ax.axvline(x=0.0494138, color='blue', linestyle='dashed', linewidth=2,
@@ -370,21 +377,21 @@ plt.show()
 # Mode 3
 fig=plt.figure()
 ax=plt.subplot(111)
-#ax.hist(outputdata_GPP[:,2], label='CLM PPE')
-#ax.hist(model_preds_GPP[:,2], label='NN Preds')                                                                                                 
-#plt.xlabel('EOF3 GPP')
-ax.hist(outputdata_LHF[:,2], label='CLM PPE')
-ax.hist(model_preds_LHF[:,2], label='NN Preds')
-plt.xlabel('EOF3 LHF')
+ax.hist(outputdata_GPP[:,2], label='CLM PPE')
+ax.hist(model_preds_GPP[:,2], label='NN Preds')                                                                                                 
+plt.xlabel('EOF3 GPP')
+#ax.hist(outputdata_LHF[:,2], label='CLM PPE')
+#ax.hist(model_preds_LHF[:,2], label='NN Preds')
+#plt.xlabel('EOF3 LHF')
 plt.ylabel('Counts')
-#ax.axvline(x=obs_GPP[:,2], color='red', linestyle='dashed', linewidth=2,
-#        label='obs')
-ax.axvline(x=obs_LHF[:,2], color='red', linestyle='dashed', linewidth=2,
+ax.axvline(x=obs_GPP[:,2], color='red', linestyle='dashed', linewidth=2,
         label='obs')
-#ax.axvline(x=opt_preds_GPP[:,2], color='green', linestyle='dashed', linewidth=2,
-#        label='Optimized NN Preds')
-ax.axvline(x=opt_preds_LHF[:,2], color='green', linestyle='dashed', linewidth=2,
+#ax.axvline(x=obs_LHF[:,2], color='red', linestyle='dashed', linewidth=2,
+#        label='obs')
+ax.axvline(x=opt_preds_GPP[:,2], color='green', linestyle='dashed', linewidth=2,
         label='Optimized NN Preds')
+#ax.axvline(x=opt_preds_LHF[:,2], color='green', linestyle='dashed', linewidth=2,
+#        label='Optimized NN Preds')
 #ax.axvline(x=0.5337539, color='blue', linestyle='dashed', linewidth=2, 
 #        label='CLM with optimized params') 
 #ax.axvline(x=-0.49806377, color='blue', linestyle='dashed', linewidth=2,
@@ -409,7 +416,9 @@ plt.show()
 #L_alt = np.sum(((outputdata_LHF-obs_LHF)/sd_LHF)**2, axis=1)
 #L_alt = np.sqrt((1/3)*(np.sum(((outputdata-obs)/sd)**2, axis=1)))
 #L_alt = np.sum(((outputdata_GPP-obs_GPP)/sd_GPP)**2, axis=1) + np.sum(((outputdata_LHF-obs_LHF)/sd_LHF)**2, axis=1) 
-L_alt = np.sum(((outputdata_GPP-obs_GPP)/sd_GPP)**2, axis=1) + B*np.sum(((outputdata_LHF-obs_LHF)/sd_LHF)**2, axis=1)
+#L_alt = np.sum(((outputdata_GPP-obs_GPP)/sd_GPP)**2, axis=1) + B*np.sum(((outputdata_LHF-obs_LHF)/sd_LHF)**2, axis=1)
+L_alt = np.sqrt(np.sum(((outputdata_GPP-obs_GPP)/sd_GPP)**2, axis=1) +\
+        B*np.sum(((outputdata_LHF-obs_LHF)/sd_LHF)**2, axis=1)) 
 #print(L_alt.shape)
 #plt.plot(L_alt, label='CLM PPE')
 #plt.hist(L_alt, label='CLM PPE')
@@ -423,7 +432,7 @@ L_alt = np.sum(((outputdata_GPP-obs_GPP)/sd_GPP)**2, axis=1) + B*np.sum(((output
 Lmin_alt = np.argmin(L_alt)
 print(Lmin_alt)
 print(L_alt[Lmin_alt])
-print(inputdata[Lmin_alt,:])
+#print(inputdata[Lmin_alt,:])
 #print(outputdata_LHF[Lmin_alt,:])
 #print(parameters[Lmin_alt,:])
 #print(np.min(L_alt))

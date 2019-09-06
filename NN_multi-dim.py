@@ -23,7 +23,7 @@ import matplotlib.pyplot as plt
 np.random.seed(9)
 
 # Read in input array
-inputdata = np.load(file="lhc_100.npy")
+inputdata = np.load(file="lhc_100.npy", allow_pickle=True)
 
 # List of input variables
 in_vars = ['medlynslope','dleaf','kmax','fff','dint','baseflow_scalar']

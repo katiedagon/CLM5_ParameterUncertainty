@@ -7,19 +7,18 @@ import numpy as np
 from scipy.io import netcdf as nc
 import matplotlib.pyplot as plt
 
+# Select output variable
+#var = "GPP"
+var="LHF"
+
 # Read netcdf file (pre-processed in NCL)
-#f = nc.netcdf_file("outputdata/outputdata_GPP_forSVD_100.nc",'r',mmap=False)
-f = nc.netcdf_file("outputdata/outputdata_LHF_forSVD_100.nc",'r',mmap=False)
-#f = nc.netcdf_file("outputdata/outputdata_GPP_forSVD_100_v2.nc",'r',mmap=False)
-#f = nc.netcdf_file("outputdata/outputdata_LHF_forSVD_100_v2.nc",'r',mmap=False)
-#f = nc.netcdf_file("outputdata/outputdata_GPP_forSVD_100_fc.nc",'r',mmap=False)
-#f = nc.netcdf_file("outputdata/outputdata_LHF_forSVD_100_fc.nc",'r',mmap=False)
-#f = nc.netcdf_file("outputdata/outputdata_GPP_forSVD_100_diff.nc",'r',mmap=False)
-#f = nc.netcdf_file("outputdata/outputdata_LHF_forSVD_100_diff.nc",'r',mmap=False)
+#f = nc.netcdf_file("outputdata/outputdata_"+var+"_forSVD_100.nc",'r',mmap=False)
+#f = nc.netcdf_file("outputdata/outputdata_"+var+"_forSVD_100_v2.nc",'r',mmap=False)
+#f = nc.netcdf_file("outputdata/outputdata_"+var+"_forSVD_100_fc.nc",'r',mmap=False)
+f = nc.netcdf_file("outputdata/outputdata_"+var+"_forSVD_100_diff.nc",'r',mmap=False)
 
 # Read variable data
-#X = f.variables['GPP']
-X = f.variables['LHF']
+X = f.variables[var]
 mask = f.variables['datamask']
 
 # Convert to numpy array
@@ -84,13 +83,14 @@ print(np.allclose(drm, np.dot(U, np.dot(smat, Vh)), atol=1e-06))
 #print(drm[:,0]-np.dot(U*s, Vh)[:,0])
 
 # Plot first mode of model U-vector (distribution)
-#plt.hist(U[:,0], bins=20)
-#plt.xlabel('Mode 1 of GPP SVD (U-vector)')
+plt.hist(U[:,0], bins=20)
+plt.xlabel('Mode 1 of '+var+' SVD (U-vector)')
 #plt.xlabel('Mode 1 of LHF SVD (U-vector)')
-#plt.ylabel('Counts')
+plt.ylabel('Counts')
 #plt.savefig("dist_outputdata_GPP_SVD_mode1.pdf")
 #plt.savefig("dist_outputdata_LHF_SVD_mode1.pdf")
-#plt.show()
+plt.savefig("dist_outputdata_diff_"+var+"_SVD_mode1.pdf")
+plt.show()
 
 # Save out first n modes from SVD
 # Note: cannot save masked array to file (this way)
@@ -104,16 +104,19 @@ print(np.allclose(drm, np.dot(U, np.dot(smat, Vh)), atol=1e-06))
 #np.save("outputdata/outputdata_GPP_SVD_3modes_diff", U[:,0:3])
 #np.save("outputdata/outputdata_LHF_SVD_3modes_diff", U[:,0:3])
 
+import sys
+sys.exit()
+
 # Compare with Observations
 
 # Read netcdf file (pre-processed in NCL)
 # anomalies from ensemble mean where ensemble does not include obs (n=100)
-#fo = nc.netcdf_file("obs/obs_GPP_4x5_anom_forSVD.nc",'r',mmap=False)
-fo = nc.netcdf_file("obs/obs_LHF_4x5_anom_forSVD.nc",'r',mmap=False)
+fo = nc.netcdf_file("obs/obs_GPP_4x5_anom_forSVD.nc",'r',mmap=False)
+#fo = nc.netcdf_file("obs/obs_LHF_4x5_anom_forSVD.nc",'r',mmap=False)
 
 # Read variable data
-#Xo = fo.variables['GPP']
-Xo = fo.variables['LHF']
+Xo = fo.variables['GPP']
+#Xo = fo.variables['LHF']
 masko = fo.variables['datamask']
 
 # Convert to numpy array

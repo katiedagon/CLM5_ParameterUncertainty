@@ -1,22 +1,22 @@
 # MCMC for optimizing the 2-layer multiple output Neural Network
-# 7/2/19
+# Experiment with single objective cost functions
+# 9/5/19
 
 # Import some modules
 import emcee
 import numpy as np
-# work-around for x11 issues
-#import matplotlib as mpl
-#mpl.use('Agg')
 import matplotlib.pyplot as plt
+
+# Define objective
+#ob = "GPP"
+ob = "LHF"
 
 # Load previously trained NN models
 import keras.backend as K
 def mean_sq_err(y_true,y_pred):
     return K.mean((y_true-y_pred)**2)
 from keras.models import load_model
-model_GPP = load_model('emulators/NN_GPP_finalize_multi-dim.h5',
-    custom_objects={'mean_sq_err': mean_sq_err})
-model_LHF = load_model('emulators/NN_LHF_finalize_multi-dim.h5',
+model = load_model('emulators/NN_'+ob+'_finalize_multi-dim.h5',
     custom_objects={'mean_sq_err': mean_sq_err})
 
 # List input variables
@@ -24,29 +24,14 @@ in_vars = ['medlynslope','dleaf','kmax','fff','dint','baseflow_scalar']
 npar = len(in_vars)
 
 # Read in obs targets and calculated variance
-obs_GPP = np.load(file="obs/obs_GPP_SVD_3modes.npy", allow_pickle=True)
-obs_LHF = np.load(file="obs/obs_LHF_SVD_3modes.npy", allow_pickle=True)
-sd_GPP = np.load(file="obs/obs_GPP_SVD_3modes_allyrs_sd.npy", allow_pickle=True)
-sd_LHF = np.load(file="obs/obs_LHF_SVD_3modes_allyrs_sd.npy", allow_pickle=True)
+obs = np.load(file="obs/obs_"+ob+"_SVD_3modes.npy", allow_pickle=True)
+sd = np.load(file="obs/obs_"+ob+"_SVD_3modes_allyrs_sd.npy", allow_pickle=True)
 
 # Define normalized error function
-# Weighting factor previously determined by midpoint of regimes
-# see NN_opt_wgt.py
-B = 1.49
-#B = 1
 def normerr(x):
     xt = x.reshape(1,-1)
-    model_preds_GPP = model_GPP.predict(xt)
-    model_preds_LHF = model_LHF.predict(xt)
-    # v2 log-likelihood (with negative sign)
-    #L = -(np.sum(((model_preds_GPP-obs_GPP)/sd_GPP)**2, axis=1) +\
-    #    B*np.sum(((model_preds_LHF-obs_LHF)/sd_LHF)**2, axis=1))
-    # v3 log-likelihood (without sd or B)
-    #L = -(np.sum((model_preds_GPP-obs_GPP)**2, axis=1) +\
-    #    np.sum((model_preds_LHF-obs_LHF)**2, axis=1)) 
-    # v4 RMSE
-    L = -np.sqrt(np.sum(((model_preds_GPP-obs_GPP)/sd_GPP)**2, axis=1) +\
-            B*np.sum(((model_preds_LHF-obs_LHF)/sd_LHF)**2, axis=1))
+    model_preds = model.predict(xt)
+    L = -np.sum(((model_preds-obs)/sd)**2, axis=1)
     return L
 
 # Define the prior
@@ -72,22 +57,17 @@ p0 = [np.random.rand(ndim) for i in range(nwalkers)]
 
 # Set up sampler
 sampler = emcee.EnsembleSampler(nwalkers, ndim, lnprob)
-# Run sampler for set number of epochs
-# should really think about ~10^6 epochs (batch job?)
-epochs = 1*10**4
+epochs = 5*10**4
 #pos, prob, state = sampler.run_mcmc(p0, epochs)
 sampler.run_mcmc(p0, epochs, progress=True)
 
 # Print mean acceptance fraction
 acc = sampler.acceptance_fraction
-#print(acc)
 print("Mean acceptance fraction: {0:.3f}"
         .format(np.mean(sampler.acceptance_fraction)))
 
 # Integrated autocorrelation time
 tau = sampler.get_autocorr_time(tol=0)
-#print(tau.shape)
-#print(tau)
 print("Mean autocorrelation time: {0:6.3f}"
         .format(np.mean(tau)))
 
@@ -103,18 +83,9 @@ for i in range(ndim):
     #ax.yaxis.set_label_coords(-0.1, 0.5)
 
 axes[-1].set_xlabel("step number");
-#plt.savefig("MCMC_sampler_chain_1e3epochs.pdf")
-#plt.savefig("MCMC_sampler_chain_1e4epochs.pdf")
-#plt.savefig("MCMC_sampler_chain_2e4epochs.pdf")
-#plt.savefig("MCMC_sampler_chain_2e4epochs_v2.pdf")
-#plt.savefig("MCMC_sampler_chain_5e4epochs_v2.pdf")
-#plt.savefig("MCMC_sampler_chain_1e5epochs_v2.pdf")
-#plt.savefig("MCMC_sampler_chain_1e4epochs_v2.pdf")
-#plt.savefig("MCMC_sampler_chain_2e5epochs_v2.pdf")
-#plt.savefig("MCMC_sampler_chain_1e6epochs_v2.pdf")
-plt.savefig("MCMC_sampler_chain_1e4epochs_v4.pdf")
+plt.savefig("MCMC_"+ob+"_sampler_chain_5e4epochs.pdf")
 plt.show()
-plt.close()
+#plt.close()
 
 # Marginalized density
 fig, axes = plt.subplots(ndim, figsize=(10, 7), sharex=True)
@@ -127,9 +98,6 @@ for i in range(ndim):
     ax.set_ylabel(labels[i])
 
 axes[-1].set_xlabel("parameter value")
-#plt.savefig("MCMC_param_dists_2e5epochs_v2.pdf")
-#plt.savefig("MCMC_param_dists_1e5epochs_v2.pdf")
-#plt.savefig("MCMC_param_dists_1e4epochs_v2.pdf")
 #plt.savefig("MCMC_param_dists_1e6epochs_v2.pdf")
 plt.show()
 #plt.close()
@@ -214,50 +182,19 @@ plt.xlabel("number of samples, $N$")
 plt.ylabel(r"$\tau$ estimates")
 plt.legend(fontsize=14)
 #plt.savefig("MCMC_autocorr_1e4epochs.pdf")
-#plt.savefig("MCMC_autocorr_2e4epochs.pdf")
-#plt.savefig("MCMC_autocorr_2e4epochs_v2.pdf")
-#plt.savefig("MCMC_autocorr_5e4epochs_v2.pdf")
-#plt.savefig("MCMC_autocorr_1e5epochs_v2.pdf")
-#plt.savefig("MCMC_autocorr_2e5epochs_v2.pdf")
-#plt.savefig("MCMC_autocorr_1e6epochs_v2.pdf")
 plt.show()
 #plt.close()
 
 # Look at the log probs
 probs_all = sampler.get_log_prob()
-#probs_all = sampler.get_log_prob(discard=100)
-#print(probs_all.shape)
-#print(np.min(probs_all))
-#print(np.max(probs_all))
-#probs_all_scaled = probs_all*(10**(-7))
-#print(np.min(probs_all_scaled))
-#print(np.max(probs_all_scaled))
 plt.plot(probs_all, "k", alpha=0.3)
-#err_all = np.exp(probs_all)
-#plt.plot(err_all, "k", alpha=0.3)
-#err_all_scaled = np.exp(-probs_all_scaled)
-#plt.plot(err_all_scaled, "k", alpha=0.3)
 plt.xlabel("step number")
 plt.ylabel("log prob")
-#plt.ylabel("prob")
-#plt.ylabel("scaled error")
-#plt.savefig("MCMC_logprob_2e4epochs.pdf")
-#plt.savefig("MCMC_scaled_error_1e3epochs.pdf")
-#plt.savefig("MCMC_scaled_error_1e4epochs.pdf")
-#plt.savefig("MCMC_scaled_error_2e4epochs.pdf")
-#plt.savefig("MCMC_scaled_error_2e4epochs_v2.pdf")
-#plt.savefig("MCMC_scaled_error_5e4epochs_v2.pdf")
-#plt.savefig("MCMC_scaled_error_1e5epochs_v2.pdf")
-#plt.savefig("MCMC_prob_5e4epochs_v2.pdf")
-#plt.savefig("MCMC_logprob_1e4epochs_v2.pdf")
-#plt.savefig("MCMC_logprob_1e5epochs_v2.pdf")
-#plt.savefig("MCMC_logprob_2e5epochs_v2.pdf")
 #plt.savefig("MCMC_logprob_1e6epochs_v2.pdf")
 plt.show()
 #plt.close()
 
-# Discard the initial N steps
-#samples = sampler.chain[:, 500:, :].reshape((-1, ndim))
+# Flatten chain; discard the initial N steps
 #flat_samples = sampler.get_chain(discard=100, thin=15, flat=True)
 #flat_samples = sampler.get_chain(discard=10000, flat=True)
 flat_samples = sampler.get_chain(flat=True)
@@ -266,23 +203,11 @@ flat_samples = sampler.get_chain(flat=True)
 # Corner plot
 import corner
 fig = corner.corner(flat_samples, labels=in_vars)
-#plt.savefig("MCMC_corner_1e3epochs.pdf")
-#plt.savefig("MCMC_corner_1e4epochs.pdf")
-#plt.savefig("MCMC_corner_2e4epochs.pdf")
-#plt.savefig("MCMC_corner_2e4epochs_thin15.pdf")
-#plt.savefig("MCMC_corner_2e4epochs_v2.pdf")
-#plt.savefig("MCMC_corner_5e4epochs_v2.pdf")
-#plt.savefig("MCMC_corner_1e5epochs_v2.pdf")
-#plt.savefig("MCMC_corner_1e4epochs_v2.pdf")
-#plt.savefig("MCMC_corner_2e5epochs_v2.pdf")
-#plt.savefig("MCMC_corner_1e6epochs_v2.pdf")
-plt.savefig("MCMC_corner_1e4epochs_v4.pdf")
+plt.savefig("MCMC_"+ob+"_corner_5e4epochs.pdf")
 #plt.show()
 plt.close()
 
 # Get last sample
-#last_sample = sampler.get_last_sample()
-#print(last_sample)
 last_sample = sampler.chain[:,epochs-1,:]
 print(np.mean(last_sample, axis=0)) # average (over walkers) last position of each parameter
 # Save last sample

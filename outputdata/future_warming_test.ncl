@@ -8,17 +8,17 @@ begin
 ;************************************************
  ; control (default params) only has last 5 years (16-20)
  ;fils1 = systemfunc("ls /glade/scratch/kdagon/archive/hydro_ensemble_LHC_default_params/lnd/hist/*.nc")
- fils1 = systemfunc("ls /glade/scratch/kdagon/archive/hydro_ensemble_LHC_1/lnd/hist/*{001[6-9],20-}*")
+ fils1 = systemfunc("ls /glade/scratch/kdagon/archive/hydro_ensemble_LHC_10/lnd/hist/*{001[6-9],20-}*")
  ;fils1 = systemfunc("ls /glade/scratch/kdagon/archive/future_climate_LHC_1/lnd/hist/*{001[6-9],20-}*")
  q1 = addfiles(fils1,"r")
 
  ; warming test currently has 20 years (1-20)
  ;fils2 = systemfunc("ls /glade/scratch/kdagon/archive/test_streams/lnd/hist/*{001[6-9],20-}*")
- fils2 = systemfunc("ls /glade/scratch/kdagon/archive/future_climate_LHC_1/lnd/hist/*{001[6-9],20-}*")
+ fils2 = systemfunc("ls /glade/scratch/kdagon/archive/future_climate_LHC_10/lnd/hist/*{001[6-9],20-}*")
  q2 = addfiles(fils2,"r")
 
  ; get file var names
- vNames = getfilevarnames(q1[0])
+ ;vNames = getfilevarnames(q1[0])
  ;print(vNames)
 
  ;var = "TSA"
@@ -26,11 +26,11 @@ begin
  ;var = "Q2M"
  ;var = "FPSN"
  ;var = "QFLX_EVAP_TOT"
- var = "EFLX_LH_TOT"
+ ;var = "EFLX_LH_TOT"
  ;var = "FSH" 
  ;var = "RAIN"
  ;var = "SOILWATER_10CM"
- ;var = "TBOT"
+ var = "TBOT"
  ;var = "QBOT"
 
  ; read in all the files and join the timeseries together

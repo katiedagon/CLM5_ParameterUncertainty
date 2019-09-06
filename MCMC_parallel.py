@@ -50,7 +50,10 @@ def normerr(x):
 # Define the prior
 # Uniform distribution between [0,1]
 def lnprior(x):
-    if all(x > 0) and all(x < 1):
+#    if all(x > 0) and all(x < 1):
+#    the following line doesn't work (bad logicals)
+#    if x.all() > 0 and x.all() < 1:
+    if np.all(x > 0) and np.all(x < 1):
         return 0.0
     return -np.inf
 
@@ -71,7 +74,8 @@ def lnprob(x):
 #print("Dumped pickle")
 
 # Set number of walkers, number of dims (= number of params)
-nwalkers = 200
+#nwalkers = 200
+nwalkers = 15
 ndim = npar
 
 # Initialize walkers (random initial states)
@@ -87,20 +91,46 @@ from multiprocessing import Pool
 #from multiprocessing import get_context 
 #with get_context("forkserver").Pool() as pool:
 with Pool(processes=2) as pool:
-#sampler = emcee.EnsembleSampler(nwalkers, ndim, lnprob)
 #    print("Define sampler")
     sampler = emcee.EnsembleSampler(nwalkers, ndim, lnprob, pool=pool) 
-    epochs = 10
+    epochs = 1*10**1
 #    print("Start sampler")
     sampler.run_mcmc(p0, epochs, progress=True)
 #    print("Finish sampler")
-#    #pool.close()
 
-# Set up sampler
-#sampler = emcee.EnsembleSampler(nwalkers, ndim, lnprob, pool=pool)
+# Threads
+#sampler = emcee.EnsembleSampler(nwalkers, ndim, lnprob, threads=4)
+#epochs = 1*10**3
+#sampler.run_mcmc(p0, epochs, progress=True)
+
+# Set up a "runner" to test different configs
+#import timeit
+#from itertools import product
+# From Anderson
+#def runner(njobs, epochs=5*10**3, ndim=npar, nwalkers=200, p0=p0, verbose=False):
+#    sampler = emcee.EnsembleSampler(nwalkers, ndim, lnprob, threads=njobs)
+#    # Save the timings into a variable for later usage?
+#    sampler.run_mcmc(p0, epochs, progress=True)
+#    if verbose:
+#        print(f"nthreads = {njobs}, epochs={epochs}")
+#    profiler = {}
+#    profiler['nthreads'] = njobs
+#    #profiler['best_time'] = time.best
+#    profiler['epochs'] = epochs
+#    return profiler
+
+# Create a cartesian product of parameters to try out
+#parameters = list(product([1, 2], [5000]))
+
+#timings = []
+#for option in parameters:
+#    timings.append(runner(njobs=option[0], epochs=option[1], verbose=True))
+
+# Serial
+#sampler = emcee.EnsembleSampler(nwalkers, ndim, lnprob)
 # Run sampler for set number of epochs
 # should really think about ~10^6 epochs (batch job?)
-#epochs = 1*10**3
+#epochs = 1*10**2
 #pos, prob, state = sampler.run_mcmc(p0, epochs)
 #sampler.run_mcmc(p0, epochs, progress=True)
 
@@ -277,7 +307,8 @@ plt.show()
 # Discard the initial N steps
 #samples = sampler.chain[:, 500:, :].reshape((-1, ndim))
 #flat_samples = sampler.get_chain(discard=100, thin=15, flat=True)
-flat_samples = sampler.get_chain(discard=100, flat=True)
+#flat_samples = sampler.get_chain(discard=100, flat=True)
+flat_samples = sampler.get_chain(flat=True)
 #print(flat_samples.shape)
 
 # Corner plot
