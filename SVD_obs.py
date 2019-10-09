@@ -1,4 +1,4 @@
-# Calculating SVD for obs
+# Calculating SVD for obs (all years, sd)
 # 11/6/18
 
 #source /glade/work/kdagon/ncar_pylib_clone/bin/activate
