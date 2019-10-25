@@ -26,11 +26,11 @@ begin
  ;var = "Q2M"
  ;var = "FPSN"
  ;var = "QFLX_EVAP_TOT"
- ;var = "EFLX_LH_TOT"
+ var = "EFLX_LH_TOT"
  ;var = "FSH" 
  ;var = "RAIN"
  ;var = "SOILWATER_10CM"
- var = "TBOT"
+ ;var = "TBOT"
  ;var = "QBOT"
 
  ; read in all the files and join the timeseries together
@@ -51,6 +51,7 @@ begin
  ; unit conversion (if needed)
  u = 1
  ;u = (12 * (3600 * 24 * 365) / 1000000) * 10^-15 ; umol /m2 /s to Pg/m2/year
+ ;u = (12 * (3600 * 24 * 365) / 10^6) ; umol /m2 /s to g/m2/year
  ;u = 86400 ; mm/s to mm/day
  TSA1 = TSA1*u
  TSA2 = TSA2*u
@@ -99,8 +100,8 @@ begin
  res@cnLinesOn           = False           ; turn off contour lines                                  
  ;res@cnLineLabelsOn      = False           ; turn off contour line labels
  ;res@lbBoxLinesOn        = False           ; turn off labelbar box lines
- ;res@cnFillPalette       = "BlWhRe"       ; color palette
- res@cnFillPalette       = "MPL_Reds"
+ res@cnFillPalette       = "BlWhRe"       ; color palette
+ ;res@cnFillPalette       = "MPL_Reds"
  res@cnSpanFillPalette   = True           ; Fully span color palette
  ;res@lbLabelBarOn        = False           ; turn off individual cb's
  
@@ -108,6 +109,16 @@ begin
  ; turn off top/right tickmarks
  res@tmXTOn = False
  res@tmYROn = False
+
+ res@cnLevelSelectionMode = "ManualLevels"
+ ; EFLX_LH_TOT diff
+ res@cnMinLevelValF  = -10
+ res@cnMaxLevelValF  = 10
+ res@cnLevelSpacingF = 0.5
+ ; FPSN diff
+ ;res@cnMinLevelValF  = -100
+ ;res@cnMaxLevelValF  = 100
+ ;res@cnLevelSpacingF = 5
 
  res@tiMainString      = "Changes with constant 2K warming"
 

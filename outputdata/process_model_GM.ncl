@@ -45,8 +45,9 @@ begin
 
  ; get landfrac & area
  landf = f_lat->landfrac
- ;printVarSummary(landf)
+ printVarSummary(landf)
  area = f_lat->area
+ printVarSummary(area)
 
  ; wgt variable
  arwt = area
@@ -73,7 +74,7 @@ begin
  ; annual mean across years
  v_am = dim_avg_n_Wrap(v,0)
 
- ;wks = gsn_open_wks("x11","test")
+ wks = gsn_open_wks("x11","test")
 
  res = True
  ;res@gsnDraw = False
