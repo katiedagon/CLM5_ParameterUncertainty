@@ -37,7 +37,8 @@ in_vars = ['medlynslope','dleaf','kmax','fff','dint','baseflow_scalar']
 #outputdata_all = np.load("outputdata/outputdata_GPP_SVD.npy")
 
 # Training to predict global mean GPP, LHF
-var = "GPP"
+#var = "GPP"
+var = "LHF"
 f=nc.netcdf_file("outputdata/outputdata_"+var+"_GM_100_diff.nc",'r', mmap=False)
 X = f.variables[var]
 outputdata = X[:]
@@ -62,10 +63,10 @@ outputdata = X[:]
 model = Sequential()
 # specify input_dim as number of parameters, not number of simulations
 # l2 norm regularizer
-model.add(Dense(7, input_dim=inputdata.shape[1], activation='relu',
+model.add(Dense(14, input_dim=inputdata.shape[1], activation='relu',
     kernel_regularizer=l2(.001)))
 # second layer with hyperbolic tangent activation
-model.add(Dense(9, activation='tanh', kernel_regularizer=l2(.001)))
+model.add(Dense(6, activation='tanh', kernel_regularizer=l2(.001)))
 # output layer with linear activation
 model.add(Dense(1))
 
@@ -74,7 +75,8 @@ def mean_sq_err(y_true,y_pred):
     return K.mean((y_true-y_pred)**2)
 
 # Compile model
-opt_dense = RMSprop(lr=0.01, rho=0.9, epsilon=None, decay=0.0) # defaults except lr
+opt_dense = RMSprop(lr=0.01, rho=0.9, epsilon=None, decay=0.0) # defaults except lr (GPP GM diff)
+#opt_dense = RMSprop(lr=0.001, rho=0.9, epsilon=None, decay=0.0) # defaults except lr (LHF GM diff)
 #opt_dense = SGD(lr=0.005, momentum=0.99, decay=1e-4, nesterov=True)
 #opt_dense = SGD(lr=0.01, momentum=0, nesterov=False) # defaut settings
 #opt_dense = Adam(lr=0.01, beta_1=0.9, beta_2=0.999, amsgrad=False) # defaults except lr
@@ -84,138 +86,166 @@ model.compile(opt_dense, "mse", metrics=[mean_sq_err])
 model.summary()
 
 # Separate training/test/val data: 60/20/20 split
-x_train = inputdata[0:60]
-x_test = inputdata[60:80]
-x_val = inputdata[80:]
-y_train = outputdata[0:60]
-y_test = outputdata[60:80]
-y_val = outputdata[80:]
+#x_train = inputdata[0:60]
+#x_test = inputdata[60:80]
+#x_val = inputdata[80:]
+#y_train = outputdata[0:60]
+#y_test = outputdata[60:80]
+#y_val = outputdata[80:]
 
 # Fit model using train/test
-eps = 500
+#eps = 500
 #results = model.fit(x_train, y_train, epochs=eps, batch_size=30,
 #        verbose=0, validation_data=(x_test,y_test))
 
 # Fit with stopping criteria when val_loss starts increasing
-es = EarlyStopping(monitor='val_loss', min_delta=1, 
-        patience=50, verbose=1, mode='min')
-results = model.fit(x_train, y_train, epochs=eps, batch_size=20,
-        callbacks=[es], validation_data=(x_test,y_test)) 
+#es = EarlyStopping(monitor='val_loss', min_delta=1, 
+#        patience=50, verbose=1, mode='min')
+#results = model.fit(x_train, y_train, epochs=eps, batch_size=20,
+#        callbacks=[es], validation_data=(x_test,y_test)) 
 
-# Plot training history by epoch 
-plt.plot(results.epoch, results.history['val_mean_sq_err'], label='test')
-plt.plot(results.epoch, results.history['mean_sq_err'], label='train')
-plt.legend()                                                                                                                                  
-plt.ylabel('Mean Squared Error')                                                                                                              
-plt.xlabel('Epoch')                                                                                                                           
-plt.title('Neural Network Training History')                                                                                                  
-#plt.savefig("train_history_RMSprop.eps")                                                                                                      
-plt.show()
-
-print('Total epochs = '+str(max(results.epoch)+1))
-
-# Plot training history after epoch 100
-plt.plot(results.epoch[100:], results.history['val_mean_sq_err'][100:],
-        label='test')
-plt.plot(results.epoch[100:], results.history['mean_sq_err'][100:],
-        label='train')
-plt.legend()
-plt.ylabel('Mean Squared Error')
-plt.xlabel('Epoch')
-plt.title('Neural Network Training History after 100 epochs')
-plt.show()
-
-# Make predictions - using validation set (single dim)
-model_preds = model.predict(x_val)[:,0]
-model_test = model.predict(x_test)[:,0]
-model_train = model.predict(x_train)[:,0]
-
-# model metric for predictions
-def mse_preds(y_true,y_pred):
-    return np.mean((y_true-y_pred)**2)
-
-# calculate model mean error with predictions
-model_me = mse_preds(y_val, model_preds)
-print("Validation MSE:", model_me)
-
-# plot validation errors
-plt.hist((y_val-model_preds)**2, bins=20)
-plt.xlabel('Validation squared errors')
-plt.ylabel('Counts')
-plt.title('Distribution of validation errors')
-plt.show()
-
-# scatterplot actual versus predicted
-plt.scatter(y_val, model_preds, label='validation')
-plt.scatter(y_train, model_train, label='training')
-plt.scatter(y_test, model_test, label= 'testing')
-plt.legend()
-plt.xlabel('CLM Model Output')
-plt.ylabel('NN Predictions')
-plt.title('Difference in GM GPP, future-control (gC/m2/yr)')
-axbuff = 5
-plt.xlim(np.amin(outputdata)-axbuff,np.amax(outputdata)+axbuff)
-plt.ylim(np.amin(outputdata)-axbuff,np.amax(outputdata)+axbuff)
-#plt.savefig("validation_scatter_GPP-SVD-mode1.pdf")
-#plt.savefig("validation_scatter_GPP_ET_SVD-mode1GPP.pdf")
-#plt.savefig("validation_scatter_training_GPP_SVD_md_mode1.pdf")
-plt.show()
-
-# linear regression actual vs. predicted
-slope, intercept, r_value, p_value, std_err = stats.linregress(y_val,model_preds)
-print("Prediction r-squared:", r_value**2)
-slope, intercept, r_value, p_value, std_err = stats.linregress(y_train,model_train)
-print("Training r-squared:", r_value**2)
-slope, intercept, r_value, p_value, std_err = stats.linregress(y_test,model_test)
-print("Testing r-squared:", r_value**2)
-
-
-# Fit the model using ALL data (finalize step)
-#results = model.fit(inputdata, outputdata, epochs=500, batch_size=30, verbose=0)
-#print(results.history)
-
-# Plot training history by epoch - are these lines the same?
-#plt.plot(results.epoch, results.history['loss'], label='test')
+# Plot training history by epoch plt.plot(results.epoch, results.history['val_mean_sq_err'], label='test')
+#plt.plot(results.epoch, results.history['val_mean_sq_err'], label='test')
 #plt.plot(results.epoch, results.history['mean_sq_err'], label='train')
-#plt.xticks(results.epoch)
-#plt.legend()
-#plt.hlines(y=0,xmin=0,xmax=15)
-#plt.hlines(y=0,xmin=0,xmax=40)
-#plt.ylabel('Mean Squared Error')
-#plt.xlabel('Epoch')
+#plt.legend()                                                                                                                                  
+#plt.ylabel('Mean Squared Error')                                                                                                              
+#plt.xlabel('Epoch')                                                                                                                           
 #plt.title('Neural Network Training History')                                                                                                  
-#plt.savefig("train_history_RMSprop.eps")
+#plt.savefig("train_history_"+var+"_GM_diff.pdf")                                                                                                      
 #plt.show()
 
-# Make predictions - using ALL data
-#model_preds = model.predict(inputdata)[:,0]
+#print('Total epochs = '+str(max(results.epoch)+1))
+
+# Plot training history after epoch X
+#epcut = 100 # GPP GM diff
+#epcut = 10 # LHF GM diff
+#plt.plot(results.epoch[epcut:], results.history['val_mean_sq_err'][epcut:],
+#        label='test')
+#plt.plot(results.epoch[epcut:], results.history['mean_sq_err'][epcut:],
+#        label='train')
+#plt.legend()
+#plt.ylabel('Mean Squared Error')
+#plt.xlabel('Epoch')
+#plt.title('Neural Network Training History after '+str(epcut)+' epochs')
+#plt.savefig("train_history_lasteps_"+var+"_GM_diff.pdf")
+#plt.show()
+
+# Make predictions - using validation set (single dim)
+#model_preds = model.predict(x_val)[:,0]
+#model_test = model.predict(x_test)[:,0]
+#model_train = model.predict(x_train)[:,0]
+
+# Distribution of predictions vs. actual
+#plt.hist(y_val, label="CLM Model Output")
+#plt.hist(model_preds, label="NN Predictions")
+#plt.legend()
+#plt.ylabel("Counts")
+#plt.xlabel("Difference in GM "+var+", future-control (W/m2)")
+#plt.show()
 
 # model metric for predictions
 #def mse_preds(y_true,y_pred):
 #    return np.mean((y_true-y_pred)**2)
 
 # calculate model mean error with predictions
-#model_me = mse_preds(outputdata, model_preds)
+#model_me = mse_preds(y_val, model_preds)
+#print("Validation MSE:", model_me)
+
+# plot validation errors
+#plt.hist((y_val-model_preds)**2, bins=20)
+#plt.xlabel('Validation squared errors')
+#plt.ylabel('Counts')
+#plt.title('Distribution of validation errors')
+#plt.savefig("dist_val_err_"+var+"_GM_diff.pdf")
+#plt.show()
 
 # scatterplot actual versus predicted
-#plt.scatter(outputdata, model_preds)
+#plt.scatter(y_val, model_preds, label='validation')
+#plt.scatter(y_train, model_train, label='training')
+#plt.scatter(y_test, model_test, label= 'testing')
+#plt.legend()
 #plt.xlabel('CLM Model Output')
 #plt.ylabel('NN Predictions')
-#plt.xlim(np.amin([outputdata,model_preds])-0.1,np.amax([outputdata,model_preds])+0.1)
-#plt.ylim(np.amin([outputdata,model_preds])-0.1,np.amax([outputdata,model_preds])+0.1)
+#plt.title('Difference in GM '+var+', future-control (gC/m2/yr)')
+#plt.title('Difference in GM '+var+', future-control (W/m2)')
+#axbuff = 5 # GPP GM diff
+#axbuff = 0.1 # LHF GM diff
+#plt.xlim(np.amin(outputdata)-axbuff,np.amax(outputdata)+axbuff)
+#plt.ylim(np.amin(outputdata)-axbuff,np.amax(outputdata)+axbuff)
+#plt.savefig("validation_scatter_GPP-SVD-mode1.pdf")
+#plt.savefig("validation_scatter_GPP_ET_SVD-mode1GPP.pdf")
+#plt.savefig("validation_scatter_training_GPP_SVD_md_mode1.pdf")
+#plt.savefig("validation_scatter_training_"+var+"_GM_diff.pdf")
+#plt.show()
+
+# linear regression actual vs. predicted
+#slope, intercept, r_value, p_value, std_err = stats.linregress(y_val,model_preds)
+#print("Prediction r-squared:", r_value**2)
+#slope, intercept, r_value, p_value, std_err = stats.linregress(y_train,model_train)
+#print("Training r-squared:", r_value**2)
+#slope, intercept, r_value, p_value, std_err = stats.linregress(y_test,model_test)
+#print("Testing r-squared:", r_value**2)
+
+
+# Fit the model using ALL data (finalize step)
+#eps = 300 # GPP GM diff
+eps = 53 # LHF GM diff
+results = model.fit(inputdata, outputdata, epochs=eps, batch_size=20, verbose=0)
+#print(results.history)
+
+# Check out the "training" history
+#plt.plot(results.epoch, results.history['mean_sq_err'])
+#plt.legend()                                                                                                                                  
+#plt.ylabel('Mean Squared Error')                                                                                                              
+#plt.xlabel('Epoch')                                                                                                                           
+#plt.title('Neural Network Training History')                                                                                                  
+#plt.show()
+
+# Save finalized model
+model.save('emulators/NN_'+var+'_finalize_GM_diff.h5')
+
+# Make predictions - using ALL data
+model_preds = model.predict(inputdata)[:,0]
+
+# Distribution of predictions vs. actual
+plt.hist(outputdata, label="CLM Model Output")
+plt.hist(model_preds, label="NN Predictions")
+plt.legend()
+plt.ylabel("Counts")
+plt.xlabel("Difference in GM "+var+", future-control (W/m2)")
+plt.savefig("dist_outputdata_modelpreds_"+var+"_GM_diff.pdf")
+plt.show()
+
+# model metric for predictions
+def mse_preds(y_true,y_pred):
+    return np.mean((y_true-y_pred)**2)
+
+# calculate model mean error with predictions
+model_me = mse_preds(outputdata, model_preds)
+
+# scatterplot actual versus predicted
+plt.scatter(outputdata, model_preds)
+plt.xlabel('CLM Model Output')
+plt.ylabel('NN Predictions')
+#plt.title('Difference in GM '+var+', future-control (gC/m2/yr)')
+plt.title('Difference in GM '+var+', future-control (W/m2)')
+#axbuff = 5
+axbuff = 0.2
+plt.xlim(np.amin(outputdata)-axbuff,np.amax(outputdata)+axbuff)                                                                              
+plt.ylim(np.amin(outputdata)-axbuff,np.amax(outputdata)+axbuff)
 #plt.savefig("validation_scatter_finalize_SVD_mode1.pdf")
 #plt.savefig("validation_scatter_finalize_SVD_mode2.pdf")
 #plt.savefig("validation_scatter_finalize_SVD_mode3.pdf")
 #plt.savefig("validation_scatter_finalize_GM_GPP_002.pdf")
-#plt.show()
+plt.savefig("validation_scatter_finalize_"+var+"_GM_diff.pdf")
+plt.show()
 
 # linear regression of actual vs predicted
-#slope, intercept, r_value, p_value, std_err = stats.linregress(outputdata,
-#                model_preds)
+slope, intercept, r_value, p_value, std_err = stats.linregress(outputdata,model_preds)
 
-#print("Model Mean Error:", results.history['mean_sq_err'][-1])
-#print("Prediction Mean Error: ", model_me)
-#print("r-squared:", r_value**2)
+print("Model Mean Error:", results.history['mean_sq_err'][-1])
+print("Prediction Mean Error: ", model_me)
+print("r-squared:", r_value**2)
 
 ##
 

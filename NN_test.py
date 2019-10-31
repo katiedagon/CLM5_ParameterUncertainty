@@ -52,7 +52,8 @@ inputdata = np.load(file="lhc_100.npy", allow_pickle=True)
 #outputdata = out2-out1 # future - present
 
 # Training to predict global mean GPP, LHF
-var = "GPP"
+#var = "GPP"
+var = "LHF"
 f=nc.netcdf_file("outputdata/outputdata_"+var+"_GM_100_diff.nc",'r', mmap=False) 
 X = f.variables[var]
 outputdata = X[:]
@@ -141,8 +142,8 @@ for i in range(minnode,maxnode+1):
 
         # Make predictions - using validation set (single dim)
         model_preds = model.predict(x_val)[:,0]
-        model_test = model.predict(x_test)[:,0]
-        model_train = model.predict(x_train)[:,0]
+        #model_test = model.predict(x_test)[:,0]
+        #model_train = model.predict(x_train)[:,0]
         # Prediction - multi-dim
         #model_preds = model.predict(x_val)
         #model_test = model.predict(x_test)
@@ -179,7 +180,8 @@ for i in range(minnode,maxnode+1):
         #    r_array[1],r_array[2]])
 
 # Different formatting for printing out metrics (2 sig figs)
-metricsFormat = [["%.2f" % m for m in msub] for msub in metrics]
+#metricsFormat = [["%.2f" % m for m in msub] for msub in metrics]
+metricsFormat = [["%.4f" % m for m in msub] for msub in metrics]
 #metricsFormat = [[round(m,2) for m in msub] for msub in metrics]
 #metricsFormat = [["%.2g" % m for m in msub] for msub in metrics]
 #print(metricsFormat)
@@ -189,7 +191,7 @@ with open('NN_test.csv', 'w', newline='') as csvfile:
     writer = csv.writer(csvfile)
     writer.writerows(metricsFormat)
 
-# Write out epochs
+# Write out epochs to txt (quick solution)
 #print(eps)
 epsFormat = ["%d" % e for e in eps]
 #print(epsFormat[0])

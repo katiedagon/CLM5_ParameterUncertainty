@@ -31,7 +31,8 @@ inputdata = np.load(file="lhc_100.npy", allow_pickle=True)
 #outputdata = np.load("outputdata/outputdata_LHF_SVD_3modes_diff.npy")
 
 # Training to predict global mean diff GPP, LHF
-var = "GPP"
+#var = "GPP"
+var = "LHF"
 f=nc.netcdf_file("outputdata/outputdata_"+var+"_GM_100_diff.nc",'r', mmap=False) 
 X = f.variables[var]
 outputdata = X[:]
@@ -69,15 +70,17 @@ def fit_model(trainX, trainY, testX, testY, pat):
     results = model.fit(trainX, trainY, epochs=500, batch_size=20,
            callbacks=[es], verbose=0, validation_data=(testX,testY))
     maxep = max(results.epoch)
+    maxloss = max(results.history['mean_sq_err'])
     # plot learning curves
     #plt.plot(results.history['mean_sq_err'], label='train')
     #plt.plot(results.history['val_mean_sq_err'], label='test')
     #plt.ylabel("Mean Squared Error") 
     #plt.xlabel("Epochs")
-    #plt.title('batch size='+str(batch))
+    #plt.title('patience='+str(pat))
     # plot learning curve (last half epochs only)
     #halfep = int(maxep/2) # get ~halfway pt
-    halfep = int(maxep*0.8) # get last 20%
+    #halfep = int(maxep*0.8) # get last 20%
+    halfep = 3 # cut off first three epochs
     plt.plot(results.epoch[halfep:], 
             results.history['mean_sq_err'][halfep:],
             label='train')
@@ -93,6 +96,7 @@ def fit_model(trainX, trainY, testX, testY, pat):
     model_train = model.predict(x_train)[:,0]
     # Calculate validation r^2
     slope,intercept,r_value,p_value,std_err=stats.linregress(y_val,model_preds)
+    plt.text(maxep, maxloss, '$r^2$=%.2g' % r_value**2)
     #print("Prediction r-squared:", r_value**2)
     # scatterplot predicted vs. actual
     #plt.scatter(y_val, model_preds, label='validation')
@@ -131,8 +135,11 @@ for i in range(len(pat)):
         #plt.ylabel("NN Predictions")
         plt.legend()
 
+#plt.savefig("tune_patience_"+var+"_GM_diff.pdf")
 #plt.savefig("tune_patience_lasteps_"+var+"_GM_diff.pdf")
+#plt.savefig("tune_patience_halfeps_"+var+"_GM_diff.pdf")
 plt.savefig("tune_patience_lasteps_v2_"+var+"_GM_diff.pdf")
+#plt.savefig("tune_patience_halfeps_v2_"+var+"_GM_diff.pdf")
 plt.show()
 
 

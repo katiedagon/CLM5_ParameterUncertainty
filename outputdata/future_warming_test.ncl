@@ -8,13 +8,13 @@ begin
 ;************************************************
  ; control (default params) only has last 5 years (16-20)
  ;fils1 = systemfunc("ls /glade/scratch/kdagon/archive/hydro_ensemble_LHC_default_params/lnd/hist/*.nc")
- fils1 = systemfunc("ls /glade/scratch/kdagon/archive/hydro_ensemble_LHC_10/lnd/hist/*{001[6-9],20-}*")
+ fils1 = systemfunc("ls /glade/scratch/kdagon/archive/hydro_ensemble_LHC_60/lnd/hist/*{001[6-9],20-}*")
  ;fils1 = systemfunc("ls /glade/scratch/kdagon/archive/future_climate_LHC_1/lnd/hist/*{001[6-9],20-}*")
  q1 = addfiles(fils1,"r")
 
  ; warming test currently has 20 years (1-20)
  ;fils2 = systemfunc("ls /glade/scratch/kdagon/archive/test_streams/lnd/hist/*{001[6-9],20-}*")
- fils2 = systemfunc("ls /glade/scratch/kdagon/archive/future_climate_LHC_10/lnd/hist/*{001[6-9],20-}*")
+ fils2 = systemfunc("ls /glade/scratch/kdagon/archive/future_climate_LHC_60/lnd/hist/*{001[6-9],20-}*")
  q2 = addfiles(fils2,"r")
 
  ; get file var names
@@ -24,14 +24,18 @@ begin
  ;var = "TSA"
  ;var = "RH2M"
  ;var = "Q2M"
- ;var = "FPSN"
+ var = "FPSN"
  ;var = "QFLX_EVAP_TOT"
- var = "EFLX_LH_TOT"
+ ;var = "EFLX_LH_TOT"
  ;var = "FSH" 
  ;var = "RAIN"
  ;var = "SOILWATER_10CM"
  ;var = "TBOT"
  ;var = "QBOT"
+ ;var = "PCO2"
+ ;var = "QVEGT"
+ ;var = "VCMX25T"
+ ;var = "TV"
 
  ; read in all the files and join the timeseries together
  TSA1 = q1[:]->$var$
@@ -49,9 +53,9 @@ begin
  ;printVarSummary(arwt)
 
  ; unit conversion (if needed)
- u = 1
+ ;u = 1
  ;u = (12 * (3600 * 24 * 365) / 1000000) * 10^-15 ; umol /m2 /s to Pg/m2/year
- ;u = (12 * (3600 * 24 * 365) / 10^6) ; umol /m2 /s to g/m2/year
+ u = (12 * (3600 * 24 * 365) / 10^6) ; umol /m2 /s to g/m2/year
  ;u = 86400 ; mm/s to mm/day
  TSA1 = TSA1*u
  TSA2 = TSA2*u
@@ -112,13 +116,13 @@ begin
 
  res@cnLevelSelectionMode = "ManualLevels"
  ; EFLX_LH_TOT diff
- res@cnMinLevelValF  = -10
- res@cnMaxLevelValF  = 10
- res@cnLevelSpacingF = 0.5
+ ;res@cnMinLevelValF  = -10
+ ;res@cnMaxLevelValF  = 10
+ ;res@cnLevelSpacingF = 0.5
  ; FPSN diff
- ;res@cnMinLevelValF  = -100
- ;res@cnMaxLevelValF  = 100
- ;res@cnLevelSpacingF = 5
+ res@cnMinLevelValF  = -100
+ res@cnMaxLevelValF  = 100
+ res@cnLevelSpacingF = 5
 
  res@tiMainString      = "Changes with constant 2K warming"
 

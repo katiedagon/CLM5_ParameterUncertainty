@@ -33,7 +33,8 @@ inputdata = np.load(file="lhc_100.npy", allow_pickle=True)
 #outputdata = np.load("outputdata/outputdata_LHF_SVD_3modes_diff.npy")
 
 # Training to predict global mean diff GPP, LHF
-var = "GPP"
+#var = "GPP"
+var = "LHF"
 f=nc.netcdf_file("outputdata/outputdata_"+var+"_GM_100_diff.nc",'r', mmap=False) 
 X = f.variables[var]
 outputdata = X[:]
@@ -75,22 +76,22 @@ def fit_model(trainX, trainY, testX, testY, optimizer):
             callbacks=[es], verbose=0, validation_data=(testX,testY))
     maxep = max(results.epoch)
     # plot learning curves
-    plt.plot(results.history['mean_sq_err'], label='train')
-    plt.plot(results.history['val_mean_sq_err'], label='test')
+    #plt.plot(results.history['mean_sq_err'], label='train')
+    #plt.plot(results.history['val_mean_sq_err'], label='test')
     #plt.ylabel("Mean Squared Error") 
     #plt.xlabel("Epochs")
-    plt.title('opt='+optimizer)
+    #plt.title('opt='+optimizer)
     # plot learning curve (last half epochs only)
-    #halfep = int(maxep/2) # get ~halfway pt
-    #plt.plot(results.epoch[halfep:], 
-    #        results.history['mean_sq_err'][halfep:],
-    #        label='train')
-    #plt.plot(results.epoch[halfep:],
-    #        results.history['val_mean_sq_err'][halfep:],
-    #        label='test')
+    halfep = int(maxep/2) # get ~halfway pt
+    plt.plot(results.epoch[halfep:], 
+            results.history['mean_sq_err'][halfep:],
+            label='train')
+    plt.plot(results.epoch[halfep:],
+            results.history['val_mean_sq_err'][halfep:],
+            label='test')
     #plt.ylabel("Mean Squared Error")
     #plt.xlabel("Epochs")
-    #plt.title('opt='+optimizer)
+    plt.title('opt='+optimizer)
 
 # create learning curves for different optimizers
 momentums = ['sgd', 'rmsprop', 'adagrad', 'adam', 'adadelta']
@@ -112,9 +113,9 @@ for i in range(len(momentums)):
         plt.legend()
 
 #plt.savefig("tune_opt_"+var+"_GM_diff.pdf")
-plt.savefig("tune_opt_es_"+var+"_GM_diff.pdf")
+#plt.savefig("tune_opt_es_"+var+"_GM_diff.pdf")
 #plt.savefig("tune_opt_lasteps_"+var+"_GM_diff.pdf")
-#plt.savefig("tune_opt_lasteps_es_"+var+"_GM_diff.pdf")
+plt.savefig("tune_opt_lasteps_es_"+var+"_GM_diff.pdf")
 plt.show()
 
 

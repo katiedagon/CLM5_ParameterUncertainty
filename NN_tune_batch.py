@@ -31,7 +31,8 @@ inputdata = np.load(file="lhc_100.npy", allow_pickle=True)
 #outputdata = np.load("outputdata/outputdata_LHF_SVD_3modes_diff.npy")
 
 # Training to predict global mean diff GPP, LHF
-var = "GPP"
+#var = "GPP"
+var = "LHF"
 f=nc.netcdf_file("outputdata/outputdata_"+var+"_GM_100_diff.nc",'r', mmap=False) 
 X = f.variables[var]
 outputdata = X[:]
@@ -61,7 +62,8 @@ def fit_model(trainX, trainY, testX, testY, batch):
     model.add(Dense(secondn, activation='tanh', kernel_regularizer=l2(.001)))
     model.add(Dense(1))
     # compile model
-    opt_dense = RMSprop(lr=0.01, rho=0.9, epsilon=None, decay=0.0) # defaults except lr
+    opt_dense = RMSprop(lr=0.01, rho=0.9, epsilon=None, decay=0.0) # defaults except lr (GPP GM diff)
+    #opt_dense = RMSprop(lr=0.001, rho=0.9, epsilon=None, decay=0.0) # defaults except lr (LHF GM diff)
     model.compile(opt_dense, loss="mse", metrics=[mean_sq_err])
     # fit model w/ EarlyStopping
     es = EarlyStopping(monitor='val_loss', min_delta=1,
@@ -76,16 +78,16 @@ def fit_model(trainX, trainY, testX, testY, batch):
     #plt.xlabel("Epochs")
     #plt.title('batch size='+str(batch))
     # plot learning curve (last half epochs only)
-    halfep = int(maxep/2) # get ~halfway pt
-    plt.plot(results.epoch[halfep:], 
-            results.history['mean_sq_err'][halfep:],
-            label='train')
-    plt.plot(results.epoch[halfep:],
-            results.history['val_mean_sq_err'][halfep:],
-            label='test')
+    #halfep = int(maxep/2) # get ~halfway pt
+    #plt.plot(results.epoch[halfep:], 
+    #        results.history['mean_sq_err'][halfep:],
+    #        label='train')
+    #plt.plot(results.epoch[halfep:],
+    #        results.history['val_mean_sq_err'][halfep:],
+    #        label='test')
     #plt.ylabel("Mean Squared Error")
     #plt.xlabel("Epochs")
-    plt.title('batch size='+str(batch))
+    #plt.title('batch size='+str(batch))
     # Make predictions
     model_preds = model.predict(x_val)[:,0]
     model_test = model.predict(x_test)[:,0]
@@ -94,14 +96,15 @@ def fit_model(trainX, trainY, testX, testY, batch):
     slope,intercept,r_value,p_value,std_err=stats.linregress(y_val,model_preds)
     #print("Prediction r-squared:", r_value**2)
     # scatterplot predicted vs. actual
-    #plt.scatter(y_val, model_preds, label='validation')
-    #plt.scatter(y_train, model_train, label='training')
-    #plt.scatter(y_test, model_test, label= 'testing')
+    plt.scatter(y_val, model_preds, label='validation')
+    plt.scatter(y_train, model_train, label='training')
+    plt.scatter(y_test, model_test, label= 'testing')
     #axbuff = 5
-    #plt.xlim(np.amin(outputdata)-axbuff,np.amax(outputdata)+axbuff)
-    #plt.ylim(np.amin(outputdata)-axbuff,np.amax(outputdata)+axbuff)
-    #plt.text(np.amin(outputdata),np.amin(outputdata), '$r^2$=%.2g' % r_value**2)
-    #plt.title('batch size='+str(batch)+', epochs='+str(maxep+1))
+    axbuff = 0.5
+    plt.xlim(np.amin(outputdata)-axbuff,np.amax(outputdata)+axbuff)
+    plt.ylim(np.amin(outputdata)-axbuff,np.amax(outputdata)+axbuff)
+    plt.text(np.amin(outputdata),np.amin(outputdata), '$r^2$=%.2g' % r_value**2)
+    plt.title('batch size='+str(batch)+', epochs='+str(maxep+1))
 
 # create plots for different batch sizes
 batch = [2, 5, 10, 20, 30, 50, 75, 90]
@@ -109,31 +112,31 @@ batch = [2, 5, 10, 20, 30, 50, 75, 90]
 #batch = [2, 3, 4, 5, 6, 8, 10, 20]
 
 # set up plots
-plt.figure(figsize=(8,10)) # learning curves                                                                                                 
-#plt.figure(figsize=(12,6)) # scatter plots
-plt.subplots_adjust(wspace=0.2,hspace=0.5) # learning curve
-#plt.subplots_adjust(wspace=0.5,hspace=0.4) # scatter plots
+#plt.figure(figsize=(8,10)) # learning curves                                                                                                 
+plt.figure(figsize=(12,6)) # scatter plots
+#plt.subplots_adjust(wspace=0.2,hspace=0.5) # learning curve
+plt.subplots_adjust(wspace=0.5,hspace=0.4) # scatter plots
 
 # Loop over batch sizes
 for i in range(len(batch)):
     np.random.seed(9)
     # determine the plot number
-    plot_no = 420 + (i+1) # learning curve
-    #plot_no = 240 + (i+1) # scatter plots
+    #plot_no = 420 + (i+1) # learning curve
+    plot_no = 240 + (i+1) # scatter plots
     plt.subplot(plot_no)
     fit_model(x_train,y_train,x_test,y_test,batch[i])
     if i == 0:
         # learning curve plot
-        plt.xlabel("Epochs")
-        plt.ylabel("Mean Squared Error")
+        #plt.xlabel("Epochs")
+        #plt.ylabel("Mean Squared Error")
         # scatterplot
-        #plt.xlabel("CLM Model Output")
-        #plt.ylabel("NN Predictions")
+        plt.xlabel("CLM Model Output")
+        plt.ylabel("NN Predictions")
         plt.legend()
 
 #plt.savefig("tune_batch_"+var+"_GM_diff.pdf")
-plt.savefig("tune_batch_lasteps_"+var+"_GM_diff.pdf")  
-#plt.savefig("tune_batch_scatter_"+var+"_GM_diff.pdf")
+#plt.savefig("tune_batch_lasteps_"+var+"_GM_diff.pdf")  
+plt.savefig("tune_batch_scatter_"+var+"_GM_diff.pdf")
 #plt.savefig("tune_batch_scatter_v2_"+var+"_GM_diff.pdf")  
 plt.show()
 

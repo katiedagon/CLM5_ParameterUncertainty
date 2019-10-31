@@ -37,7 +37,8 @@ inputdata = np.load(file="lhc_100.npy", allow_pickle=True)
 #outputdata = np.load("outputdata/outputdata_LHF_SVD_3modes_diff.npy")
 
 # Training to predict global mean GPP, LHF
-var = "GPP"
+#var = "GPP"
+var = "LHF"
 f=nc.netcdf_file("outputdata/outputdata_"+var+"_GM_100_diff.nc",'r', mmap=False)
 X = f.variables[var]
 outputdata = X[:]
@@ -75,10 +76,10 @@ for k in range(1,samps+1):
     model = Sequential()
     # specify input_dim as number of parameters, not number of simulations
     # l2 norm regularizer
-    model.add(Dense(7, input_dim=inputdata.shape[1], activation='relu',
+    model.add(Dense(14, input_dim=inputdata.shape[1], activation='relu',
         kernel_regularizer=l2(.001)))
     # second layer with hyperbolic tangent activation
-    model.add(Dense(9, activation='tanh', kernel_regularizer=l2(.001)))
+    model.add(Dense(6, activation='tanh', kernel_regularizer=l2(.001)))
     # output layer with linear activation
     model.add(Dense(1))
     #model.add(Dense(nmodes))
@@ -117,8 +118,8 @@ for k in range(1,samps+1):
 
     # Make predictions - using validation set (single dim)
     model_preds = model.predict(x_val)[:,0]
-    model_test = model.predict(x_test)[:,0]
-    model_train = model.predict(x_train)[:,0]
+    #model_test = model.predict(x_test)[:,0]
+    #model_train = model.predict(x_train)[:,0]
 
     # Predictions - multi-dim
     #model_preds = model.predict(x_val)
@@ -171,9 +172,11 @@ for k in range(1,samps+1):
     eps.append(max(results.epoch)+1)
 
 print("Mean Validation MSE:")
-print("%.2f (+/- %.2f)" % (np.mean(metricsME), np.std(metricsME)))
+#print("%.2f (+/- %.2f)" % (np.mean(metricsME), np.std(metricsME)))
+print("%.4f (+/- %.4f)" % (np.mean(metricsME), np.std(metricsME)))
 print("Mean Validation r^2:")
 print("%.2f (+/- %.2f)" % (np.mean(metricsRsq), np.std(metricsRsq)))
+#print("%.4f (+/- %.4f)" % (np.mean(metricsRsq), np.std(metricsRsq)))
 #print("%.2g (+/- %.2g)" % (np.mean(metricswRsq), np.std(metricswRsq)))
 print("Mean Number of Epochs:")
 print("%d (+/- %.2f)" % (np.mean(eps), np.std(eps)))
