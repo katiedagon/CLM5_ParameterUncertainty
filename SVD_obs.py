@@ -9,7 +9,6 @@ import matplotlib.pyplot as plt
 from numpy.linalg import pinv
 
 # Read netcdf file (pre-processed in NCL)
-#f=nc.netcdf_file("obs/obs_GPP_4x5_anom_forSVD.nc",'r',mmap=False)
 #f=nc.netcdf_file("obs/obs_GPP_4x5_anom_forSVD_allyrs.nc",'r',mmap=False)
 f=nc.netcdf_file("obs/obs_LHF_4x5_anom_forSVD_allyrs.nc",'r',mmap=False)
 # Read variable data
@@ -82,6 +81,8 @@ smat = np.diag(s)
 #print(smat.shape)
 U_obs = np.dot(drm,pinv(np.dot(smat,Vh)))
 print(U_obs.shape)
+plt.hist(U_obs[:,0], bins=20)
+plt.show()
 
 # Calculate sd across years
 U_obs_sd = np.std(U_obs,axis=0)
@@ -91,4 +92,4 @@ print(U_obs_sd[0:3])
 
 # Save out first 3 modes from SVD
 #np.save("obs/obs_GPP_SVD_3modes_allyrs_sd", U_obs_sd[0:3])
-np.save("obs/obs_LHF_SVD_3modes_allyrs_sd", U_obs_sd[0:3])
+#np.save("obs/obs_LHF_SVD_3modes_allyrs_sd", U_obs_sd[0:3])

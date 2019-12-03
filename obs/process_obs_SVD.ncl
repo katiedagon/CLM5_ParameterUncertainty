@@ -9,35 +9,43 @@ begin
  path = "~/CLM5hydro_LHC/obs/"
 
  ; set variable(s) of interest
- var = "GPP"
- ;var = "LHF"
+ ;var = "GPP"
+ var = "LHF"
 
  ; set years
  nyrs = 5
  ;nyrs = 27
 
  ; unit conversion (if needed)
- u = 365 * 10^-15 ; gC/m2/day to Pg/m2/year
+ ;u = 365 * 10^-15 ; gC/m2/day to Pg/m2/year
  ;u = 10^-15 ; gC/m2/day to Pg/m2/day
  ;u = 1
  ;u = 86400 * 365 * 10^-12 ; kgC/m2/s to Pg/m2/year
- ;u = 10^-12 ; W to TW
+ u = 10^-12 ; W to TW
 
  ; get obs file
- filename = "MR_GPP_4x5_2000_2004.nc"
+ ; FLUXNET
+ ;filename = "MR_GPP_4x5_2000_2004.nc"
  ;filename = "MR_LHF_4x5_2000_2004.nc"
  ;filename = "MR_GPP_4x5.nc"
  ;filename = "MR_LHF_4x5.nc"
+ ; WECANN
+ filename = "WECANN_GPP_LHF_4x5_2007_2015.nc"
  filepath = str_concat((/path,filename/))
  f_obs = addfile(filepath,"r")
 
  ; get gridcell areas
- grid_area = f_obs->area 
+ ; using model output for consistency
+ f_md = addfile("/glade/scratch/kdagon/archive/hydro_ensemble_LHC_1/lnd/hist/hydro_ensemble_LHC_1.clm2.h0.0016-01.nc","r")
+ grid_area = f_md->area
+ ;grid_area = f_obs->area 
  grid_area_m = grid_area ; metadata
  grid_area_m = grid_area*10^6 ; km^2 to m^2
 
  ; get obs datamask
- datamask_obs = f_obs->datamask
+ ;datamask_obs = f_obs->datamask
+ ;datamask_obs = f_obs->datamaskG
+ datamask_obs = f_obs->datamaskL
 
  ; read in obs
  v_obs = f_obs->$var$
@@ -46,8 +54,12 @@ begin
  ; copy metadata
  copy_VarMeta(v_obs,v_obs_c)
  ;printVarSummary(v_obs_c)
+ ; WECANN - subset first 5 years
+ v_obs_c_s = v_obs_c(:59,:,:)
+ ;printVarSummary(v_obs_c_s)
+ v_obs_am = dim_avg_n_Wrap(v_obs_c_s,0)
  ; 5-year annual mean
- v_obs_am = dim_avg_n_Wrap(v_obs_c,0) 
+ ;v_obs_am = dim_avg_n_Wrap(v_obs_c,0) 
  ; test without area weighting
  ;v_obs_am_area = v_obs_am
  ; month to annual (to preserve all years)
@@ -56,7 +68,7 @@ begin
  ; area-weighted annual mean, copy metadata
  v_obs_am_area = v_obs_am * grid_area_m
  copy_VarMeta(v_obs_am,v_obs_am_area)
- ; preserve all years
+ ; area-weighted, preserve all years
  ;v_obs_am_area = v_obs_am ; metadata / placeholder
  ;do i=1,nyrs
  ; v_obs_am_area(i-1,:,:) = v_obs_am(i-1,:,:) * grid_area_m
@@ -66,8 +78,10 @@ begin
 ;************************************************
 ; read in LHC ensemble output
 ;************************************************
- f_model = addfile("../outputdata/outputdata_GPP_forSVD_100.nc","r")
+ ;f_model = addfile("../outputdata/outputdata_GPP_forSVD_100.nc","r")
+ ;f_model = addfile("../outputdata/outputdata_GPP_forSVD_100_WECANNmask.nc","r")
  ;f_model = addfile("../outputdata/outputdata_LHF_forSVD_100.nc","r")
+ f_model = addfile("../outputdata/outputdata_LHF_forSVD_100_WECANNmask.nc","r")
  O = f_model->O
  ;printVarSummary(O)
  
@@ -93,7 +107,7 @@ begin
 ;************************************************
 ; prepare input to SVD
 ;************************************************
- ; subtract "ensemble" mean from obs
+ ; subtract ensemble mean from obs
  ; where ensemble mean is LHC ensemble mean
  v_obs_anom = v_obs_am_area ; metadata
  v_obs_anom = v_obs_am_area - O_em ; no obs
@@ -102,18 +116,18 @@ begin
  ;do i=1,nyrs
  ; v_obs_anom(i-1,:,:) = v_obs_am_area(i-1,:,:) - O_em
  ;end do
- printVarSummary(v_obs_anom)
+ ;printVarSummary(v_obs_anom)
 
  ; test alternate units
- v_obs_anom_test = v_obs_anom
- v_obs_anom_test = v_obs_anom*0.002739726027
- printVarSummary(v_obs_anom_test)
+ ;v_obs_anom_test = v_obs_anom
+ ;v_obs_anom_test = v_obs_anom*0.002739726027
+ ;printVarSummary(v_obs_anom_test)
 
  ; update units
  ;v_obs_anom@units = "PgC/yr"
  ;v_obs_anom@units = "W"
- ;v_obs_anom@units = "TW"
- v_obs_anom@units = "PgC/day"
+ v_obs_anom@units = "TW"
+ ;v_obs_anom@units = "PgC/day"
  ;printVarSummary(v_obs_anom)
  
  ; test plot
@@ -142,14 +156,14 @@ begin
  res@tiMainFontHeightF   = 0.015
 
  ; set the contour bounds (GPP)
- res@cnLevelSelectionMode = "ManualLevels"
+ ;res@cnLevelSelectionMode = "ManualLevels"
  ;res@cnMinLevelValF  = -0.5
  ;res@cnMaxLevelValF  = 0.2
  ;res@cnLevelSpacingF = 0.1
 
  ; single plot
  ; 5-year mean
- plot = gsn_csm_contour_map(wks,v_obs_anom_test,res)
+ plot = gsn_csm_contour_map(wks,v_obs_anom,res)
  ; all years
  ;plot = gsn_csm_contour_map(wks,v_obs_anom(0,:,:),res)
 
@@ -159,15 +173,15 @@ begin
  ; writing as nc (preferred)
  ;ncdf = addfile("obs_GPP_4x5_anom_forSVD.nc", "c")
  ;ncdf = addfile("obs_LHF_4x5_anom_forSVD.nc", "c")
- ;ncdf = addfile("obs_GPP_4x5_anom_forSVD_v2.nc", "c") 
  ;ncdf = addfile("obs_GPP_4x5_anom_forSVD_allyrs.nc", "c")
  ;ncdf = addfile("obs_LHF_4x5_anom_forSVD_allyrs.nc", "c")
- ncdf = addfile("obs_GPP_4x5_anom_forSVD_alt.nc", "c")
+ ;ncdf = addfile("WECANN_GPP_4x5_anom_forSVD.nc", "c")
+ ncdf = addfile("WECANN_LHF_4x5_anom_forSVD.nc", "c")
 
  ; define time as an unlimited dimension (optional?)
  ;filedimdef(ncdf,"time",-1,True) 
- ncdf->GPP = v_obs_anom
- ;ncdf->LHF = v_obs_anom
+ ;ncdf->GPP = v_obs_anom
+ ncdf->LHF = v_obs_anom
  ncdf->datamask = datamask_obs
 
 end

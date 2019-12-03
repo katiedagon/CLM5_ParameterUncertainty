@@ -14,15 +14,15 @@ begin
  path = "/glade/scratch/kdagon/archive/"
 
  ; set variable(s) of interest
- ;var = "FPSN"
+ var = "FPSN"
  ;var = "TSA"
  ;var = "QFLX_EVAP_TOT"
- var = "EFLX_LH_TOT"
+ ;var = "EFLX_LH_TOT"
 
  ; unit conversion (if needed)
- u = 1
+ ;u = 1
  ;u = (12 * (60 * 60 * 24 * 365) / 10^6) * 10^-15 ; umolC/m2/s to PgC/m2/yr
- ;u = (12 * (60 * 60 * 24 * 365) / 10^6)  ; umol/m2/s to gC/m2/yr
+ u = (12 * (60 * 60 * 24 * 365) / 10^6)  ; umol/m2/s to gC/m2/yr
 
  ; gauss weights for global mean
  ;lats = 46 ; number of latitudes at 4x5
@@ -58,6 +58,11 @@ begin
  ;printVarSummary(arwt) 
  ;printMinMax(arwt,1)
 
+ ; get obs datamask
+ f_obs = addfile("../obs/MR_GPP_4x5_2000_2004.nc","r")
+ ;f_obs = addfile("../obs/MR_LHF_4x5_2000_2004.nc","r")
+ datamask_obs = f_obs->datamask
+
  ; establish output array
  out = new((/niter/),float)
  out!0 = "ens"
@@ -73,21 +78,23 @@ begin
   f = addfiles(fils,"r")
   v1 = f[:]->$var$
   ; second ensemble for difference
-  strs = (/path,"future_climate_LHC_",y,"/lnd/hist/*{001[6-9],20-}*"/)
-  str_c = str_concat(strs)
-  fils = systemfunc("ls "+str_c)
-  f = addfiles(fils,"r")
-  v2 = f[:]->$var$
-  o = v2 - v1 ; future - present
+  ;strs = (/path,"future_climate_LHC_",y,"/lnd/hist/*{001[6-9],20-}*"/)
+  ;str_c = str_concat(strs)
+  ;fils = systemfunc("ls "+str_c)
+  ;f = addfiles(fils,"r")
+  ;v2 = f[:]->$var$
+  ;o = v2 - v1 ; future - present
+  o = v1 ; present only
   copy_VarMeta(v1,o)
+  ; mask model output to match obs
+  o_m = mask(o,datamask_obs.eq.0,False)
+  copy_VarMeta(o,o_m)
   ; unit conversion
-  o_c = o*u
-  copy_VarMeta(o,o_c)
+  o_c = o_m*u
+  copy_VarMeta(o_m,o_c)
   ; global, annual mean
   ;v_gm_am_alt = dim_avg_n_Wrap(wgt_areaave_Wrap(v,clat,1,0),0)
   v_gm_am = dim_avg_n_Wrap(wgt_areaave2(o_c,arwt,0),0)
-  ;v_gm_am = v_gm_am*86400*365 ; QFLX_EVAP_TOT
-  ;v_gm_am = v_gm_am - 273 ; TSA
   print("Global mean="+v_gm_am)
   out(i-1) = v_gm_am
   ;out2(i-1) = v_gm_am_alt
@@ -98,8 +105,8 @@ begin
  end do
 
  ;print(out)
- ;out@units = "g/m^2/yr"
- out@units = "W/m^2"
+ out@units = "g/m^2/yr"
+ ;out@units = "W/m^2"
  printVarSummary(out)
 ;************************************************
 ; write output file
@@ -112,9 +119,10 @@ begin
  ;write_table("outputdata_GPP_IAV.csv", "w", alist, "%f")
 
  ; writing as nc (preferred)
+ ncdf = addfile("outputdata_GPP_GM_100.nc", "c")
  ;ncdf = addfile("outputdata_GPP_GM_100_diff.nc", "c")
- ;ncdf->GPP = out
- ncdf = addfile("outputdata_LHF_GM_100_diff.nc", "c")
- ncdf->LHF = out 
+ ncdf->GPP = out
+ ;ncdf = addfile("outputdata_LHF_GM_100_diff.nc", "c")
+ ;ncdf->LHF = out 
 
 end

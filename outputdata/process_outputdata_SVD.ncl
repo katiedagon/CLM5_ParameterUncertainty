@@ -37,10 +37,14 @@ begin
  grid_area_m = grid_area ; metadata
  grid_area_m = grid_area*10^6 ; km^2 to m^2
 
- ; get obs datamask
+ ; get obs datamask - FLUXNET
  ;f_obs = addfile("../obs/MR_GPP_4x5_2000_2004.nc","r")
- f_obs = addfile("../obs/MR_LHF_4x5_2000_2004.nc","r")
- datamask_obs = f_obs->datamask
+ ;f_obs = addfile("../obs/MR_LHF_4x5_2000_2004.nc","r")
+ ;datamask_obs = f_obs->datamask
+ ; get obs datamask - WECANN
+ f_obs = addfile("../obs/WECANN_GPP_LHF_4x5_2007_2015.nc","r")
+ datamaskG = f_obs->datamaskG
+ datamaskL = f_obs->datamaskL
 
  ; set up storage matrix
  O = new((/niter,o_md_dims(1),o_md_dims(2)/),"float")
@@ -60,16 +64,19 @@ begin
   fils = systemfunc("ls "+str_c)
   f = addfiles(fils,"r")
   v1 = f[:]->$var$
+  o = v1 ; single ensemble case
   ; second ensemble for difference
-  strs = (/path,"future_climate_LHC_",y,"/lnd/hist/*{001[6-9],20-}*"/)
-  str_c = str_concat(strs)
-  fils = systemfunc("ls "+str_c)
-  f = addfiles(fils,"r")
-  v2 = f[:]->$var$
-  o = v2 - v1 ; future - present
+  ;strs = (/path,"future_climate_LHC_",y,"/lnd/hist/*{001[6-9],20-}*"/)
+  ;str_c = str_concat(strs)
+  ;fils = systemfunc("ls "+str_c)
+  ;f = addfiles(fils,"r")
+  ;v2 = f[:]->$var$
+  ;o = v2 - v1 ; future - present
   copy_VarMeta(v1,o)
   ; mask model output to match obs
-  o_m = mask(o,datamask_obs.eq.0,False)
+  ;o_m = mask(o,datamask_obs.eq.0,False) ; FLUXNET
+  ;o_m = mask(o,datamaskG.eq.0,False) ; WECANN GPP
+  o_m = mask(o,datamaskL.eq.0,False) ; WECANN LHF
   copy_VarMeta(o,o_m)
   ; unit conversion
   o_c = o_m*u
@@ -157,7 +164,6 @@ begin
  ;u = new((/ncol,nrow/),typeof(X))
  ;v = new((/ncol,ncol/),typeof(X))
  ;s = svd_lapack(X_mod,"S","S",0,u,v)
-
  ;printVarSummary(u)
  ;printVarSummary(v)
  ;print(s)
@@ -176,11 +182,15 @@ begin
  ;ncdf = addfile("outputdata_GPP_forSVD_100_fc.nc", "c")
  ;ncdf = addfile("outputdata_LHF_forSVD_100_fc.nc", "c") 
  ;ncdf = addfile("outputdata_GPP_forSVD_100_diff.nc", "c")
- ncdf = addfile("outputdata_LHF_forSVD_100_diff.nc", "c")
+ ;ncdf = addfile("outputdata_LHF_forSVD_100_diff.nc", "c")
+ ;ncdf = addfile("outputdata_GPP_forSVD_100_WECANNmask.nc", "c")
+ ncdf = addfile("outputdata_LHF_forSVD_100_WECANNmask.nc", "c")
 
  ; define time as an unlimited dimension (optional?)
  ;filedimdef(ncdf,"time",-1,True) 
- ncdf->datamask = datamask_obs
+ ;ncdf->datamask = datamask_obs
+ ;ncdf->datamask = datamaskG
+ ncdf->datamask = datamaskL
  ncdf->O = O ; masked, unit converted, annual mean, area wgt
  ;ncdf->GPP = X ; anomalies from annual mean (input to SVD)
  ncdf->LHF = X

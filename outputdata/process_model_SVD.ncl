@@ -7,7 +7,7 @@ begin
 ; read in data
 ;************************************************
  ; set param set number
- pset = "001"
+ pset = "v4"
 
  ; set model path
  path = "/glade/scratch/kdagon/archive/"
@@ -24,12 +24,14 @@ begin
  u = 1/(10^12) ; W to TW
 
  ; get hist files (last 5 years)
- ;strs = (/path,"test_paramset_SVD_",pset,"/lnd/hist/*{001[6-9],20-}*"/)
  ;strs = (/path,"hydro_ensemble_LHC_default_params/lnd/hist/*{001[6-9],20-}*"/)
  ;strs = (/path,"hydro_ensemble_LHC_86/lnd/hist/*{001[6-9],20-}*"/)
  ;strs = (/path,"hydro_ensemble_LHC_81/lnd/hist/*{001[6-9],20-}*"/)
+
+ strs = (/path,"test_paramset_SVD_",pset,"/lnd/hist/*{001[6-9],20-}*"/)
  ;strs = (/path,"test_paramset_LHF_SVD_",pset,"/lnd/hist/*{001[6-9],20-}*"/)
- strs = (/path,"test_paramset_GPP_LHF_SVD_",pset,"/lnd/hist/*{001[6-9],20-}*"/)
+ ;strs = (/path,"test_paramset_GPP_LHF_SVD_",pset,"/lnd/hist/*{001[6-9],20-}*"/)
+
  str_c = str_concat(strs)
  ;print(str_c)
  fils = systemfunc("ls "+str_c)
@@ -44,6 +46,8 @@ begin
  ; get obs datamask
  ;f_obs = addfile("../obs/MR_GPP_4x5_2000_2004.nc","r")
  f_obs = addfile("../obs/MR_LHF_4x5_2000_2004.nc","r")
+ ;f_obs = addfile("../obs/WECANN_GPP_4x5_anom_forSVD.nc","r")
+ ;f_obs = addfile("../obs/WECANN_LHF_4x5_anom_forSVD.nc","r")
  datamask_obs = f_obs->datamask
 
  ; mask model output to match obs
@@ -62,6 +66,8 @@ begin
  ; read LHC ensemble for anomaly calculation
  ;f_model = addfile("../outputdata/outputdata_GPP_forSVD_100.nc","r")
  f_model = addfile("../outputdata/outputdata_LHF_forSVD_100.nc","r")
+ ;f_model = addfile("../outputdata/outputdata_GPP_forSVD_100_WECANNmask.nc","r")
+ ;f_model = addfile("../outputdata/outputdata_LHF_forSVD_100_WECANNmask.nc","r")
  O = f_model->O
  ;printVarSummary(O)                                                                                                                         
 
@@ -75,13 +81,12 @@ begin
  ;O_mod(:99,:,:) = O
  ;O_mod(100,:,:) = v_am_area
  ;printVarSummary(O_mod)
-
- ; ensemble mean w/obs
+ ; ensemble mean w/test member
  ;O_em_alt = dim_avg_n_Wrap(O_mod,0)
  ;printVarSummary(O_em_alt) 
 
  ; prepare input to SVD
- ; subtract "ensemble" mean from test member
+ ; subtract ensemble mean from test member
  ; where ensemble mean is LHC ensemble mean
  v_anom = v_am_area ; metadata
  v_anom = v_am_area - O_em ; no test member
@@ -100,8 +105,8 @@ begin
  res = True
  ;res@gsnDraw = False
  ;res@gsnFrame = False
- res@cnFillOn = True
- res@cnLinesOn           = False           ; turn off contour lines
+ res@cnFillOn = True           ; turn off contour lines
+ res@cnLinesOn           = False
  res@cnLineLabelsOn      = False
  res@cnFillPalette       = "MPL_YlOrRd" 
  res@cnSpanFillPalette   = True            ; Fully span color palette
@@ -123,11 +128,15 @@ begin
 
  ; write output file
  ;ncdf = addfile("CLM_default_GPP_forSVD.nc", "c")
- ;ncdf = addfile("test_paramset_GPP_forSVD.nc", "c")
  ;ncdf = addfile("CLM_default_LHF_forSVD.nc", "c")
+ ;ncdf = addfile("CLM_default_GPP_forSVD_WECANNmask.nc","c")
+ ;ncdf = addfile("CLM_default_LHF_forSVD_WECANNmask.nc","c")
+
+ ;ncdf = addfile("test_paramset_GPP_forSVD.nc", "c")
  ncdf = addfile("test_paramset_LHF_forSVD.nc", "c")
  ;ncdf = addfile("test_paramset_LHF_SVD_001_forSVD.nc", "c")
  ;ncdf = addfile("test_paramset_SVD_006_LHF_forSVD.nc", "c")
+
  ;ncdf->GPP = v_anom 
  ncdf->LHF = v_anom
  ncdf->datamask = datamask_obs

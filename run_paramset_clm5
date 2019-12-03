@@ -37,18 +37,19 @@ pwd
 #export EXPTNAME="test_paramset_SVD_005"
 #export EXPTNAME="test_paramset_SVD_006"
 #export EXPTNAME="test_paramset_LHF_SVD_001"
-export EXPTNAME="test_paramset_GPP_LHF_SVD_001"
+#export EXPTNAME="test_paramset_GPP_LHF_SVD_001"
+export EXPTNAME="test_paramset_SVD_v4"
 echo $EXPTNAME
 
 # Remove existing output
-rm -rf /glade/scratch/$USER/$EXPTNAME
-rm -rf /glade/scratch/$USER/archive/$EXPTNAME
+#rm -rf /glade/scratch/$USER/$EXPTNAME
+#rm -rf /glade/scratch/$USER/archive/$EXPTNAME
 
 # Remove existing working directories
-rm -rf $EXPTNAME
+#rm -rf $EXPTNAME
 
-#../create_newcase --run-unsupported --compset I2000Clm50Sp --res f45_f45 --case $EXPTNAME --project P08010000
-../create_newcase --run-unsupported --compset I2000Clm50Sp --res f45_f45 --case $EXPTNAME --project P54048000
+../create_newcase --run-unsupported --compset I2000Clm50Sp --res f45_f45 --case $EXPTNAME --project P08010000
+#../create_newcase --run-unsupported --compset I2000Clm50Sp --res f45_f45 --case $EXPTNAME --project P54048000
 
 cd $EXPTNAME
 
