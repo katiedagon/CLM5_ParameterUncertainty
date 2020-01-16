@@ -9,3 +9,4 @@ outputdata/*.nc
 outputdata/*.csv
 obs/*.nc
 MCMC_posteriors/
+manuscript_figures/

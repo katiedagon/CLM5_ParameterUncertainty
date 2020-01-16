@@ -10,8 +10,8 @@ begin
  path = "~/CLM5hydro_LHC/obs/"
 
  ; set variable(s) of interest
- ;var = "GPP"
- var = "LHF"
+ var = "GPP"
+ ;var = "LHF"
 
  ; set years
  ;nyrs = 5
@@ -60,20 +60,24 @@ begin
  ;pset2 = "006"
  
  ; set test case name
- test_case = "test_paramset_SVD_v4"
+ ;test_case = "test_paramset_SVD_v4"
+
+ ; set PPE number
+ PPE_mem = "92"
 
  ; set model output
- ;var_model = "FPSN"
- var_model = "EFLX_LH_TOT"
+ var_model = "FPSN"
+ ;var_model = "EFLX_LH_TOT"
 
  ; model unit conversion
  ;u_model = (12 * (60 * 60 * 24 * 365) / 10^6)  ; umol/m2/s to gC/m2/yr 
- ;u_model = (12 * (60 * 60 * 24) / 10^6) ; umolC/m2/s to gC/m2/day
- u_model = 1
+ u_model = (12 * (60 * 60 * 24) / 10^6) ; umolC/m2/s to gC/m2/day
+ ;u_model = 1
 
  path_model = "/glade/scratch/kdagon/archive/"
  ;strs = (/path_model,"test_paramset_",pset,"/lnd/hist/*{001[6-9],20-}*"/)
- strs = (/path_model,test_case,"/lnd/hist/*{001[6-9],20-}*"/) 
+ ;strs = (/path_model,test_case,"/lnd/hist/*{001[6-9],20-}*"/) 
+ strs = (/path_model,"hydro_ensemble_LHC_",PPE_mem,"/lnd/hist/*{001[6-9],20-}*"/)
  str_c = str_concat(strs)
  print(str_c)
  fils = systemfunc("ls "+str_c)
@@ -190,7 +194,7 @@ begin
  ;plot = new(3,graphic)
  ;plot = new(4,graphic)
 
- ;wks = gsn_open_wks("x11","test")
+ wks = gsn_open_wks("x11","test")
  ;wks = gsn_open_wks("pdf","model-minus-obs_4x5_2000-2004_amean_GPP_002")
  ;wks = gsn_open_wks("pdf","model-minus-obs_4x5_2000-2004_amean_GPP_006")
  ;wks = gsn_open_wks("pdf","model-minus-obs_4x5_2000-2004_amean_GPP_SVD001")
@@ -198,7 +202,7 @@ begin
  ;wks = gsn_open_wks("pdf","model-minus-obs_4x5_2000-2004_amean_GPP_SVD005")
  ;wks = gsn_open_wks("pdf","PPE-minus-obs_modeldefault-minus-obs")
  ;wks = gsn_open_wks("pdf","RMSE_"+var+test_case+"_obs_default")
- wks = gsn_open_wks("pdf","Mean_bias_"+var+test_case+"_obs_default")
+ ;wks = gsn_open_wks("pdf","Mean_bias_"+var+test_case+"_obs_default")
 
  res = True
  res@gsnDraw = False
@@ -217,17 +221,17 @@ begin
  ;res@gsnRightString = diff@units
  ;res@gsnRightString = "~F33~m~F21~mol m~S~-2~N~s~S~-1"
  ;res@gsnRightString = "gC m~S~-2~N~ yr~S~-1"
- ;res@gsnRightString = "gC m~S~-2~N~ day~S~-1"
- res@gsnRightString = "W m~S~-2"
+ res@gsnRightString = "gC m~S~-2~N~ day~S~-1"
+ ;res@gsnRightString = "W m~S~-2"
  ;res@gsnRightString = "%"
 
  ; set the contour bounds
  res@cnLevelSelectionMode = "ManualLevels"
 
  ; GPP diffs (gC/m^2/day)
- ;res@cnMinLevelValF  = -3
- ;res@cnMaxLevelValF  = 3
- ;res@cnLevelSpacingF = 0.3
+ res@cnMinLevelValF  = -3
+ res@cnMaxLevelValF  = 3
+ res@cnLevelSpacingF = 0.3
 
  ; GPP RMSE
  ;res@cnMinLevelValF  = 0.
@@ -235,9 +239,9 @@ begin
  ;res@cnLevelSpacingF = 0.25
 
  ; LHF diffs (W/m^2)
- res@cnMinLevelValF  = -30
- res@cnMaxLevelValF  = 30
- res@cnLevelSpacingF = 3
+ ;res@cnMinLevelValF  = -30
+ ;res@cnMaxLevelValF  = 30
+ ;res@cnLevelSpacingF = 3
 
  ; LHF RMSE
  ;res@cnMinLevelValF  = 0.
