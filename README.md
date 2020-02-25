@@ -57,10 +57,13 @@ There is also a script for running an [ILAMB](https://www.ilamb.org/) compatible
 ## Optimization Files
 
 * `NN_opt.py`: Optimize the emulator predictions.
-* `MCMC.py`: Generate parameter posterior distributions using MCMC (serial and parallel versions).
 
 ## Supplemental Files
 
 * `LHC_invert.py` inverts the existing parameter array (parameters.npy) back to the original LHC random sampling and writes out these values (lhc.npy)
 * `simple_model.py` tests simpler models between LHC values and CLM output (e.g., correlation coefficients, scatterplots, multi-linear regression)
 * `time_test.py` calculates compute time for emulation
+
+## Parameter Sensitivity
+
+The Parameter_Sensitivity folder include scripts used to generate and analyze one-at-a-time parameter sensitivity simulations for CLM5 biophysical parameters.
