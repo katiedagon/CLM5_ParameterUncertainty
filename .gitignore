@@ -11,3 +11,4 @@ obs/*.nc
 MCMC_posteriors/
 manuscript_figures/
 DASH*
+*.npy
