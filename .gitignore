@@ -12,3 +12,4 @@ MCMC/
 manuscript_figures/
 DASH*
 *.npy
+Preprocessing.ipynb
