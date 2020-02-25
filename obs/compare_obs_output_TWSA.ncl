@@ -1,5 +1,5 @@
 ; ***********************************************
-; compare_obs_output.ncl
+; compare_obs_output_TWSA.ncl
 ; ***********************************************
 ;************************************************
 begin
@@ -10,58 +10,27 @@ begin
  path = "~/CLM5hydro_LHC/obs/"
 
  ; set variable(s) of interest
- ;var = "GPP"
- ;var = "LHF"
- var = "FSH"
-
- ; set years
- ;nyrs = 5
+ var = "TWSA"
 
  ; unit conversion (if needed)
- ;u_obs = 365 * 10^-15 ; gC/m2/day to Pg/m2/year
- ;u_obs = 365 ; gC/m2/day to gC/m2/year
- ;u_obs = 10^6 / (86400 * 12) ; gC/m2/day to umolC/m2/s
  u_obs = 1
 
  ; get obs file
- ;filename = "MR_"+var+"_4x5_2000_2004.nc"
- filename = "GBAF_SH_4x5_2000_2004.nc"
+ filename = "GRACE_TWSA_4x5_2002_2004.nc"
  filepath = str_concat((/path,filename/))
  f_obs = addfile(filepath,"r")
  datamask_obs = f_obs->datamask
  
- ; since gaus function does not generate the same lats as model grid
- ; use actual latitudes and cosine weighting for global mean
- ;rad = 4.0*atan(1.0)/180.0
- ;lat = f_obs->lat
- ;clat = cos(lat*rad)
- ;print(clat)
- 
  v_obs = f_obs->$var$
- ;print(v_obs&lon)
- ;printVarSummary(v_obs)
  ; unit conversion, copy metadata
  v_obs_c = v_obs*u_obs 
  copy_VarMeta(v_obs,v_obs_c)
  ;printVarSummary(v_obs_c)
- ; 5-year  annual mean
+ ; 3-year annual mean - note this isn't 3 FULL years due to GRACE missing months
  v_obs_amean = dim_avg_n_Wrap(v_obs_c,0)
- ;printVarSummary(v_obs_amean)
- ;printMinMax(v_obs_amean,1)
+ printVarSummary(v_obs_amean)
+ printMinMax(v_obs_amean,1)
 
- ; global mean calculation - update for landfrac/area
- ; month to annual - 5-year maps
- ;v_obs_amean = month_to_annual(v_obs_c,1)
- ;printVarSummary(v_obs_amean)
- ; global mean, annual mean
- ;v_gm_am = dim_avg_n_Wrap(wgt_areaave_Wrap(v_obs_c,clat,1,0),0)
- ;print(v_gm_am)
-
- ; get model output - test simulations
- ; set param set number
- ;pset = "002"
- ;pset2 = "006"
- 
  ; set test case name
  test_case = "test_paramset_SVD_v4"
 
@@ -69,27 +38,18 @@ begin
  ;PPE_mem = "92"
 
  ; set model output
- ;var_model = "FPSN"
- ;var_model = "EFLX_LH_TOT"
- var_model = "FSH"
+ var_model = "TWS"
 
  ; model unit conversion
- ;u_model = (12 * (60 * 60 * 24 * 365) / 10^6)  ; umol/m2/s to gC/m2/yr 
- ;u_model = (12 * (60 * 60 * 24) / 10^6) ; umolC/m2/s to gC/m2/day
  u_model = 1
 
  path_model = "/glade/scratch/kdagon/archive/"
- ;strs = (/path_model,"test_paramset_",pset,"/lnd/hist/*{001[6-9],20-}*"/)
- strs = (/path_model,test_case,"/lnd/hist/*{001[6-9],20-}*"/) 
- ;strs = (/path_model,"hydro_ensemble_LHC_",PPE_mem,"/lnd/hist/*{001[6-9],20-}*"/)
+ strs = (/path_model,test_case,"/lnd/hist/*{001[8-9],20-}*"/)
  str_c = str_concat(strs)
  print(str_c)
  fils = systemfunc("ls "+str_c)
  f = addfiles(fils,"r")
  v_model = f[:]->$var_model$
- ;print(v_model&lon)
- ;v_model_amean = month_to_annual(v_model,1)
- ;printVarSummary(v_model_amean)
 
  ; mask model to match obs
  v_model_m = mask(v_model,datamask_obs.eq.0,False)
@@ -99,31 +59,22 @@ begin
  v_model_c = v_model_m*u_model
  copy_VarMeta(v_model_m,v_model_c)
 
- ; 5-year annual mean
+ ; 3-year annual mean
  v_model_amean = dim_avg_n_Wrap(v_model_c,0)
  ;printVarSummary(v_model_amean)
 
- ; get hist files from model run2 (last 5 years)
- ;strs = (/path_model,"test_paramset_",pset2,"/lnd/hist/*{001[6-9],20-}*"/)
- ;strs = (/path_model,pset2,"/lnd/hist/*{001[6-9],20-}*"/) 
- ;str_c = str_concat(strs)
- ;fils = systemfunc("ls "+str_c)
- ;f = addfiles(fils,"r")
- ;v_model2 = f[:]->$var_model$
- ;v_model2_amean = month_to_annual(v_model2,1)
-
- ; get model output - PPE
- ; set number of simulations
- ;niter = 100
- ;niter = 20
-
- ; set years
- ;nyrs = 5
+ ; TWSA: subtract annual mean from TWS output for each month
+ ; I don't think this is calculating the right thing to compare with obs
+ v_model_anom = v_model_c ; metadata
+ ntime = 36
+ do i=1,ntime
+  v_model_anom(i-1,:,:) = v_model_c(i-1,:,:) - v_model_amean
+ end do
+ v_model_anom_amean = dim_avg_n_Wrap(v_model_anom,0)
+ printVarSummary(v_model_anom_amean)
 
  ; get sample file for metadata
  f_md = addfile("/glade/scratch/kdagon/archive/hydro_ensemble_LHC_1/lnd/hist/hydro_ensemble_LHC_1.clm2.h0.0016-01.nc","r")
- ;o_md = f_md->$var_model$
- ;o_md_dims = dimsizes(o_md)
  landf = f_md->landfrac
  area = f_md->area
  ; wgt variable
@@ -133,76 +84,25 @@ begin
  arwt_m = mask(arwt,datamask_obs.eq.0,False) 
  copy_VarMeta(area,arwt_m)
 
- ; set up storage matrix
- ;v_model_am = new((/niter,o_md_dims(1),o_md_dims(2)/),"float")
- ;v_model_am!0 = "ens"
- ;v_model_am!1 = "lat"
- ;v_model_am&lat = o_md&lat
- ;v_model_am!2 = "lon"
- ;v_model_am&lon = o_md&lon
-
- ; get hist files (last 5 years)
- ;do i=1,niter
- ; y=tostring(i)
- ; print(y)
- ; strs = (/path_model,"hydro_ensemble_LHC_",y,"/lnd/hist/*{001[6-9],20-}*"/)
- ; str_c = str_concat(strs)
- ; fils = systemfunc("ls "+str_c)
- ; f = addfiles(fils,"r")
- ; v = f[:]->$var_model$
-  ; mask model output to match obs
- ; v_c = mask(v,datamask_obs.eq.0,False)
- ; copy_VarMeta(v,v_c)
-  ; unit conversion
- ; v_c = v_c*u_model
- ; v_am = dim_avg_n_Wrap(v_c,0) ; 5-year annual mean maps
- ; v_model_am(i-1,:,:) = v_am ; save map
- ;end do
- ;v_model_amean = dim_avg_n_Wrap(v_model_am,0) ; mean over PPE
-
  ; compare obs / model
- diff = v_model_amean - v_obs_amean
+ diff = v_model_anom_amean - v_obs_amean
  copy_VarMeta(v_model_amean, diff)
  print("Test Case - Observations")
  printMinMax(diff,1)
 
  ; RMSE
- ;rmse = sqrt(dim_avg_n_Wrap((v_model_c - v_obs_c)^2,0))
- rmse = sqrt((v_model_amean - v_obs_amean)^2)
+ rmse = sqrt((v_model_anom_amean - v_obs_amean)^2)
  ;printVarSummary(rmse)
  copy_VarMeta(v_model_amean,rmse)
  print("Test Case - Obs RMSE:")
  printMinMax(rmse,0)
 
- ; perdiff
- ;v_obs_amean_mask = mask(v_obs_amean,v_obs_amean.eq.0,False)
- ;v_obs_amean_mask = mask(v_obs_amean,v_obs_amean.lt.0.01,False)
- ;perdiff = 100*diff/v_obs_amean_mask
- ;copy_VarMeta(diff,perdiff)
- ;perdiff_amean = dim_avg_n_Wrap(perdiff,0)
- ;print("Test Case - Observations (%)")
- ;printMinMax(perdiff,1)
-
- ; model run2
- ;diff2 = v_model2_amean - v_obs_amean
- ;copy_VarMeta(v_model2_amean, diff2)
- ;diff2_amean = dim_avg_n_Wrap(diff2,0)
- ;perdiff2 = 100*diff2/v_obs_amean_mask
- ;copy_VarMeta(diff2,perdiff2)
- ;perdiff2_amean = dim_avg_n_Wrap(perdiff2,0)
-
  ; plot diff
- ;plot = new(nyrs,graphic)
  plot = new(2,graphic)
  ;plot = new(3,graphic)
  ;plot = new(4,graphic)
 
  wks = gsn_open_wks("x11","test")
- ;wks = gsn_open_wks("pdf","model-minus-obs_4x5_2000-2004_amean_GPP_002")
- ;wks = gsn_open_wks("pdf","model-minus-obs_4x5_2000-2004_amean_GPP_006")
- ;wks = gsn_open_wks("pdf","model-minus-obs_4x5_2000-2004_amean_GPP_SVD001")
- ;wks = gsn_open_wks("pdf","model-minus-obs_4x5_2000-2004_amean_GPP_LHC84_SVD004")
- ;wks = gsn_open_wks("pdf","model-minus-obs_4x5_2000-2004_amean_GPP_SVD005")
  ;wks = gsn_open_wks("pdf","PPE-minus-obs_modeldefault-minus-obs")
  ;wks = gsn_open_wks("pdf","RMSE_"+var+test_case+"_obs_default")
  ;wks = gsn_open_wks("pdf","Mean_bias_"+var+test_case+"_obs_default")
@@ -220,31 +120,31 @@ begin
  res@lbLabelBarOn        = False           ; Turn off individual cb's
  res@lbBoxLinesOn = False ; no boxes
  res@gsnLeftString = var
- ;res@gsnLeftString = var+" RMSE"
- ;res@gsnRightString = diff@units
+ res@gsnLeftString = var+" RMSE"
  ;res@gsnRightString = "~F33~m~F21~mol m~S~-2~N~s~S~-1"
  ;res@gsnRightString = "gC m~S~-2~N~ yr~S~-1"
  ;res@gsnRightString = "gC m~S~-2~N~ day~S~-1"
- res@gsnRightString = "W m~S~-2"
+ ;res@gsnRightString = "W m~S~-2"
+ res@gsnRightString = "kg m~S~-2" 
  ;res@gsnRightString = "%"
 
  ; set the contour bounds
  res@cnLevelSelectionMode = "ManualLevels"
 
  ; GPP diffs (gC/m^2/day)
- ;res@cnMinLevelValF  = -3
- ;res@cnMaxLevelValF  = 3
- ;res@cnLevelSpacingF = 0.3
+ res@cnMinLevelValF  = -3
+ res@cnMaxLevelValF  = 3
+ res@cnLevelSpacingF = 0.3
 
  ; GPP RMSE
  ;res@cnMinLevelValF  = 0.
  ;res@cnMaxLevelValF  = 4.
  ;res@cnLevelSpacingF = 0.25
 
- ; LHF/FSH diffs (W/m^2)
- res@cnMinLevelValF  = -30
- res@cnMaxLevelValF  = 30
- res@cnLevelSpacingF = 3
+ ; LHF diffs (W/m^2)
+ ;res@cnMinLevelValF  = -30
+ ;res@cnMaxLevelValF  = 30
+ ;res@cnLevelSpacingF = 3
 
  ; LHF RMSE
  ;res@cnMinLevelValF  = 0.
@@ -259,21 +159,14 @@ begin
  ;label_strs = str_concat((/pset, " relative to Observations"/))
  ;res@gsnCenterString = label_strs
  ;res@gsnCenterString = "Model with 'best' parameters - Observations"
- res@gsnCenterString = "Optimized Model - Obs"
+ ;res@gsnCenterString = "Optimized Model - Obs"
   
  ;plot(0) = gsn_csm_contour_map(wks,diff_amean,res)
  ;res@gsnCenterString = "PPE mean - Observations"
- plot(0) = gsn_csm_contour_map(wks,diff,res)
+ ;plot(0) = gsn_csm_contour_map(wks,diff,res)
  ;plot(0) = gsn_csm_contour_map(wks,rmse,res)
-
- ; percent diff
- ;res@cnMinLevelValF  = -100
- ;res@cnMaxLevelValF  = 100
- ;res@cnLevelSpacingF = 10
- ;res@gsnRightString = "%"
- ;res@gsnCenterString = "PPE mean - Observations"
- ;res@gsnCenterString = "Model with 'best' parameters - Observations"
- ;plot(1) = gsn_csm_contour_map(wks,perdiff,res)
+ plot(0) = gsn_csm_contour_map(wks,v_model_anom_amean,res)
+ plot(1) = gsn_csm_contour_map(wks,v_obs_amean,res)
 
  ;resP                     = True                ; modify the panel plot
  ;resP@gsnMaximize         = True
@@ -292,6 +185,7 @@ begin
  ; compare obs / model default
  strs_def = (/path_model,"hydro_ensemble_LHC_default_params/lnd/hist/*{001[6-9],20-}*"/)
  str_c = str_concat(strs_def)
+ delete(fils)
  fils = systemfunc("ls "+str_c)
  f = addfiles(fils,"r")
  v_model_default = f[:]->$var_model$
@@ -327,9 +221,9 @@ begin
  ;res@cnLevelSpacingF = 100
  ;res@gsnRightString = "gC m~S~-2~N~ yr~S~-1"
  ;res@gsnCenterString = "Model with default parameters - Observations"
- res@gsnCenterString = "Default Model - Obs"  
+ ;res@gsnCenterString = "Default Model - Obs"  
 
- plot(1) = gsn_csm_contour_map(wks,diff_def,res)
+ ;plot(1) = gsn_csm_contour_map(wks,diff_def,res)
  ;plot(1) = gsn_csm_contour_map(wks,rmse_def,res)
 
  ;res@cnMinLevelValF  = -100

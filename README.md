@@ -4,30 +4,15 @@ This repository provides code to run a CLM5 perturbed parameter ensemble to inve
 
 ## Requirements
 
-Create a clone of the [NCAR package library](https://www2.cisl.ucar.edu/resources/computational-systems/cheyenne/software/python).
-
 Install [pyDOE package](https://pythonhosted.org/pyDOE/randomized.html#latin-hypercube) in order to use lhs function for Latin Hypercube sampling.
 
 Install [tensorflow](https://www.tensorflow.org/) and [keras](https://keras.io/) packages for machine learning (neural networks).
 
 Install [emcee](https://emcee.readthedocs.io/en/latest/) for MCMC sampling and [corner](https://corner.readthedocs.io/en/latest/) for visualization.
-```bash
-# Create clone
-ncar_pylib -c 20190627 /glade/work/kdagon/ncar_pylib_clone_20190627
-cd /glade/work/kdagon/ncar_pylib_clone_20190627
-# Source the virtual environment
-source /bin/activate
-# Install packages with pip
-pip install pyDOE
-pip install tensorflow
-pip install keras
-pip install emcee==3.0rc2
-pip install corner
-```
 
 ## Ensemble Generating Files
 
-The master ensemble script is `ensemble_script_clm5` (bash). This sets up ensemble cases, configuration, etc. Within this you set the ensemble size.
+The primary ensemble script is `ensemble_script_clm5` (bash). This sets up ensemble cases, configuration, etc. Within this you set the ensemble size.
 
 This also calls 3 python scripts to set parameter values:
 
@@ -52,6 +37,8 @@ This also calls 3 python scripts to set parameter values:
 There is a version specific for running an idealized future climate ensemble (`ensemble_script_clm5_warming`), where the surface temperature is increased by 2K everywhere (see also `perturb_TBOT` for how the forcing data is modified).
 
 There is also a script for testing a single parameter set in CLM5: `run_paramset_clm5`. This does not rely on the above python scripts and parameter values are set manually in this script and by providing a modified params file.
+
+There is also a script for running an [ILAMB](https://www.ilamb.org/) compatible test case: `run_ILAMB_case_clm5`.
 
 ## Data Processing Files
 

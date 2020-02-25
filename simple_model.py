@@ -13,52 +13,56 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 # Read in input array
-inputdata = np.load(file="lhc_100.npy")
+inputdata = np.load(file="lhc_100.npy", allow_pickle=True)
+print(inputdata.shape)
 
 # List of input variables
 in_vars = ['medlynslope','dleaf','kmax','fff','dint','baseflow_scalar']
 
 # Read in output array
 outputdata = np.loadtxt("outputdata/outputdata_GPP.csv")
+print(outputdata.shape)
 
 # Simple scatterplots and correlation coeffs
-#for x in range(6):
-#    plt.scatter(inputdata[:,x],outputdata)
-#    plt.ylabel('CLM Output')
-#    plt.xlabel('LHC values')
-#    plt.title(in_vars[x])
+for x in range(6):
+    plt.scatter(inputdata[:,x],outputdata)
+    plt.ylabel('CLM Output')
+    plt.xlabel('LHC values')
+    plt.title(in_vars[x])
 #    plt.savefig("scatter_GPPvs%s.eps" % (in_vars[x], ))
-#    plt.show()
+    plt.show()
 
-#    rho, spval = stats.spearmanr(inputdata[:,x],outputdata)
-#    print(rho, spval)
+    rho, spval = stats.spearmanr(inputdata[:,x],outputdata)
+    print(rho, spval)
 
-#    pcc, ppval = stats.pearsonr(inputdata[:,x],outputdata)
-#    print(pcc, ppval)
+    pcc, ppval = stats.pearsonr(inputdata[:,x],outputdata)
+    print(pcc, ppval)
 
 # use eumerate to avoid range command
 #for x, y in enumerate(in_vars):
 #    plt.scatter(inputdata[:,x], outputdata)
 # etc...except for two changes:
 #    plt.title(y)
+#    plt.show()
 #    plt.savefig("scatter_GPPvs%s.eps" % (y, ))
 
 # Multivariate linear regression
-regr = linear_model.LinearRegression()
-regr.fit(inputdata, outputdata)
-print('Coefficients: \n', regr.coef_)
+#regr = linear_model.LinearRegression()
+#regr.fit(inputdata, outputdata)
+#print('Coefficients: \n', regr.coef_)
 
-pred = regr.predict(inputdata)
-print(pred.shape)
+#pred = regr.predict(inputdata)
+#print(pred.shape)
 
-print(inputdata.shape, outputdata.shape)
-plt.scatter(inputdata[:,0], outputdata,  color='black')
-plt.plot(inputdata, pred, color='blue', linewidth=3)
+#print(inputdata.shape, outputdata.shape)
+#plt.scatter(inputdata[:,0], outputdata,  color='black')
+#plt.plot(inputdata[:,0], pred, color='blue', linewidth=3)
 
 #plt.xticks(())
 #plt.yticks(())
 
-plt.savefig('test.pdf')
-plt.close()
+#plt.savefig('test.pdf')
+#plt.close()
+
 #plt.show()
 

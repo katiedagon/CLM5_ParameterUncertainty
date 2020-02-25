@@ -11,9 +11,8 @@
 
 export USER="kdagon"
 
-#export CODENAME="clm5.0"
 export CODENAME="ctsm_ParamEns"
-export NAME="hydro_ensemble_LHC"
+export NAME="hydro_ensemble_LHC_ILAMB"
 
 cd /glade/work/$USER/$CODENAME
 pwd
@@ -21,14 +20,33 @@ pwd
 cd cime/scripts
 pwd
 
+## First time only
+#mkdir $NAME
+##
+
 cd $NAME
 pwd
+
+## Base build: uncomment this first time only
+#rm -rf codebase_$NAME
+#rm -rf /glade/scratch/$USER/codebase_$NAME
+
+#../create_newcase --run-unsupported --compset I2000Clm50Sp  --res f09_f09 --case codebase_$NAME --project P08010000
+
+#cd codebase_$NAME 
+#pwd
+#./case.setup
+#qcmd -- ./case.build
+
+#cd ..
+##
 
 ## IMPORTANT TO MODIFY THIS EACH TIME ##
 #export EXPTNAME=${NAME}_$i
 #export EXPTNAME=${NAME}_${i}_hybrid
 #export EXPTNAME="${NAME}_default_params"
-export EXPTNAME="test_paramset_SVD_v4"
+#export EXPTNAME="ILAMB_control"
+export EXPTNAME="ILAMB_calib"
 echo $EXPTNAME
 
 # Remove existing output
@@ -38,39 +56,48 @@ echo $EXPTNAME
 # Remove existing working directories
 #rm -rf $EXPTNAME
 
-../create_newcase --run-unsupported --compset I2000Clm50Sp --res f45_f45 --case $EXPTNAME --project P08010000
+# 4x5 degrees
+#../create_newcase --run-unsupported --compset I2000Clm50Sp --res f45_f45 --case $EXPTNAME --project P08010000
 #../create_newcase --run-unsupported --compset I2000Clm50Sp --res f45_f45 --case $EXPTNAME --project P54048000
+
+# 1 degree
+../create_newcase --run-unsupported --compset I2000Clm50Sp --res f09_f09 --case $EXPTNAME --project P08010000 
 
 cd $EXPTNAME
 
 ./xmlchange JOB_QUEUE=regular
-./xmlchange JOB_WALLCLOCK_TIME=3:00:00
+./xmlchange JOB_WALLCLOCK_TIME=12:00:00
 
-./xmlchange NTASKS_CPL=-4
-./xmlchange NTASKS_OCN=-4
-./xmlchange NTASKS_WAV=-4
-./xmlchange NTASKS_GLC=-4
-./xmlchange NTASKS_ICE=-4
-./xmlchange NTASKS_ROF=-4
-./xmlchange NTASKS_LND=-4
+# Unclear what PE layout for 1deg
+#./xmlchange NTASKS_CPL=-4
+#./xmlchange NTASKS_OCN=-4
+#./xmlchange NTASKS_WAV=-4
+#./xmlchange NTASKS_GLC=-4
+#./xmlchange NTASKS_ICE=-4
+#./xmlchange NTASKS_ROF=-4
+#./xmlchange NTASKS_LND=-4
 
 ./xmlchange CONTINUE_RUN=FALSE
 ./xmlchange RESUBMIT=0
-./xmlchange STOP_N=20
+./xmlchange STOP_N=50
 ./xmlchange STOP_OPTION=nyears
 
 ./xmlchange BUILD_COMPLETE="TRUE"
 ./xmlchange EXEROOT="/glade/scratch/$USER/codebase_$NAME/bld"
 
-./xmlchange DATM_CLMNCEP_YR_START=2000
-./xmlchange DATM_CLMNCEP_YR_END=2004
+#./xmlchange DATM_CLMNCEP_YR_START=2000
+#./xmlchange DATM_CLMNCEP_YR_END=2004
+
+./xmlchange DATM_CLMNCEP_YR_START=1965
+./xmlchange DATM_CLMNCEP_YR_END=2014
 
 # Setup case (creates user_nl_* files)
 ./case.setup
 
 # Generate param files for PFT-dependent params - do this ahead (for now)
 # Set params file
-pftfile="/glade/u/home/$USER/pft_files/hydro_ensemble_LHC/${EXPTNAME}.nc"
+#pftfile="/glade/u/home/$USER/pft_files/hydro_ensemble_LHC/${EXPTNAME}.nc"
+pftfile="/glade/u/home/$USER/pft_files/hydro_ensemble_LHC/test_paramset_SVD_v4.nc"
 
 # Make changes to netcdf file through ncl script pft_var_2.ncl
 
