@@ -1,5 +1,5 @@
 # Resampling train/test/val
-# For the best 2-layer single output Neural Network
+# For the best 2-layer Neural Network configurations
 # 8/16/18
 
 from keras.models import Sequential

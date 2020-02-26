@@ -60,6 +60,7 @@ The `NN` folder includes scripts used to construct, train, and optimize the neur
 * `NN_interp.py`: Interpret the NN results.
 * `NN_interp_plot.ipynb`: Interpret and plot the NN results.
 * `NN_opt*.py`: Optimize the emulator predictions (weighted and unweighted versions).
+* `NN_opt_plot.ipynb`: Optimize the emulator predictions and plot the results.
 
 ## Supplemental Files
 
