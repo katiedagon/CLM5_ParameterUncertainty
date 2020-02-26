@@ -1,7 +1,3 @@
-# For now run this ncar python env in the command line (or bash script)
-# Not sure how to execute within python script:
-#source /glade/work/kdagon/ncar_pylib_clone/bin/activate
-
 # Testing out different NN configurations
 # Focusing on 1 or 2 hidden layers
 # Number of nodes ranging from 1 to 10 in each layer
@@ -11,6 +7,10 @@
 # Number of nodes ranging from 5 to 15 in each layer (less than 5 nodes perform poorly)
 # Consider only relu in first layer (better performance than linear)
 # 5/7/19
+
+# For now run this ncar python env in the command line (or bash script)
+# Not sure how to execute within python script:
+#source /glade/work/kdagon/ncar_pylib_clone/bin/activate
 
 from keras.models import Sequential
 from keras.layers import Dense

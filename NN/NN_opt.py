@@ -1,7 +1,3 @@
-# For now run this ncar python env in the command line (or bash script)
-# Not sure how to execute within python script:
-#source /glade/work/kdagon/ncar_pylib_clone/bin/activate
-
 # Optimize the 2-layer multiple output Neural Network
 # Connecting obs, variance, predictions through likelihood function
 # 4/9/19

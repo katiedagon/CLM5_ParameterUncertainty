@@ -1,7 +1,3 @@
-# For now run this ncar python env in the command line (or bash script)
-# Not sure how to execute within python script:
-#source /glade/work/kdagon/ncar_pylib_clone/bin/activate
-
 # Finalize the 2-layer single output Neural Network
 # 8/16/18
 
@@ -202,7 +198,7 @@ results = model.fit(inputdata, outputdata, epochs=eps, batch_size=20, verbose=0)
 #plt.show()
 
 # Save finalized model
-model.save('emulators/NN_'+var+'_finalize_GM_diff.h5')
+#model.save('emulators/NN_'+var+'_finalize_GM_diff.h5')
 
 # Make predictions - using ALL data
 model_preds = model.predict(inputdata)[:,0]
@@ -213,7 +209,7 @@ plt.hist(model_preds, label="NN Predictions")
 plt.legend()
 plt.ylabel("Counts")
 plt.xlabel("Difference in GM "+var+", future-control (W/m2)")
-plt.savefig("dist_outputdata_modelpreds_"+var+"_GM_diff.pdf")
+#plt.savefig("dist_outputdata_modelpreds_"+var+"_GM_diff.pdf")
 plt.show()
 
 # model metric for predictions
@@ -237,7 +233,7 @@ plt.ylim(np.amin(outputdata)-axbuff,np.amax(outputdata)+axbuff)
 #plt.savefig("validation_scatter_finalize_SVD_mode2.pdf")
 #plt.savefig("validation_scatter_finalize_SVD_mode3.pdf")
 #plt.savefig("validation_scatter_finalize_GM_GPP_002.pdf")
-plt.savefig("validation_scatter_finalize_"+var+"_GM_diff.pdf")
+#plt.savefig("validation_scatter_finalize_"+var+"_GM_diff.pdf")
 plt.show()
 
 # linear regression of actual vs predicted

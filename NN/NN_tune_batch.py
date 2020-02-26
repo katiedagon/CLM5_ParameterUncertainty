@@ -136,7 +136,7 @@ for i in range(len(batch)):
 
 #plt.savefig("tune_batch_"+var+"_GM_diff.pdf")
 #plt.savefig("tune_batch_lasteps_"+var+"_GM_diff.pdf")  
-plt.savefig("tune_batch_scatter_"+var+"_GM_diff.pdf")
+#plt.savefig("tune_batch_scatter_"+var+"_GM_diff.pdf")
 #plt.savefig("tune_batch_scatter_v2_"+var+"_GM_diff.pdf")  
 plt.show()
 

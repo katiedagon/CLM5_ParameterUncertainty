@@ -44,19 +44,21 @@ There is also a script for running an [ILAMB](https://www.ilamb.org/) compatible
 
 * `outputdata/process_outputdata.ncl` and associated scripts process CLM output for training the neural network
 * `obs/process_obs.ncl` and associated scripts process the observational data  
-* `SVD.py` and `SVD_obs.py` perform a singular value decomposition on model output and observations  
+* The `SVD` folder includes scripts to perform a singular value decomposition on model output and observations  
 
 ## Machine Learning Files
 
+The `NN` folder includes scripts used to construct, train, and optimize the neural networks.
+
 * `NN_multi-dim.py`: Test out multidimensional output for the neural network.
+* `NN_tune.py`: Hyperparameter tuning (e.g., learning rate, batch size).
 * `NN_test.py`: Test out different NN configurations (# of layers, # of nodes).
 * `NN_resample.py`: Use resampling of the training data to better refine candidate NN models.
 * `NN_finalize.py`: Finalize best NN model (single and multidimensional versions).
+* `NN_finalize_plot.ipynb`: Finalize and plot NN emulators. 
 * `NN_interp.py`: Interpret the NN results.
-
-## Optimization Files
-
-* `NN_opt.py`: Optimize the emulator predictions.
+* `NN_interp_plot.ipynb`: Interpret and plot the NN results.
+* `NN_opt.py`: Optimize the emulator predictions (weighted and unweighted versions).
 
 ## Supplemental Files
 

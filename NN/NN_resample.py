@@ -1,7 +1,3 @@
-# For now run this ncar python env in the command line (or bash script)
-# Not sure how to execute within python script:
-#source /glade/work/kdagon/ncar_pylib_clone/bin/activate
-
 # Resampling train/test/val
 # For the best 2-layer single output Neural Network
 # 8/16/18

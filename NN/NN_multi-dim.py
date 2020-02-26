@@ -1,7 +1,3 @@
-# For now run this ncar python env in the command line (or bash script)
-# Not sure how to execute within python script:
-#source /glade/work/kdagon/ncar_pylib_clone/bin/activate
-
 # NN with multiple output fields
 # 6/26/18
 # Update with SVD output 

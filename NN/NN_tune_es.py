@@ -138,7 +138,7 @@ for i in range(len(pat)):
 #plt.savefig("tune_patience_"+var+"_GM_diff.pdf")
 #plt.savefig("tune_patience_lasteps_"+var+"_GM_diff.pdf")
 #plt.savefig("tune_patience_halfeps_"+var+"_GM_diff.pdf")
-plt.savefig("tune_patience_lasteps_v2_"+var+"_GM_diff.pdf")
+#plt.savefig("tune_patience_lasteps_v2_"+var+"_GM_diff.pdf")
 #plt.savefig("tune_patience_halfeps_v2_"+var+"_GM_diff.pdf")
 plt.show()
 

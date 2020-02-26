@@ -138,7 +138,7 @@ for i in range(len(momentums)):
 #plt.savefig("tune_opt_es_"+var+"_GM_diff.pdf")
 #plt.savefig("tune_opt_lasteps_"+var+"_GM_diff.pdf")
 #plt.savefig("tune_opt_lasteps_es_"+var+"_GM_diff.pdf")
-plt.savefig("tune_opt_scatter_"+var+"_GM_diff.pdf")   
+#plt.savefig("tune_opt_scatter_"+var+"_GM_diff.pdf")   
 plt.show()
 
 
