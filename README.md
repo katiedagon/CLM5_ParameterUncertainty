@@ -1,4 +1,4 @@
-# CLM5 Biogeophysical Parameter Uncertainty Project
+# CLM5 Biophysical Parameter Uncertainty Project
 
 This repository provides code to run a CLM5 perturbed parameter ensemble to investigate parameter uncertainty using neural networks.
 
@@ -44,28 +44,29 @@ There is also a script for running an [ILAMB](https://www.ilamb.org/) compatible
 
 * `outputdata/process_outputdata.ncl` and associated scripts process CLM output for training the neural network
 * `obs/process_obs.ncl` and associated scripts process the observational data  
-* The `SVD` folder includes scripts to perform a singular value decomposition on model output and observations  
+
+The `SVD` folder includes scripts to perform a singular value decomposition on model output and observations.  
 
 ## Machine Learning Files
 
 The `NN` folder includes scripts used to construct, train, and optimize the neural networks.
 
 * `NN_multi-dim.py`: Test out multidimensional output for the neural network.
-* `NN_tune.py`: Hyperparameter tuning (e.g., learning rate, batch size).
+* `NN_tune_*.py`: Hyperparameter tuning (e.g., learning rate, batch size).
 * `NN_test.py`: Test out different NN configurations (# of layers, # of nodes).
 * `NN_resample.py`: Use resampling of the training data to better refine candidate NN models.
-* `NN_finalize.py`: Finalize best NN model (single and multidimensional versions).
+* `NN_finalize*.py`: Finalize best NN model (single and multidimensional versions).
 * `NN_finalize_plot.ipynb`: Finalize and plot NN emulators. 
 * `NN_interp.py`: Interpret the NN results.
 * `NN_interp_plot.ipynb`: Interpret and plot the NN results.
-* `NN_opt.py`: Optimize the emulator predictions (weighted and unweighted versions).
+* `NN_opt*.py`: Optimize the emulator predictions (weighted and unweighted versions).
 
 ## Supplemental Files
 
-* `LHC_invert.py` inverts the existing parameter array (parameters.npy) back to the original LHC random sampling and writes out these values (lhc.npy)
-* `LHC_visualize.ipynb` visualizes the LHC-generated input values 
-* `simple_model.py` tests simpler models between LHC values and CLM output (e.g., correlation coefficients, scatterplots, multi-linear regression)
-* `time_test.py` calculates compute time for emulation
+* `LHC_invert.py`: Invert the existing parameter array (parameters.npy) back to the original LHC random sampling and write out these values (lhc.npy).
+* `LHC_visualize.ipynb`: Visualize the LHC-generated input values. 
+* `simple_model.py`: Test simpler models between LHC values and CLM output (e.g., correlation coefficients, scatterplots, multi-linear regression).
+* `time_test.py`: Calculate compute time for emulation.
 
 ## Parameter Sensitivity
 
