@@ -7,7 +7,9 @@ outputdata/figures/
 .ipynb_checkpoints/
 outputdata/*.nc
 outputdata/*.csv
+outputdata/*.npy
 obs/*.nc
+obs/*.npy
 MCMC/
 manuscript_figures/
 DASH*
