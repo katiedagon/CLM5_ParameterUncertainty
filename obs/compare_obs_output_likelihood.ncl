@@ -1,5 +1,7 @@
 ; ***********************************************
 ; compare_obs_output_likelihood.ncl
+;
+; Compare obs with model output using likelihood function
 ; ***********************************************
 ;************************************************
 begin

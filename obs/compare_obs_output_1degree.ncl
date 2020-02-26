@@ -1,5 +1,7 @@
 ; ***********************************************
 ; compare_obs_output_1degree.ncl
+; 
+; Compare obs with output from 1 degree CLM simulations
 ; ***********************************************
 ;************************************************
 begin

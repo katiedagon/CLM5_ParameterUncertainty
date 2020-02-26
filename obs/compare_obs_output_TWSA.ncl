@@ -1,5 +1,7 @@
 ; ***********************************************
 ; compare_obs_output_TWSA.ncl
+;
+; Compare obs with CLM output for total water storage anomaly
 ; ***********************************************
 ;************************************************
 begin

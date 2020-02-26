@@ -1,5 +1,8 @@
 ; ***********************************************
 ; mean_bias_maps.ncl
+;
+; Calculate and plot mean bias maps
+; Compare obs with optimized and default CLM
 ; ***********************************************
 ;************************************************
 begin

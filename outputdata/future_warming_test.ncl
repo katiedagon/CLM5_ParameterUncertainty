@@ -1,5 +1,7 @@
 ; ***********************************************
 ; future_warming_test.ncl
+;
+; Test effectiveness of idealized future warming perturbation
 ; ***********************************************
 ;************************************************
 begin
