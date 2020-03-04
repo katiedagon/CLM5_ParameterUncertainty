@@ -30,14 +30,14 @@ pwd
 ##base build: UNCOMMENT THIS THE FIRST TIME YOU RUN SCRIPT
 #rm -rf codebase_$NAME
 #rm -rf /glade/scratch/$USER/codebase_$NAME
-../create_newcase --run-unsupported --compset I2000Clm50Sp  --res f45_f45 --case codebase_$NAME --project P08010000
+#../create_newcase --run-unsupported --compset I2000Clm50Sp  --res f45_f45 --case codebase_$NAME --project P08010000
 
-cd codebase_$NAME 
-pwd
-./case.setup
-qcmd -- ./case.build
+#cd codebase_$NAME 
+#pwd
+#./case.setup
+#qcmd -- ./case.build
 
-cd ..
+#cd ..
 ##
 
 ##control run: UNCOMMENT THIS THE SECOND TIME YOU RUN SCRIPT
