@@ -26,8 +26,8 @@ begin
  v_obs_amean = dim_avg_n_Wrap(v_obs,0)
 
  ; set test case name
- ;test_case = "test_paramset_SVD_v4"
- test_case = "test_paramset_SVD_v5"
+ test_case = "test_paramset_SVD_v4"
+ ;test_case = "test_paramset_SVD_v5"
 
  ; set model output
  var_model = "FPSN"
@@ -35,7 +35,8 @@ begin
  ; model unit conversion (if needed)
  u_model = (12 * (60 * 60 * 24) / 10^6) ; umolC/m2/s to gC/m2/day
 
- path_model = "/glade/scratch/kdagon/archive/"
+ path_model = "/glade/work/kdagon/CLM5_PPE/"
+ ;path_model = "/glade/scratch/kdagon/archive/"
  strs = (/path_model,test_case,"/lnd/hist/*{001[6-9],20-}*"/) 
  str_c = str_concat(strs)
  fils = systemfunc("ls "+str_c)
@@ -57,14 +58,28 @@ begin
  diff = v_model_amean - v_obs_amean
  copy_VarMeta(v_model_amean, diff)
  print(var+" CLM Test Case - Observations")
+ print("Min/Max")
  printMinMax(diff,1)
+
+ ; global means
+ landf = f[0]->landfrac
+ area = f[0]->area
+ ; wgt variable
+ arwt = area
+ arwt = area * landf
+ arwt = arwt/max(arwt)
+ arwt_m = mask(arwt,datamask_obs.eq.0,False)
+ copy_VarMeta(area,arwt_m)
+ diff_gmean = wgt_areaave2(diff, arwt_m, 0)
+ print("Mean Bias")
+ print(diff_gmean)
 
  ; plot diff
  plotA = new(2,graphic)
 
- ;wks = gsn_open_wks("x11","test")
+ wks = gsn_open_wks("x11","test")
  ;wks = gsn_open_wks("pdf","Mean_bias_maps_GPP_LHF_FSH")
- wks = gsn_open_wks("pdf","Mean_bias_maps_GPP_LHF_FSH_altopt")
+ ;wks = gsn_open_wks("pdf","Mean_bias_maps_GPP_LHF_FSH_altopt")
 
  res = True
  res@gsnDraw = False
@@ -111,7 +126,12 @@ begin
  diff_def = v_model_def_amean - v_obs_amean
  copy_VarMeta(v_model_def_amean, diff_def)
  print(var+" Default CLM - Observations")
+ print("Min/Max")
  printMinMax(diff_def,1)
+
+ diff_def_gmean = wgt_areaave2(diff_def,arwt_m,0)
+ print("Mean Bias")
+ print(diff_def_gmean)
 
  res@gsnCenterString = "Default CLM - Observations"  
 
@@ -136,7 +156,8 @@ begin
  ; set model output
  var_model = "EFLX_LH_TOT"
 
- path_model = "/glade/scratch/kdagon/archive/"
+ path_model = "/glade/work/kdagon/CLM5_PPE/"
+ ;path_model = "/glade/scratch/kdagon/archive/"
  strs = (/path_model,test_case,"/lnd/hist/*{001[6-9],20-}*"/)
  str_c = str_concat(strs)
  fils = systemfunc("ls "+str_c)
@@ -154,7 +175,14 @@ begin
  diff = v_model_amean - v_obs_amean
  copy_VarMeta(v_model_amean, diff)
  print(var+" CLM Test Case - Observations")
+ print("Min/Max")
  printMinMax(diff,1)
+
+ arwt_m = mask(arwt,datamask_obs.eq.0,False)
+ copy_VarMeta(area,arwt_m)
+ diff_gmean = wgt_areaave2(diff,arwt_m,0)
+ print("Mean Bias")
+ print(diff_gmean)
 
  ; plot diff
  plotB = new(2, graphic)
@@ -189,7 +217,12 @@ begin
  diff_def = v_model_def_amean - v_obs_amean
  copy_VarMeta(v_model_def_amean, diff_def)
  print(var+" Default CLM - Observations")
+ print("Min/Max")
  printMinMax(diff_def,1)
+
+ diff_def_gmean = wgt_areaave2(diff_def,arwt_m,0)
+ print("Mean Bias")
+ print(diff_def_gmean)
 
  ;res@gsnCenterString = "Default CLM - Observations"
 
@@ -214,7 +247,8 @@ begin
  ; set model output                                                                                                                            
  var_model = "FSH"                                                                                                                            
 
- path_model = "/glade/scratch/kdagon/archive/"                                                                                                 
+ path_model = "/glade/work/kdagon/CLM5_PPE/"
+ ;path_model = "/glade/scratch/kdagon/archive/"                                                                                                 
  strs = (/path_model,test_case,"/lnd/hist/*{001[6-9],20-}*"/)                                                                                  
  str_c = str_concat(strs)                                                                                                                      
  fils = systemfunc("ls "+str_c)                                                                                                                
@@ -232,7 +266,14 @@ begin
  diff = v_model_amean - v_obs_amean                                                                                                            
  copy_VarMeta(v_model_amean, diff)                                                                                                             
  print(var+" CLM Test Case - Observations")                                                                                                    
+ print("Min/Max")
  printMinMax(diff,1)                                                                                                                           
+
+ arwt_m = mask(arwt,datamask_obs.eq.0,False)
+ copy_VarMeta(area,arwt_m)
+ diff_gmean = wgt_areaave2(diff,arwt_m,0)
+ print("Mean Bias")
+ print(diff_gmean)
 
  ; plot diff
  plotC = new(2, graphic)
@@ -266,7 +307,12 @@ begin
  diff_def = v_model_def_amean - v_obs_amean                                                                                                    
  copy_VarMeta(v_model_def_amean, diff_def)                                                                                                     
  print(var+" Default CLM - Observations")
+ print("Min/Max")
  printMinMax(diff_def,1)                                                                                                                       
+
+ diff_def_gmean = wgt_areaave2(diff_def,arwt_m,0)
+ print("Mean Bias")                                                                                                                           
+ print(diff_def_gmean)
                                                                                                                                                
  ;res@gsnCenterString = "Default CLM - Observations"                                                                                            
 

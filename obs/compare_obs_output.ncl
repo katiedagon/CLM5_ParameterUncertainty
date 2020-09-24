@@ -12,8 +12,8 @@ begin
  path = "~/CLM5_ParameterUncertainty/obs/"
 
  ; set variable(s) of interest
- ;var = "GPP"
- var = "LHF"
+ var = "GPP"
+ ;var = "LHF"
  ;var = "FSH"
 
  ; set years
@@ -71,21 +71,21 @@ begin
  ;PPE_mem = "92"
 
  ; set model output
- ;var_model = "FPSN"
- var_model = "EFLX_LH_TOT"
+ var_model = "FPSN"
+ ;var_model = "EFLX_LH_TOT"
  ;var_model = "FSH"
 
  ; model unit conversion
  ;u_model = (12 * (60 * 60 * 24 * 365) / 10^6)  ; umol/m2/s to gC/m2/yr 
- ;u_model = (12 * (60 * 60 * 24) / 10^6) ; umolC/m2/s to gC/m2/day
- u_model = 1
+ u_model = (12 * (60 * 60 * 24) / 10^6) ; umolC/m2/s to gC/m2/day
+ ;u_model = 1
 
  path_model = "/glade/work/kdagon/CLM5_PPE/"
  ;strs = (/path_model,"test_paramset_",pset,"/lnd/hist/*{001[6-9],20-}*"/)
  strs = (/path_model,test_case,"/lnd/hist/*{001[6-9],20-}*"/) 
  ;strs = (/path_model,"hydro_ensemble_LHC_",PPE_mem,"/lnd/hist/*{001[6-9],20-}*"/)
  str_c = str_concat(strs)
- print(str_c)
+ ;print(str_c)
  fils = systemfunc("ls "+str_c)
  f = addfiles(fils,"r")
  v_model = f[:]->$var_model$
@@ -165,16 +165,16 @@ begin
  ; compare obs / model
  diff = v_model_amean - v_obs_amean
  copy_VarMeta(v_model_amean, diff)
- print("Test Case - Observations")
- printMinMax(diff,1)
+ ;print("Test Case - Observations")
+ ;printMinMax(diff,1)
 
  ; RMSE
  ;rmse = sqrt(dim_avg_n_Wrap((v_model_c - v_obs_c)^2,0))
- rmse = sqrt((v_model_amean - v_obs_amean)^2)
+ ;rmse = sqrt((v_model_amean - v_obs_amean)^2)
  ;printVarSummary(rmse)
- copy_VarMeta(v_model_amean,rmse)
- print("Test Case - Obs RMSE:")
- printMinMax(rmse,0)
+ ;copy_VarMeta(v_model_amean,rmse)
+ ;print("Test Case - Obs RMSE:")
+ ;printMinMax(rmse,0)
 
  ; perdiff
  ;v_obs_amean_mask = mask(v_obs_amean,v_obs_amean.eq.0,False)
@@ -308,16 +308,16 @@ begin
 
  diff_def = v_model_def_amean - v_obs_amean
  copy_VarMeta(v_model_def_amean, diff_def)
- print("Default - Observations")
- printMinMax(diff_def,1)
+ ;print("Default - Observations")
+ ;printMinMax(diff_def,1)
 
  ;rmse_def = dim_rmsd_n_Wrap(v_model_default_c, v_obs_c, 0)
  ;rmse_def = dim_rmsd_Wrap(v_model_def_amean, v_obs_amean)
- rmse_def = sqrt((v_model_def_amean - v_obs_amean)^2)
+ ;rmse_def = sqrt((v_model_def_amean - v_obs_amean)^2)
  ;printVarSummary(rmse_def)
- copy_VarMeta(v_model_def_amean,rmse_def)
- print("Default / Obs RMSE:")
- printMinMax(rmse_def,0)
+ ;copy_VarMeta(v_model_def_amean,rmse_def)
+ ;print("Default / Obs RMSE:")
+ ;printMinMax(rmse_def,0)
 
  ;perdiff_def = 100*diff_def/v_obs_amean_mask
  ;copy_VarMeta(diff_def,perdiff_def)
@@ -364,7 +364,7 @@ begin
  v_obs_clim = clmMonTLL(v_obs_c)
  ;v_obs_time = v_obs_clim(:,{latp},{lonp})
  v_obs_time = wgt_areaave2(v_obs_clim(:,{latmin:latmax},{lonmin:lonmax}),arwt_m({latmin:latmax},{lonmin:lonmax}),0)
- printVarSummary(v_obs_clim(:,{latmin:latmax},{lonmin:lonmax}))
+ ;printVarSummary(v_obs_clim(:,{latmin:latmax},{lonmin:lonmax}))
  v_model_def_clim = clmMonTLL(v_model_default_c)
  ;v_model_def_time = v_model_def_clim(:,{latp},{lonp}) 
  v_model_def_time = wgt_areaave2(v_model_def_clim(:,{latmin:latmax},{lonmin:lonmax}),arwt_m({latmin:latmax},{lonmin:lonmax}),0)
@@ -373,6 +373,14 @@ begin
  v_model_time = wgt_areaave2(v_model_clim(:,{latmin:latmax},{lonmin:lonmax}),arwt_m({latmin:latmax},{lonmin:lonmax}),0)
  ;v_model2_clim = clmMonTLL(v_model2)
  ;v_model2_time = v_model2_clim(:,{latp},{lonp})
+
+ ; regional mean diffs
+ v_diff_rmean = dim_avg_n_Wrap(v_model_time - v_obs_time,0)
+ print("Regional Mean Diff, Opt-Obs")
+ print(v_diff_rmean)
+ v_diff_rmean = dim_avg_n_Wrap(v_model_def_time - v_obs_time,0)
+ print("Regional Mean Diff, Def-Obs")
+ print(v_diff_rmean)
 
  dims = dimsizes(v_model_def_time)
  ;data = new((/4,dims(0)/),float)
@@ -383,14 +391,14 @@ begin
  ;data(3,:) = v_model_def_time
  data(2,:) = v_model_def_time
 
- ;wks2 = gsn_open_wks("x11","test")
+ wks2 = gsn_open_wks("x11","test")
  ;wks2 = gsn_open_wks("pdf","model-compare-obs_seasonal-cycle_GPP_pt")
  ;wks2 = gsn_open_wks("pdf","model-compare-obs_seasonal-cycle_GPP_pt_006") 
  ;wks2 = gsn_open_wks("pdf","model-compare-obs_seasonal-cycle_GPP_pt_006_005")
  ;wks2 = gsn_open_wks("pdf","model-compare-obs_seasonal-cycle_GPP_pt_002_006")
  ;wks2 = gsn_open_wks("pdf","model-compare-obs_seasonal-cycle_GPP_pt_SVD001_002")
  ;wks2 = gsn_open_wks("pdf","model-compare-obs_seasonal-cycle_GPP_pt_LHC84_SVD004")
- wks2 = gsn_open_wks("pdf",var+"_month_climo_"+test_case+"_obs_default_clean")
+ ;wks2 = gsn_open_wks("pdf",var+"_month_climo_"+test_case+"_obs_default_clean")
 
  ;plot2 = new(2, graphic)
  plot2 = new(4, graphic)
@@ -408,8 +416,8 @@ begin
  res2@xyLineThicknessF = 5.0
 
  ;res2@tiYAxisString = "GPP (~F33~m~F21~mol m~S~-2~N~s~S~-1~N~)"
- ;res2@tiYAxisString = "GPP (gC m~S~-2~N~ day~S~-1~N~)"
- res2@tiYAxisString = "LHF (W m~S~-2~N~)"
+ res2@tiYAxisString = "GPP (gC m~S~-2~N~ day~S~-1~N~)"
+ ;res2@tiYAxisString = "LHF (W m~S~-2~N~)"
  ;res2@tiYAxisString = "SH (W m~S~-2~N~)" 
  ;res2@tiXAxisString = "Months"
  res2@tiMainString = "Amazon (0-10S, 70-50W)" 
@@ -419,11 +427,11 @@ begin
  res2@pmLegendDisplayMode    = "Always"
  res2@pmLegendSide           = "Top"               ; Change location of 
  ; GPP
- ;res2@pmLegendParallelPosF   = 0.3                  ; move units right
- ;res2@pmLegendOrthogonalPosF = -1.1
+ res2@pmLegendParallelPosF   = 0.3                  ; move units right
+ res2@pmLegendOrthogonalPosF = -1.1
  ; LHF
- res2@pmLegendParallelPosF   = 0.3
- res2@pmLegendOrthogonalPosF = -0.4                ; move units down
+ ;res2@pmLegendParallelPosF   = 0.3
+ ;res2@pmLegendOrthogonalPosF = -0.4                ; move units down
  res2@pmLegendWidthF         = 0.1                ; Change width and
  res2@pmLegendHeightF        = 0.15                ; height of legend.
  res2@lgPerimOn              = False               ; turn off box around
@@ -457,9 +465,15 @@ begin
  ;v_model_time = v_model_clim(:,{latp},{lonp})
  ;v_model2_time = v_model2_clim(:,{latp},{lonp})
  v_obs_time = wgt_areaave2(v_obs_clim(:,{latmin:latmax},{lonmin:lonmax}),arwt_m({latmin:latmax},{lonmin:lonmax}),0)                           
- printVarSummary(v_obs_clim(:,{latmin:latmax},{lonmin:lonmax}))                                                                               
+ ;printVarSummary(v_obs_clim(:,{latmin:latmax},{lonmin:lonmax}))                                                                               
  v_model_def_time = wgt_areaave2(v_model_def_clim(:,{latmin:latmax},{lonmin:lonmax}),arwt_m({latmin:latmax},{lonmin:lonmax}),0)               
  v_model_time = wgt_areaave2(v_model_clim(:,{latmin:latmax},{lonmin:lonmax}),arwt_m({latmin:latmax},{lonmin:lonmax}),0) 
+ v_diff_rmean = dim_avg_n_Wrap(v_model_time - v_obs_time,0)
+ print("Regional Mean Diff, Opt-Obs")
+ print(v_diff_rmean)
+ v_diff_rmean = dim_avg_n_Wrap(v_model_def_time - v_obs_time,0)
+ print("Regional Mean Diff, Def-Obs")
+ print(v_diff_rmean)
  data(0,:) = v_obs_time                                                                                                                        
  data(1,:) = v_model_time
  ;data(2,:) = v_model2_time
@@ -483,16 +497,22 @@ begin
  ;v_model_def_time = v_model_def_clim(:,{latp},{lonp})
  ;v_model_time = v_model_clim(:,{latp},{lonp})
  v_obs_time = wgt_areaave2(v_obs_clim(:,{latmin:latmax},{lonmin:lonmax}),arwt_m({latmin:latmax},{lonmin:lonmax}),0)
- printVarSummary(v_obs_clim(:,{latmin:latmax},{lonmin:lonmax}))
+ ;printVarSummary(v_obs_clim(:,{latmin:latmax},{lonmin:lonmax}))
  v_model_def_time = wgt_areaave2(v_model_def_clim(:,{latmin:latmax},{lonmin:lonmax}),arwt_m({latmin:latmax},{lonmin:lonmax}),0)
  v_model_time = wgt_areaave2(v_model_clim(:,{latmin:latmax},{lonmin:lonmax}),arwt_m({latmin:latmax},{lonmin:lonmax}),0)
+ v_diff_rmean = dim_avg_n_Wrap(v_model_time - v_obs_time,0)
+ print("Regional Mean Diff, Opt-Obs")
+ print(v_diff_rmean)
+ v_diff_rmean = dim_avg_n_Wrap(v_model_def_time - v_obs_time,0)
+ print("Regional Mean Diff, Def-Obs")
+ print(v_diff_rmean)
  data(0,:) = v_obs_time
  data(1,:) = v_model_time
  data(2,:) = v_model_def_time
  res2@tiMainString = "Eastern US (35-45N, 100-80W)"
  res2@tiXAxisString = "Months"
- ;res2@tiYAxisString = "GPP (gC m~S~-2~N~ day~S~-1~N~)"
- res2@tiYAxisString = "LHF (W m~S~-2~N~)"
+ res2@tiYAxisString = "GPP (gC m~S~-2~N~ day~S~-1~N~)"
+ ;res2@tiYAxisString = "LHF (W m~S~-2~N~)"
  ;res2@tiYAxisString = "SH (W m~S~-2~N~)"  
  plot2(2) = gsn_csm_xy(wks2,months,data,res2)
 
@@ -508,9 +528,15 @@ begin
  lonmin = 90
  lonmax = 110
  v_obs_time = wgt_areaave2(v_obs_clim(:,{latmin:latmax},{lonmin:lonmax}),arwt_m({latmin:latmax},{lonmin:lonmax}),0)
- printVarSummary(v_obs_clim(:,{latmin:latmax},{lonmin:lonmax}))
+ ;printVarSummary(v_obs_clim(:,{latmin:latmax},{lonmin:lonmax}))
  v_model_def_time = wgt_areaave2(v_model_def_clim(:,{latmin:latmax},{lonmin:lonmax}),arwt_m({latmin:latmax},{lonmin:lonmax}),0)
  v_model_time = wgt_areaave2(v_model_clim(:,{latmin:latmax},{lonmin:lonmax}),arwt_m({latmin:latmax},{lonmin:lonmax}),0)
+ v_diff_rmean = dim_avg_n_Wrap(v_model_time - v_obs_time,0)
+ print("Regional Mean Diff, Opt-Obs")
+ print(v_diff_rmean)
+ v_diff_rmean = dim_avg_n_Wrap(v_model_def_time - v_obs_time,0)
+ print("Regional Mean Diff, Def-Obs")
+ print(v_diff_rmean)
  data(0,:) = v_obs_time
  data(1,:) = v_model_time
  data(2,:) = v_model_def_time
