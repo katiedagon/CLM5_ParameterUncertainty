@@ -9,7 +9,8 @@ begin
 ; read in data
 ;************************************************
  ; set param set number
- pset = "v4"
+ ;pset = "v4"
+ pset = "v5"
 
  ; set model path
  path = "/glade/scratch/kdagon/archive/"
@@ -135,9 +136,11 @@ begin
  ;ncdf = addfile("CLM_default_LHF_forSVD_WECANNmask.nc","c")
 
  ;ncdf = addfile("test_paramset_GPP_forSVD.nc", "c")
- ncdf = addfile("test_paramset_LHF_forSVD.nc", "c")
+ ;ncdf = addfile("test_paramset_LHF_forSVD.nc", "c")
  ;ncdf = addfile("test_paramset_LHF_SVD_001_forSVD.nc", "c")
  ;ncdf = addfile("test_paramset_SVD_006_LHF_forSVD.nc", "c")
+ ;ncdf = addfile("test_paramset_v5_GPP_forSVD.nc", "c")
+ ncdf = addfile("test_paramset_v5_LHF_forSVD.nc", "c") 
 
  ;ncdf->GPP = v_anom 
  ncdf->LHF = v_anom

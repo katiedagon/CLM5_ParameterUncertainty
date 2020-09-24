@@ -28,7 +28,8 @@ pwd
 #export EXPTNAME=${NAME}_$i
 #export EXPTNAME=${NAME}_${i}_hybrid
 #export EXPTNAME="${NAME}_default_params"
-export EXPTNAME="test_paramset_SVD_v4"
+#export EXPTNAME="test_paramset_SVD_v4"
+export EXPTNAME="test_paramset_SVD_v5"
 echo $EXPTNAME
 
 # Remove existing output
@@ -60,7 +61,7 @@ cd $EXPTNAME
 ./xmlchange STOP_OPTION=nyears
 
 ./xmlchange BUILD_COMPLETE="TRUE"
-./xmlchange EXEROOT="/glade/scratch/$USER/codebase_$NAME/bld"
+./xmlchange EXEROOT="/glade/work/kdagon/CLM5_PPE/codebase_$NAME/bld/"
 
 ./xmlchange DATM_CLMNCEP_YR_START=2000
 ./xmlchange DATM_CLMNCEP_YR_END=2004
@@ -70,7 +71,7 @@ cd $EXPTNAME
 
 # Generate param files for PFT-dependent params - do this ahead (for now)
 # Set params file
-pftfile="/glade/u/home/$USER/pft_files/hydro_ensemble_LHC/${EXPTNAME}.nc"
+pftfile="/glade/u/home/$USER/pft_files/${NAME}/${EXPTNAME}.nc"
 
 # Make changes to netcdf file through ncl script pft_var_2.ncl
 
@@ -80,7 +81,7 @@ echo  $uclm >> user_nl_clm
 
 # If not PFT-dependent, edit the namelist appropriately
 echo "fff=0.02" >> user_nl_clm
-echo "dint=1.0" >> user_nl_clm
+echo "dint=0.86" >> user_nl_clm
 echo "baseflow_scalar=0.0005" >> user_nl_clm
 
 ./case.submit

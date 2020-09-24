@@ -16,15 +16,15 @@ begin
  path = "/glade/scratch/kdagon/archive/"
 
  ; set variable(s) of interest
- ;var = "FPSN"
+ var = "FPSN"
  ;var = "TSA"
  ;var = "QFLX_EVAP_TOT"
  ;var = "EFLX_LH_TOT"
- var = "FSH"
+ ;var = "FSH"
 
  ; unit conversion (if needed)
- u = 1
- ;u = (12 * (60 * 60 * 24 * 365) / 10^6) * 10^-15 ; umolC/m2/s to PgC/m2/yr
+ ;u = 1
+ u = (12 * (60 * 60 * 24 * 365) / 10^6) * 10^-15 ; umolC/m2/s to PgC/m2/yr
  ;u = (12 * (60 * 60 * 24 * 365) / 10^6)  ; umol/m2/s to gC/m2/yr
 
  ; gauss weights for global mean
@@ -62,9 +62,9 @@ begin
  ;printMinMax(arwt,1)
 
  ; get obs datamask
- ;f_obs = addfile("../obs/MR_GPP_4x5_2000_2004.nc","r")
+ f_obs = addfile("../obs/MR_GPP_4x5_2000_2004.nc","r")
  ;f_obs = addfile("../obs/MR_LHF_4x5_2000_2004.nc","r")
- f_obs = addfile("../obs/GBAF_SH_4x5_2000_2004.nc","r")
+ ;f_obs = addfile("../obs/GBAF_SH_4x5_2000_2004.nc","r")
  datamask_obs = f_obs->datamask
 
  ; establish output array
@@ -109,8 +109,9 @@ begin
  end do
 
  ;print(out)
+ out@units = "Pg/m^2/yr"
  ;out@units = "g/m^2/yr"
- out@units = "W/m^2"
+ ;out@units = "W/m^2"
  printVarSummary(out)
 ;************************************************
 ; write output file
@@ -128,7 +129,7 @@ begin
  ;ncdf->GPP = out
  ;ncdf = addfile("outputdata_LHF_GM_100_diff.nc", "c")
  ;ncdf->LHF = out 
- ncdf = addfile("outputdata_FSH_GM_100_diff.nc", "c")
- ncdf->FSH = out
+ ;ncdf = addfile("outputdata_FSH_GM_100_diff.nc", "c")
+ ;ncdf->FSH = out
 
 end

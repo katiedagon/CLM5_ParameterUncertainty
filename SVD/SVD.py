@@ -21,7 +21,7 @@ import numpy.ma as ma
 landfrac_mask = ma.masked_where(landfrac > 1e34, landfrac) # sufficiently large to mask FillValues (~1e36)
 
 # Read netcdf file (pre-processed in NCL)
-f = nc.netcdf_file("outputdata/outputdata_"+var+"_forSVD_100.nc",'r',mmap=False)
+f = nc.netcdf_file("../outputdata/outputdata_"+var+"_forSVD_100.nc",'r',mmap=False)
 #f = nc.netcdf_file("outputdata/outputdata_"+var+"_forSVD_100_v2.nc",'r',mmap=False)
 #f = nc.netcdf_file("outputdata/outputdata_"+var+"_forSVD_100_fc.nc",'r',mmap=False)
 #f = nc.netcdf_file("outputdata/outputdata_"+var+"_forSVD_100_diff.nc",'r',mmap=False)
@@ -103,13 +103,13 @@ print(np.allclose(dr, np.dot(U, np.dot(smat, Vh))))
 #print(drm[:,0]-np.dot(U*s, Vh)[:,0])
 
 # Plot first mode of model U-vector (distribution)
-plt.hist(U[:,0], bins=20)
-plt.xlabel('Mode 1 of '+var+' SVD (U-vector)')
-plt.ylabel('Counts')
+#plt.hist(U[:,0], bins=20)
+#plt.xlabel('Mode 1 of '+var+' SVD (U-vector)')
+#plt.ylabel('Counts')
 #plt.savefig("dist_outputdata_GPP_SVD_mode1.pdf")
 #plt.savefig("dist_outputdata_LHF_SVD_mode1.pdf")
 #plt.savefig("dist_outputdata_diff_"+var+"_SVD_mode1.pdf")
-plt.show()
+#plt.show()
 
 # Save out first n modes from SVD
 # Note: cannot save masked array to file (this way)
@@ -131,7 +131,7 @@ plt.show()
 
 # Read netcdf file (pre-processed in NCL)
 # anomalies from ensemble mean where ensemble does not include obs (n=100)
-fo = nc.netcdf_file("obs/obs_"+var+"_4x5_anom_forSVD.nc",'r',mmap=False)
+fo = nc.netcdf_file("../obs/obs_"+var+"_4x5_anom_forSVD.nc",'r',mmap=False)
 #fo = nc.netcdf_file("obs/WECANN_"+var+"_4x5_anom_forSVD.nc",'r',mmap=False)
 
 # Read variable data
@@ -183,27 +183,29 @@ U_obs = np.dot(dom,pinv(np.dot(smat,Vh)))
 # Print out U_obs for first mode
 #print(U_obs[:,0])
 # First 3 modes
-print(U_obs[:3])
+#print(U_obs[:3])
 
 # Save out first n modes of U_obs
 #np.save("obs/obs_"+var+"_SVD_3modes", U_obs[:,0:3])
 #np.save("obs/WECANN_"+var+"_SVD_3modes", U_obs[:,0:3]) 
 
 # Plot first mode of model U-vector (distribution) with U_obs (vertical line)
-plt.hist(U[:,0], bins=20)
-plt.xlabel('Mode 1 of '+var+' SVD (U-vector)')
-plt.ylabel('Counts')
-plt.axvline(x=U_obs[0], color='r', linestyle='dashed', linewidth=2)
+#plt.hist(U[:,0], bins=20)
+#plt.xlabel('Mode 1 of '+var+' SVD (U-vector)')
+#plt.ylabel('Counts')
+#plt.axvline(x=U_obs[0], color='r', linestyle='dashed', linewidth=2)
 #plt.savefig("dist_outputdata_"+var+"_SVD_mode1_withobs.pdf")
 #plt.savefig("dist_outputdata_"+var+"_SVD_mode1_withWECANN.pdf")
-plt.show()
+#plt.show()
 
 # Project test paramset into SVD space
+testset = "v5"
+
 #ft = nc.netcdf_file("outputdata/test_paramset_SVD_006_GPP_forSVD.nc",'r',mmap=False)
 #ft = nc.netcdf_file("outputdata/test_paramset_SVD_006_LHF_forSVD.nc",'r',mmap=False)
 #ft = nc.netcdf_file("outputdata/test_paramset_LHF_SVD_001_forSVD.nc",'r',mmap=False)
-ft = nc.netcdf_file("outputdata/test_paramset_"+var+"_forSVD.nc",'r',mmap=False)
-#ft = nc.netcdf_file("outputdata/test_paramset_LHF_forSVD.nc",'r',mmap=False)
+#ft = nc.netcdf_file("outputdata/test_paramset_"+var+"_forSVD.nc",'r',mmap=False)
+ft = nc.netcdf_file("../outputdata/test_paramset_"+testset+"_"+var+"_forSVD.nc",'r',mmap=False)
 
 Xt = ft.variables[var]
 maskt = ft.variables['datamask']
@@ -216,7 +218,7 @@ dtm = dt[i,j]
 #print(drtm.shape)
 #drtm[drtm==1.e+36] = 0
 U_test = np.dot(dtm,pinv(np.dot(smat,Vh)))
-print(U_test[:3])
+print("Simulated "+var+" modes = ",U_test[:3])
 # Calculate likelihood based on these results
 #sd = np.load(file="obs/obs_"+var+"_SVD_3modes_allyrs_sd.npy")
 #L = np.sum(var_modes*((U_test[:3]-U_obs[:3])/sd)**2)
@@ -227,15 +229,15 @@ print(U_test[:3])
 #print(L)
 
 # Plot distribution with U_obs and U_test
-plt.hist(U[:,0], bins=20)
-plt.xlabel('Mode 1 of GPP SVD (U-vector)')
-plt.ylabel('Counts')
-plt.axvline(x=U_obs[0], color='r', linestyle='dashed', linewidth=2)
-plt.axvline(x=U_test[0], color='b', linestyle='dashed', linewidth=2)
-plt.show()
+#plt.hist(U[:,0], bins=20)
+#plt.xlabel('Mode 1 of GPP SVD (U-vector)')
+#plt.ylabel('Counts')
+#plt.axvline(x=U_obs[0], color='r', linestyle='dashed', linewidth=2)
+#plt.axvline(x=U_test[0], color='b', linestyle='dashed', linewidth=2)
+#plt.show()
 
 # Project model with default params into SVD space
-fd= nc.netcdf_file("outputdata/CLM_default_"+var+"_forSVD.nc",'r',mmap=False)
+fd= nc.netcdf_file("../outputdata/CLM_default_"+var+"_forSVD.nc",'r',mmap=False)
 #fd=nc.netcdf_file("outputdata/CLM_default_"+var+"_forSVD_WECANNmask.nc",'r',mmap=False)
 Xd = fd.variables[var]
 maskd = fd.variables['datamask']
@@ -251,7 +253,7 @@ ddm = dd[i,j]
 # if FillValues persist...
 #drdm[drdm==1.e+36] = 0
 U_default = np.dot(ddm,pinv(np.dot(smat,Vh)))
-print(U_default[:3])
+#print(U_default[:3])
 
 # Save out first n modes of U_default
 #np.save("outputdata/modeldefault_GPP_SVD_3modes", U_default[:,0:3])

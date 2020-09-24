@@ -10,7 +10,7 @@ begin
 ; GPP
 ;************************************************
  ; set obs path
- path = "~/CLM5hydro_LHC/obs/"
+ path = "~/CLM5_ParameterUncertainty/obs/"
 
  ; set variable(s) of interest
  var = "GPP"
@@ -26,7 +26,8 @@ begin
  v_obs_amean = dim_avg_n_Wrap(v_obs,0)
 
  ; set test case name
- test_case = "test_paramset_SVD_v4"
+ ;test_case = "test_paramset_SVD_v4"
+ test_case = "test_paramset_SVD_v5"
 
  ; set model output
  var_model = "FPSN"
@@ -62,7 +63,8 @@ begin
  plotA = new(2,graphic)
 
  ;wks = gsn_open_wks("x11","test")
- wks = gsn_open_wks("pdf","Mean_bias_maps_GPP_LHF_FSH")
+ ;wks = gsn_open_wks("pdf","Mean_bias_maps_GPP_LHF_FSH")
+ wks = gsn_open_wks("pdf","Mean_bias_maps_GPP_LHF_FSH_altopt")
 
  res = True
  res@gsnDraw = False
@@ -94,7 +96,8 @@ begin
  plotA(0) = gsn_csm_contour_map(wks,diff,res)
 
  ; compare obs / model default
- strs_def = (/path_model,"hydro_ensemble_LHC_default_params/lnd/hist/*{001[6-9],20-}*"/)
+ ;strs_def = (/path_model,"hydro_ensemble_LHC_default_params/lnd/hist/*{001[6-9],20-}*"/)
+ strs_def = (/"/glade/work/kdagon/CLM5_PPE/hydro_ensemble_LHC_default_params/lnd/hist/*{001[6-9],20-}*"/)
  str_c = str_concat(strs_def)
  fils = systemfunc("ls "+str_c)
  f = addfiles(fils,"r")
@@ -173,7 +176,8 @@ begin
  plotB(0) = gsn_csm_contour_map(wks,diff,res)
 
  ; compare obs / model default
- strs_def = (/path_model,"hydro_ensemble_LHC_default_params/lnd/hist/*{001[6-9],20-}*"/)
+ ;strs_def = (/path_model,"hydro_ensemble_LHC_default_params/lnd/hist/*{001[6-9],20-}*"/)
+ strs_def = (/"/glade/work/kdagon/CLM5_PPE/hydro_ensemble_LHC_default_params/lnd/hist/*{001[6-9],20-}*"/)
  str_c = str_concat(strs_def)
  fils = systemfunc("ls "+str_c)
  f = addfiles(fils,"r")
@@ -249,7 +253,8 @@ begin
  plotC(0) = gsn_csm_contour_map(wks,diff,res)
 
  ; compare obs / model default                                                                                                                 
- strs_def = (/path_model,"hydro_ensemble_LHC_default_params/lnd/hist/*{001[6-9],20-}*"/)                                                       
+ ;strs_def = (/path_model,"hydro_ensemble_LHC_default_params/lnd/hist/*{001[6-9],20-}*"/)                                                       
+ strs_def = (/"/glade/work/kdagon/CLM5_PPE/hydro_ensemble_LHC_default_params/lnd/hist/*{001[6-9],20-}*"/)
  str_c = str_concat(strs_def)                                                                                                                  
  fils = systemfunc("ls "+str_c)                                                                                                                
  f = addfiles(fils,"r")                                                                                                                        

@@ -8,7 +8,7 @@ begin
 ; read in obs data
 ;************************************************
  ; set obs path
- path = "~/CLM5hydro_LHC/obs/"
+ path = "~/CLM5_ParameterUncertainty/obs/"
 
  ; set variable(s) of interest
  ;var = "GPP"
@@ -28,11 +28,11 @@ begin
  ; get obs file
  ; FLUXNET
  ;filename = "MR_GPP_4x5_2000_2004.nc"
- ;filename = "MR_LHF_4x5_2000_2004.nc"
+ filename = "MR_LHF_4x5_2000_2004.nc"
  ;filename = "MR_GPP_4x5.nc"
  ;filename = "MR_LHF_4x5.nc"
  ; WECANN
- filename = "WECANN_GPP_LHF_4x5_2007_2015.nc"
+ ;filename = "WECANN_GPP_LHF_4x5_2007_2015.nc"
  filepath = str_concat((/path,filename/))
  f_obs = addfile(filepath,"r")
 
@@ -45,9 +45,9 @@ begin
  grid_area_m = grid_area*10^6 ; km^2 to m^2
 
  ; get obs datamask
- ;datamask_obs = f_obs->datamask
+ datamask_obs = f_obs->datamask
  ;datamask_obs = f_obs->datamaskG
- datamask_obs = f_obs->datamaskL
+ ;datamask_obs = f_obs->datamaskL
 
  ; read in obs
  v_obs = f_obs->$var$
@@ -57,11 +57,11 @@ begin
  copy_VarMeta(v_obs,v_obs_c)
  ;printVarSummary(v_obs_c)
  ; WECANN - subset first 5 years
- v_obs_c_s = v_obs_c(:59,:,:)
+ ;v_obs_c_s = v_obs_c(:59,:,:)
  ;printVarSummary(v_obs_c_s)
- v_obs_am = dim_avg_n_Wrap(v_obs_c_s,0)
+ ;v_obs_am = dim_avg_n_Wrap(v_obs_c_s,0)
  ; 5-year annual mean
- ;v_obs_am = dim_avg_n_Wrap(v_obs_c,0) 
+ v_obs_am = dim_avg_n_Wrap(v_obs_c,0) 
  ; test without area weighting
  ;v_obs_am_area = v_obs_am
  ; month to annual (to preserve all years)
@@ -82,8 +82,8 @@ begin
 ;************************************************
  ;f_model = addfile("../outputdata/outputdata_GPP_forSVD_100.nc","r")
  ;f_model = addfile("../outputdata/outputdata_GPP_forSVD_100_WECANNmask.nc","r")
- ;f_model = addfile("../outputdata/outputdata_LHF_forSVD_100.nc","r")
- f_model = addfile("../outputdata/outputdata_LHF_forSVD_100_WECANNmask.nc","r")
+ f_model = addfile("../outputdata/outputdata_LHF_forSVD_100.nc","r")
+ ;f_model = addfile("../outputdata/outputdata_LHF_forSVD_100_WECANNmask.nc","r")
  O = f_model->O
  ;printVarSummary(O)
  
@@ -178,7 +178,8 @@ begin
  ;ncdf = addfile("obs_GPP_4x5_anom_forSVD_allyrs.nc", "c")
  ;ncdf = addfile("obs_LHF_4x5_anom_forSVD_allyrs.nc", "c")
  ;ncdf = addfile("WECANN_GPP_4x5_anom_forSVD.nc", "c")
- ncdf = addfile("WECANN_LHF_4x5_anom_forSVD.nc", "c")
+ ;ncdf = addfile("WECANN_LHF_4x5_anom_forSVD.nc", "c")
+ ncdf = addfile("obs_LHF_4x5_anom_forSVD_TW.nc", "c") ; sanity check LHF units
 
  ; define time as an unlimited dimension (optional?)
  ;filedimdef(ncdf,"time",-1,True) 

@@ -9,21 +9,27 @@ begin
 ;************************************************
  ;fils = systemfunc("ls /glade/scratch/kdagon/archive/hydro_ensemble_LHC_default_params/lnd/hist/*.nc")
  ;fils = systemfunc("ls /glade/scratch/kdagon/archive/test_streams/lnd/hist/*.nc")
- fils = systemfunc("ls /glade/scratch/kdagon/archive/future_climate_LHC_1/lnd/hist/*.nc")
- q    = addfiles(fils,"r")
+ ;fils = systemfunc("ls /glade/scratch/kdagon/archive/future_climate_LHC_1/lnd/hist/*.nc")
+ ;q    = addfiles(fils,"r")
  
+ q = addfile("/glade/work/kdagon/CLM5_PS/CLM_control.nc", "r") 
+
  ; read in all the files and join the timeseries together
 
  ;TSOI_10cm      = q[:]->TSOI_10CM
  ;printVarSummary(TSOI_10cm)
  ;H2OSOI_10cm    = q[:]->SOILWATER_10CM
- TSOI     	= q[:]->TSOI ; 4D variable (time x lev x lat x lon)
+ ;TSOI     	= q[:]->TSOI ; 4D variable (time x lev x lat x lon)
+ TSOI          = q->TSOI
  ;printVarSummary(TSOI)
- H2OSOI		= q[:]->H2OSOI ; 4D variable (time x lev x lat x lon)
- ;printVarSummary(H2OSOI)
+ ;H2OSOI		= q[:]->H2OSOI ; 4D variable (time x lev x lat x lon)
+ H2OSOI                = q->H2OSOI
+ printVarSummary(H2OSOI)
 
- SOILLIQ = q[:]->SOILLIQ 
- SOILICE = q[:]->SOILICE
+ ;SOILLIQ = q[:]->SOILLIQ 
+ SOILLIQ = q->SOILLIQ
+ ;SOILICE = q[:]->SOILICE
+ SOILICE = q->SOILICE
  SOILWATER = SOILLIQ
  SOILWATER = SOILLIQ+SOILICE
  SOILWATER_TOT = dim_sum_n_Wrap(SOILWATER,1)
@@ -31,7 +37,7 @@ begin
 
  TSOI_C = TSOI ; metadata
  TSOI_C = TSOI - 273 ; convert temp K->C
- TSOI_C&levgrnd = TSOI_C&levgrnd*1000 ; convert depth m->mm
+ ;TSOI_C&levgrnd = TSOI_C&levgrnd*1000 ; convert depth m->mm
 
  ;lev=10
  ;H2OSOI_active = H2OSOI(:,:lev-1,:,:)
@@ -40,10 +46,16 @@ begin
  ;printVarSummary(H2OSOI_active)
  ;H2OSOI_active&levsoi = H2OSOI_active&levsoi*1000 ; convert depth m->mm
 
+ ;lev = 12 ; about 2m
+ ;TSOI_12 = TSOI(:,lev-1,:,:)
+ ;printVarSummary(TSOI_12)
+
  ; get landfrac & area
- landf = q[0]->landfrac
+ ;landf = q[0]->landfrac
+ landf = q->landfrac
  ;printVarSummary(landf)
- area = q[0]->area
+ ;area = q[0]->area
+ area = q->area
 
  ; wgt variable
  arwt = area
@@ -53,19 +65,32 @@ begin
 
  ; global means
  TSOI_C_gm = wgt_areaave2(TSOI_C,arwt,0) 
+ TSOI_C_gm!0 = "time"
+ TSOI_C_gm&time = TSOI_C&time
  ;TSOI_C_gm&time = ispan(0,359,1) ; 30 years of monthly average data (30*12 = 360)
- ;printVarSummary(TSOI_C_gm)
+ TSOI_C_gm!1 = "lev"
+ TSOI_C_gm&lev = TSOI_C&levgrnd
+ printVarSummary(TSOI_C_gm)
  H2OSOI_active_gm = wgt_areaave2(H2OSOI,arwt,0)
+ printVarSummary(H2OSOI_active_gm)
+ H2OSOI_active_gm!0 = "time"
+ H2OSOI_active_gm&time = H2OSOI&time
  ;H2OSOI_active_gm&time = ispan(0,359,1)
+ H2OSOI_active_gm!1 = "lev"
+ ;H2OSOI_active_gm&lev = H2OSOI!1
  ;printVarSummary(H2OSOI_active_gm)
+ ;TSOI_12_gm = wgt_areaave2(TSOI_12,arwt,0)
+ ;TSOI_12_gm!0 = "time"
+ ;TSOI_12_gm&time = TSOI_12&time
+ ;printVarSummary(TSOI_12_gm)
 
  ; annual means
  ;TSOI_C_annual = block_avg(TSOI_C_gm,12)
- ;TSOI_C_annual = month_to_annual(TSOI_C_gm,1)
+ TSOI_C_annual = month_to_annual(TSOI_C_gm,1)
  ;printVarSummary(TSOI_C_annual) 
 
  ;H2OSOI_active_annual = block_avg(H2OSOI_active_gm,12)
- ;H2OSOI_active_annual = month_to_annual(H2OSOI_active_gm,1)
+ H2OSOI_active_annual = month_to_annual(H2OSOI_active_gm,1)
  ;printVarSummary(H2OSOI_active_annual)
 
  ; monthly means
@@ -80,6 +105,18 @@ begin
  SOILWATER_gm&time = SOILWATER_TOT&time
  ;printVarSummary(SOILWATER_gm)
  SOILWATER_gm_am = month_to_annual(SOILWATER_gm,1)
+
+ ; total column average (soil temperature)
+ TSOI_C_cm = dim_avg_n_Wrap(TSOI_C,1)
+ ;printVarSummary(TSOI_C_cm)
+ ; then global mean
+ TSOI_C_cm_gm = wgt_areaave2(TSOI_C_cm,arwt,0)
+ ;printVarSummary(TSOI_C_cm_gm)
+ TSOI_C_cm_gm!0 = "time"
+ TSOI_C_cm_gm&time = TSOI_C_cm&time
+ ;printVarSummary(TSOI_C_cm_gm)
+ TSOI_C_cm_gm_am = month_to_annual(TSOI_C_cm_gm,1)
+ ;printVarSummary(TSOI_C_cm_gm_am)
 
  ; regression lines
  ;t = ispan(1,30,1)
@@ -124,6 +161,32 @@ begin
  ;plot = gsn_csm_y(wks_panel,data15,res)
 
  delete(plot)
+
+ ;wks_panel = gsn_open_wks("x11","test")
+ wks_panel = gsn_open_wks("eps","hydro_ensemble0_soiltemp_columnmean_annual")
+ res@tiYAxisString     = "~F21~Total Column Average Soil Temperature (~S~o~N~C)"
+
+ ; average soil temperature (average across soil depth)
+ ;printVarSummary(TSOI_C_gm)
+ ;TSOI_C_gm_avg = dim_avg_n_Wrap(TSOI_C_gm,1) ; all layers 
+ ;TSOI_C_gm_avg = dim_avg_n_Wrap(TSOI_C_gm(:,:9),1) ; active layer?
+ ;TSOI_C_gm_avg = dim_avg_n_Wrap(TSOI_C_gm(:,:11),1) ; top 2m
+ ;TSOI_C_gm_avg = TSOI_C_gm(:,9) ; layer 10
+ ;printVarSummary(TSOI_C_gm_avg) 
+ ;TSOI_C_gm_avg_am = month_to_annual(TSOI_C_gm_avg,1)
+ ;printVarSummary(TSOI_C_gm_avg_am)
+
+ ; single layer soil temperature
+ ;TSOI_12_gm_am = month_to_annual(TSOI_12_gm,1)
+ ;printVarSummary(TSOI_12_gm_am)
+
+ ;plot = gsn_csm_y(wks_panel,TSOI_C_gm_avg_am,res)
+ ;plot = gsn_csm_y(wks_panel,TSOI_12_gm_am,res)
+ plot = gsn_csm_y(wks_panel,TSOI_C_cm_gm_am,res)
+
+ delete(plot)
+
+
  wks_panel = gsn_open_wks("x11","test")
  plot = new(2,graphic)
 
@@ -165,16 +228,16 @@ begin
  res@tiMainString      = "~F21~Soil Temperature (~S~o~N~C)"
 
  ;printVarSummary(transpose(TSOI_C_gm)) 
- plot(0) = gsn_csm_contour(wks_panel,transpose(TSOI_C_gm),res)
- ;plot(0) = gsn_csm_contour(wks_panel,transpose(TSOI_C_annual),res) 
+ ;plot(0) = gsn_csm_contour(wks_panel,transpose(TSOI_C_gm),res)
+ plot(0) = gsn_csm_contour(wks_panel,transpose(TSOI_C_annual),res) 
 
  res@gsnYAxisIrregular2Log = False
- res@tiXAxisString     = "~F21~Months from Start"
- ;res@tiXAxisString     = "~F21~Years from Start"
+ ;res@tiXAxisString     = "~F21~Months from Start"
+ res@tiXAxisString     = "~F21~Years from Start"
  res@tiYAxisString     = "~F21~Soil Layer"
  res@tiMainString      = "~F21~Soil Moisture (mm~S~3~N~mm~S~-3~N~)"
- plot(1) = gsn_csm_contour(wks_panel,transpose(H2OSOI_active_gm),res)   
- ;plot(1) = gsn_csm_contour(wks_panel,transpose(H2OSOI_active_annual),res)
+ ;plot(1) = gsn_csm_contour(wks_panel,transpose(H2OSOI_active_gm),res)   
+ plot(1) = gsn_csm_contour(wks_panel,transpose(H2OSOI_active_annual),res)
 
 
 
