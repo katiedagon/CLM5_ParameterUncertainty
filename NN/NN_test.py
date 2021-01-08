@@ -1,4 +1,5 @@
 # Testing out different NN configurations
+# 5/17/19
 
 from keras.models import Sequential
 from keras.layers import Dense
@@ -14,7 +15,7 @@ import csv
 # Read in input array
 inputdata = np.load(file="../lhc_100.npy", allow_pickle=True)
 
-# Read in output array
+# Read in output array (GPP or LHF)
 #outputdata = np.load("../outputdata/outputdata_GPP_SVD_3modes.npy")
 outputdata = np.load("../outputdata/outputdata_LHF_SVD_3modes.npy")
 
@@ -35,10 +36,11 @@ maxnode = 15
 # Min # of nodes
 minnode = 5
 
-# Loop over # of nodes
+# Create arrays to save out metrics and epochs
 metrics=[]
-#eps = []
+eps = []
 
+# Loop over # of nodes
 # First layer
 for i in range(minnode,maxnode+1):
     # Second layer
@@ -52,26 +54,33 @@ for i in range(minnode,maxnode+1):
 
         # Create 2-layer simple model
         model = Sequential()
+        # first layer, relu as first activation
         model.add(Dense(i, input_dim=inputdata.shape[1], activation='relu',
-        #model.add(Dense(i, input_dim=inputdata.shape[1], activation='tanh',
             kernel_regularizer=l2(.001)))
+        # first layer, tanh as first activation
+        #model.add(Dense(i, input_dim=inputdata.shape[1], activation='tanh',
+            #kernel_regularizer=l2(.001)))
+        # second layer, tanh as second activation
         model.add(Dense(j, activation='tanh', kernel_regularizer=l2(.001)))
+        # output layer, linear activation
         model.add(Dense(nmodes))
 
         # Define model metrics
         def mean_sq_err(y_true,y_pred):
             return K.mean((y_true-y_pred)**2)
 
-        # Compile model
+        # Compile model with RMSprop optimization
         opt_dense = RMSprop(lr=0.005, rho=0.9, epsilon=None, decay=0.0)
         model.compile(opt_dense, "mse", metrics=[mean_sq_err])
 
         # Fit the model w/ EarlyStopping
-        #es = EarlyStopping(monitor='val_loss', min_delta=1,
-        #        patience=50, verbose=1, mode='min')
+        es = EarlyStopping(monitor='val_loss', min_delta=1,
+                patience=50, verbose=1, mode='min')
         results = model.fit(x_train, y_train, epochs=500, batch_size=30,
-        #        callbacks=[es], verbose=0, validation_data=(x_test,y_test))
-            verbose=0, validation_data=(x_test,y_test))
+                callbacks=[es], verbose=0, validation_data=(x_test,y_test))
+        # Fit the model w/o EarlyStopping
+        #results = model.fit(x_train, y_train, epochs=500, batch_size=30,
+            #verbose=0, validation_data=(x_test,y_test))
 
         # Make predictions - using validation set
         model_preds = model.predict(x_val)
@@ -94,14 +103,14 @@ for i in range(minnode,maxnode+1):
             r_array.append(r_value**2)
 
         # save out total epochs
-        #eps.append(max(results.epoch)+1)
+        eps.append(max(results.epoch)+1)
 
         # save metrics - multi-dim
         metrics.append([results.history['mean_sq_err'][-1],
             results.history['val_mean_sq_err'][-1],model_me,r_array[0],
             r_array[1],r_array[2]])
 
-# Different formatting for printing out metrics (2 sig figs)
+# Different formatting for printing out metrics (2 significant figures)
 metricsFormat = [["%.4f" % m for m in msub] for msub in metrics]
 
 # Write out metric data to csv
@@ -109,8 +118,8 @@ with open('NN_test.csv', 'w', newline='') as csvfile:
     writer = csv.writer(csvfile)
     writer.writerows(metricsFormat)
 
-# Write out epochs to txt
-#epsFormat = ["%d" % e for e in eps]
-#with open('NN_test_eps.txt', 'w') as f:
-#    for i,e in enumerate(epsFormat):
-#        f.write(epsFormat[i]+'\n')
+# Write out number of epochs to txt
+epsFormat = ["%d" % e for e in eps]
+with open('NN_test_eps.txt', 'w') as f:
+    for i,e in enumerate(epsFormat):
+        f.write(epsFormat[i]+'\n')

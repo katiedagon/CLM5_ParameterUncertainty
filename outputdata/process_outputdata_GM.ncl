@@ -39,7 +39,8 @@ begin
  ;print(clat)
 
  ; sample file for fixed variables output
- strs_lat = str_concat((/path,"hydro_ensemble_LHC_1/lnd/hist/hydro_ensemble_LHC_1.clm2.h0.0016-01.nc"/))
+ perm_path = "/glade/work/kdagon/CLM5_PPE/"
+ strs_lat = str_concat((/perm_path,"hydro_ensemble_LHC_1/lnd/hist/hydro_ensemble_LHC_1.clm2.h0.0016-01.nc"/))
  f_lat = addfile(strs_lat,"r")
 
  ; since gaus function does not generate the same lats as 4x5 grid
@@ -75,20 +76,20 @@ begin
  do i=1,niter
   y=tostring(i)
   print("Ensemble member "+y)
-  strs = (/path,"hydro_ensemble_LHC_",y,"/lnd/hist/*{001[6-9],20-}*"/)
-  ;strs = (/path,"future_climate_LHC_",y,"/lnd/hist/*{001[6-9],20-}*"/)
+  ;strs = (/path,"hydro_ensemble_LHC_",y,"/lnd/hist/*{001[6-9],20-}*"/)
+  strs = (/path,"future_climate_LHC_",y,"/lnd/hist/*{001[6-9],20-}*"/)
   str_c = str_concat(strs)
   fils = systemfunc("ls "+str_c)
   f = addfiles(fils,"r")
   v1 = f[:]->$var$
   ; second ensemble for difference
-  strs = (/path,"future_climate_LHC_",y,"/lnd/hist/*{001[6-9],20-}*"/)
-  str_c = str_concat(strs)
-  fils = systemfunc("ls "+str_c)
-  f = addfiles(fils,"r")
-  v2 = f[:]->$var$
-  o = v2 - v1 ; future - present
-  ;o = v1 ; present only
+  ;strs = (/path,"future_climate_LHC_",y,"/lnd/hist/*{001[6-9],20-}*"/)
+  ;str_c = str_concat(strs)
+  ;fils = systemfunc("ls "+str_c)
+  ;f = addfiles(fils,"r")
+  ;v2 = f[:]->$var$
+  ;o = v2 - v1 ; future - present
+  o = v1 ; present only
   copy_VarMeta(v1,o)
   ; mask model output to match obs
   o_m = mask(o,datamask_obs.eq.0,False)
