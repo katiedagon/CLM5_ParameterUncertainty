@@ -1,6 +1,8 @@
 # CLM5 Biophysical Parameter Uncertainty Project
 
-This repository provides code to run a CLM5 perturbed parameter ensemble to investigate parameter uncertainty using neural networks.
+This repository provides code to run a CLM5 perturbed parameter ensemble to investigate parameter uncertainty using neural networks. This code was developed as part of a publication Dagon et al. 2020, which you can find more details below.
+
+Dagon, K., B.M. Sanderson, R.A. Fisher, D.M. Lawrence (2020), A machine learning approach to emulation and biophysical parameter estimation with the Community Land Model, version 5. Advances in Statistical Climatology, Meteorology and Oceanography, 6, 223-244, [doi:10.5194/ascmo-6-223-2020](https://doi.org/10.5194/ascmo-6-223-2020).
 
 ## Requirements
 
