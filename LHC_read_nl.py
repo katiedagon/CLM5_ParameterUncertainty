@@ -19,7 +19,8 @@ def read_params(param_file=None):
     data = None
     if param_file is None:
         param_file = os.path.dirname(os.path.abspath(__file__))
-        param_file = os.path.join(param_file, "parameters.npy")
+        #param_file = os.path.join(param_file, "parameters.npy")
+        param_file = os.path.join(param_file, "parameters_posterior.npy")
 
     data = numpy.load(file=param_file, allow_pickle=True)
     return data

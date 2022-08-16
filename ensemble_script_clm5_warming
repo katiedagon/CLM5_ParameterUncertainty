@@ -9,15 +9,17 @@
 export USER="kdagon"
 
 export CODENAME="ctsm_ParamEns"
-export NAME="future_climate_LHC"
+#export NAME="future_climate_LHC"
+export NAME="future_climate_posterior"
 
 # Set number of sample cases
-niter=100
-#niter=1
+#niter=100
+niter=1
 echo "number of samples = "$niter
 
 # Run LHC_write to generate parameter value array
 # only needs to be run once for the ensemble
+# and not in the case of a posterior run
 # needs to be run before LHC_read_nl.py
 # command line arg provides number of samples/simulations
 # Source python env only for python command, then exit
@@ -37,7 +39,7 @@ cd cime/scripts
 pwd
 
 ## Create experiment directory: uncomment this first time only
-#mkdir $NAME
+mkdir $NAME
 ##
 
 cd $NAME
@@ -125,16 +127,16 @@ export EXPTNAME=${NAME}_$i
 echo $EXPTNAME
 
 # Remove existing output
-rm -rf /glade/scratch/$USER/$EXPTNAME
-rm -rf /glade/scratch/$USER/archive/$EXPTNAME
+#rm -rf /glade/scratch/$USER/$EXPTNAME
+#rm -rf /glade/scratch/$USER/archive/$EXPTNAME
 
 # Remove existing working directories
-rm -rf $EXPTNAME
+#rm -rf $EXPTNAME
 
 # Project TSS Account
-#../create_newcase --run-unsupported --compset I2000Clm50Sp --res f45_f45 --case $EXPTNAME --project P08010000
+../create_newcase --run-unsupported --compset I2000Clm50Sp --res f45_f45 --case $EXPTNAME --project P08010000
 # Project ASP Account
-../create_newcase --run-unsupported --compset I2000Clm50Sp --res f45_f45 --case $EXPTNAME --project P54048000
+#../create_newcase --run-unsupported --compset I2000Clm50Sp --res f45_f45 --case $EXPTNAME --project P54048000
 
 cd $EXPTNAME
 
@@ -155,7 +157,7 @@ cd $EXPTNAME
 ./xmlchange STOP_OPTION=nyears
 
 ./xmlchange BUILD_COMPLETE="TRUE"
-./xmlchange EXEROOT="/glade/scratch/$USER/codebase_hydro_ensemble_LHC/bld"
+./xmlchange EXEROOT="/glade/work/kdagon/CLM5_PPE/codebase_hydro_ensemble_LHC/bld/"
 
 ./xmlchange DATM_CLMNCEP_YR_START=2000
 ./xmlchange DATM_CLMNCEP_YR_END=2004
@@ -175,15 +177,15 @@ cd $EXPTNAME
 # Assumes this folder has already been created?
 pftfile="/glade/u/home/$USER/pft_files/$NAME/${EXPTNAME}.nc"
 # Remove existing file, if applicable
-rm -f $pftfile
+#rm -f $pftfile
 # Copy default 
-cp /glade/p/cesmdata/cseg/inputdata/lnd/clm2/paramdata/clm5_params.c171117.nc $pftfile
+cp /glade/u/home/$USER/pft_files/clm5_params.c171117.nc $pftfile
 
 # Make changes to netcdf file through python script
 #source /glade/work/$USER/ncar_pylib_clone/bin/activate
 #pylib
 source /glade/work/kdagon/ncar_pylib_clone_20190627/bin/activate
-python /glade/u/home/$USER/CLM5hydro_LHC/LHC_read_pft.py $(( i - 1 )) $pftfile
+python /glade/u/home/$USER/CLM5_ParameterUncertainty/LHC_read_pft.py $(( i - 1 )) $pftfile
 deactivate
 
 # Set params file in namelist
@@ -196,7 +198,7 @@ echo  $uclm >> user_nl_clm
 #source /glade/work/$USER/ncar_pylib_clone/bin/activate
 #pylib
 source /glade/work/kdagon/ncar_pylib_clone_20190627/bin/activate
-python /glade/u/home/$USER/CLM5hydro_LHC/LHC_read_nl.py $(( i - 1 )) >> user_nl_clm
+python /glade/u/home/$USER/CLM5_ParameterUncertainty/LHC_read_nl.py $(( i - 1 )) >> user_nl_clm
 deactivate
 
 ./case.submit

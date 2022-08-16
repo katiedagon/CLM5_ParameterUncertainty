@@ -24,8 +24,8 @@ begin
 
  ; unit conversion (if needed)
  ;u = 1
- u = (12 * (60 * 60 * 24 * 365) / 10^6) * 10^-15 ; umolC/m2/s to PgC/m2/yr
- ;u = (12 * (60 * 60 * 24 * 365) / 10^6)  ; umol/m2/s to gC/m2/yr
+ ;u = (12 * (60 * 60 * 24 * 365) / 10^6) * 10^-15 ; umolC/m2/s to PgC/m2/yr
+ u = (12 * (60 * 60 * 24 * 365) / 10^6)  ; umol/m2/s to gC/m2/yr
 
  ; gauss weights for global mean
  ;lats = 46 ; number of latitudes at 4x5
