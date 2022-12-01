@@ -10,7 +10,7 @@ outputdata/*.csv
 outputdata/*.npy
 obs/*.nc
 obs/*.npy
-MCMC/
+MCMC/posterior_dists/
 manuscript_figures/
 DASH*
 *.npy
